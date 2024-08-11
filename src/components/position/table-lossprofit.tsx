@@ -50,9 +50,7 @@ export function TableLossProfit({
   const ticker = searchParams.get("ticker")
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
-  if (creator) {
-    useWarnIfUnsavedChanges(unsavedChanges)
-  }
+  useWarnIfUnsavedChanges(unsavedChanges)
 
   useEffect(() => {
     if (!creator) {
