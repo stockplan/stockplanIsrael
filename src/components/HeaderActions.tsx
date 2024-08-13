@@ -3,8 +3,6 @@
 import React, { useState } from "react"
 import { useRouter } from "next/navigation"
 import { User } from "@supabase/supabase-js"
-import { getURL } from "@/utils/helpers"
-// import ContactFormModal from "./ContactForm"
 import { Button } from "./ui/button"
 import dynamic from "next/dynamic"
 import Image from "next/image"
@@ -28,12 +26,11 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
     }
   }
 
-  const hoToHomepage = () => {
+  const goToHomepage = () => {
     setVal("")
     if (user) return
 
-    const redirectUrl = getURL("/home")
-    router.push(redirectUrl)
+    router.push("/home")
   }
 
   const goToDemo = (e: any) => {
@@ -41,14 +38,13 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
 
     if (!val) return
 
-    const redirectUrl = getURL(`/calculator/lossprofit?ticker=${val}`)
-    router.push(redirectUrl)
+    router.push(`/calculator/lossprofit?ticker=${val}`)
     setVal("")
   }
 
   return (
     <>
-      <div className=" cursor-pointer" onClick={hoToHomepage}>
+      <div className=" cursor-pointer" onClick={goToHomepage}>
         <Image
           src="/img/Logo.png"
           className="w-auto h-auto"

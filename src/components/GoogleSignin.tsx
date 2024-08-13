@@ -11,13 +11,10 @@ const GoogleSignin = () => {
     try {
       const supabase = createClient()
 
-      const redirectUrl = getURL(
-        `/auth/callback?next=${DEFAULT_LOGIN_REDIRECT}`
-      )
       await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: redirectUrl,
+          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${DEFAULT_LOGIN_REDIRECT}`,
         },
       })
     } catch (error) {
