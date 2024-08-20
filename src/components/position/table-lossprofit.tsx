@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   ColumnDef,
   flexRender,
@@ -50,7 +50,7 @@ export function TableLossProfit({
   const ticker = searchParams.get("ticker")
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
-  useWarnIfUnsavedChanges(unsavedChanges)
+  useWarnIfUnsavedChanges(unsavedChanges, !!creator)
 
   useEffect(() => {
     if (!creator) {
@@ -176,9 +176,11 @@ export function TableLossProfit({
   }
 
   const handleDeleteAll = () => {
-    setTableData([getEmptyRow(creator)])
+    const emptyTable = [getEmptyRow(creator)]
+    setTableData(emptyTable)
     table.setPageIndex(0)
     setUnsavedChanges(true)
+    saveChanges(emptyTable)
   }
 
   const table = useReactTable({

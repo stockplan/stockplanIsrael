@@ -43,12 +43,11 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       backgroundImage: {
-        auth: "url('/img/cover.jpg')",
-        "dark-buildings": "linear-gradient(90deg, #242725 0%, #404546 100%)",
         main: "url('/img/bl.png')",
       },
       colors: {
         "background-main": "#404546",
+        header: "#2D5686",
       },
     },
   },

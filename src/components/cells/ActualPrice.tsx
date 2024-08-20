@@ -1,9 +1,8 @@
-"use client"
-
 import React, { useEffect, useState } from "react"
 import { CellType } from "../position/columns"
 import useSWR from "swr"
 import axios from "axios"
+import { ClipLoader, FadeLoader, SyncLoader } from "react-spinners"
 
 const fetcher = async (url: string, currTicker: string) =>
   await axios.get(`${url}?ticker=${currTicker}`).then((res) => {
@@ -18,13 +17,13 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
 
   const updateData = table.options.meta!.updateData!
 
-  const { data, error } = useSWR(
+  const { data, error, isLoading } = useSWR(
     ticker ? ["/api/tickerPrice", ticker] : null,
     ([url, currTicker]) => fetcher(url, currTicker),
     {
+      fallbackData: actualPrice,
       refreshInterval: 60000,
       revalidateOnFocus: false,
-      // revalidateOnMount: true,
       shouldRetryOnError: false,
     }
   )
@@ -47,12 +46,19 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
     setPrice(actualPrice)
   }, [actualPrice])
 
-  const formattedPrice =
-    price % 1 === 0 ? price.toString() : price.toFixed(2).replace(/\.00$/, "")
+  const formattedPrice = price
+    ? price % 1 === 0
+      ? price.toString()
+      : price.toFixed(2).replace(/\.00$/, "")
+    : 0
 
   return (
     <div className={`px-6 w-24 text-center ${error ? "text-red-500" : ""}`}>
-      ${formattedPrice}
+      {isLoading ? (
+        <ClipLoader color="#ffffff" size={25} />
+      ) : (
+        `$${formattedPrice}`
+      )}
     </div>
   )
 }

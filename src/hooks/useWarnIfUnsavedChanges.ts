@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
-export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
+export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
   const router = useRouter()
 
   const handleAnchorClick: EventListener = (event) => {
@@ -27,8 +27,11 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
   }
 
   useEffect(() => {
+    if (!isUser) return
     const mutationObserver = new MutationObserver(addAnchorListeners)
+
     mutationObserver.observe(document.body, { childList: true, subtree: true })
+
     addAnchorListeners()
 
     return () => {
@@ -38,7 +41,7 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
         anchor.removeEventListener("click", handleAnchorClick)
       )
     }
-  }, [])
+  }, [isUser])
 
   useEffect(() => {
     const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
@@ -47,7 +50,7 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
     }
 
     const handlePopState = (e: PopStateEvent) => {
-      if (unsaved) {
+      if (unsaved && isUser) {
         const confirmLeave = window.confirm(
           "You have unsaved changes. Are you sure you want to leave?"
         )
@@ -58,7 +61,7 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
       }
     }
 
-    if (unsaved) {
+    if (unsaved && isUser) {
       window.addEventListener("beforeunload", beforeUnloadHandler)
       window.addEventListener("popstate", handlePopState)
     } else {
@@ -70,13 +73,13 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
       window.removeEventListener("beforeunload", beforeUnloadHandler)
       window.removeEventListener("popstate", handlePopState)
     }
-  }, [unsaved])
+  }, [unsaved, isUser])
 
   useEffect(() => {
     const originalPush = router.push
 
     router.push = (url: string, options?: NavigateOptions) => {
-      if (unsaved) {
+      if (unsaved && isUser) {
         const confirmLeave = window.confirm(
           "You have unsaved changes. Are you sure you want to leave?"
         )

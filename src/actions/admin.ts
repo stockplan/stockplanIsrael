@@ -1,5 +1,6 @@
 "use server"
 
+import { createClient } from "@/lib/supabase/client"
 import { ContactMessageSchema } from "@/schemas"
 import axios from "axios"
 import SubmitJSON from "submitjson"
@@ -51,6 +52,36 @@ export async function getAllPositions() {
 }
 
 export async function sendEmailToAdmin(
+  userMessage: z.infer<typeof ContactMessageSchema>
+) {
+  try {
+    const validatedUserMessage = ContactMessageSchema.safeParse(userMessage)
+
+    if (!validatedUserMessage.success) {
+      console.log(validatedUserMessage.error)
+      return { error: validatedUserMessage.error.message }
+    }
+
+    const { firstName, lastName, description, email } =
+      validatedUserMessage.data
+
+    const toInsetContact = {
+      first_name: firstName,
+      last_name: lastName,
+      email,
+      description,
+    }
+
+    const supabase = createClient()
+    const { error } = await supabase.from("contacts").insert(toInsetContact)
+    if (error) throw error
+    return { success: true }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export async function sendEmailToAdmin1(
   userMessage: z.infer<typeof ContactMessageSchema>
 ) {
   try {

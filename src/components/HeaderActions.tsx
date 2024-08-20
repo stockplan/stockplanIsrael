@@ -6,6 +6,9 @@ import { User } from "@supabase/supabase-js"
 import { Button } from "./ui/button"
 import dynamic from "next/dynamic"
 import Image from "next/image"
+import { cn } from "@/lib/utils"
+import LoginButton from "./ui/login-button"
+import LogoutBtn from "./LogoutBtn"
 
 const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false })
 
@@ -44,7 +47,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
 
   return (
     <>
-      <div className=" cursor-pointer" onClick={goToHomepage}>
+      <div className="cursor-pointer" onClick={goToHomepage}>
         <Image
           src="/img/Logo.png"
           className="w-auto h-auto"
@@ -65,8 +68,15 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
           className="w-full bg-transparent border-none focus-visible:right-0 focus-visible:outline-none pl-2 pe-28 "
           placeholder="AAPL"
         />
-        <button className="bg-white pr-2 cursor-pointer">Go</button>
+        <button
+          className={`bg-white pr-2 ${cn(
+            !user ? "cursor-pointer" : "cursor-default"
+          )}`}
+        >
+          Go
+        </button>
       </form>
+      {user ? <LogoutBtn /> : <LoginButton />}
       {user && (
         <Button
           variant="ghost"
