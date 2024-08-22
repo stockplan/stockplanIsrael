@@ -43,7 +43,7 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       backgroundImage: {
-        main: "url('/img/bl.png')",
+        main: "url('/img/bl-new.png')",
       },
       colors: {
         "background-main": "#404546",
