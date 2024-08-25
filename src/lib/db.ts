@@ -16,6 +16,7 @@ const cached: {
 
 async function connectMongo() {
   if (cached.connection) {
+    console.log("🚀 Using cached connection")
     return cached.connection
   }
   if (!cached.promise) {

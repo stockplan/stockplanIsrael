@@ -16,7 +16,7 @@ interface Props {
 const UserStocksModal = ({ isOpen, onClose, positions }: Props) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] text-gray-700">
+      <DialogContent className="sm:max-w-[425px] text-gray-700 max-h-[500px] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-center text-lg sm:text-xl text-gray-700">
             User stocks

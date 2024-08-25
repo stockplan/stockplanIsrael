@@ -1,4 +1,3 @@
-import { Position } from "@/schemas"
 import { Schema, model, models, Document, Model } from "mongoose"
 
 export interface IPosition extends Document {
@@ -17,7 +16,7 @@ export interface IPosition extends Document {
   expectedLossPercent: number
 }
 
-const PositionSchema = new Schema<Position>(
+const PositionSchema = new Schema<IPosition>(
   {
     creator: { type: String },
     ticker: { type: String, uppercase: true, default: "" },
@@ -44,4 +43,4 @@ const PositionSchema = new Schema<Position>(
 
 const PositionModel = models?.Position || model("Position", PositionSchema)
 
-export default PositionModel as Model<IPosition>
+export default PositionModel

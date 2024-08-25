@@ -19,10 +19,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    await connectMongo()
+
     const usersWithTickers = await Promise.all(
       users.map(async (user) => {
         const extendedUser = user as ExtendedUser
-        await connectMongo()
         const dbUser = await UserModel.findOne({
           userId: extendedUser.id,
         }).populate("positions")
@@ -48,7 +49,6 @@ export async function PUT(req: Request) {
     const { maxTickers, id } = updates
 
     if (maxTickers !== undefined && id) {
-      // נוודא שהערך maxTickers הוא מספר ומצוי בטווח הנדרש
       if (
         typeof maxTickers === "number" &&
         maxTickers > 0 &&
@@ -59,7 +59,7 @@ export async function PUT(req: Request) {
           { $set: { maxTickers } },
           { new: true }
         )
-        // console.log("Updated user:", res)
+
         return NextResponse.json({ success: true, user: res })
       } else {
         return NextResponse.json(
@@ -94,15 +94,24 @@ export async function DELETE(req: NextRequest) {
       )
     }
 
-    const supabase = createAdminClient()
+    await connectMongo()
+    const userToDelete = await UserModel.findOne({ userId: id })
 
+    if (!userToDelete) {
+      return NextResponse.json({ success: false, message: "User not founded" })
+    }
+
+    const positionIds = userToDelete.positions
+
+    await Promise.all([
+      UserModel.findOneAndDelete({ userId: id }),
+      PositionModel.deleteMany({ _id: { $in: positionIds } }),
+    ])
+
+    const supabase = createAdminClient()
     const res = await supabase.auth.admin.deleteUser(id)
 
-    console.log(res)
-
-    await UserModel.findOneAndDelete({ userId: id })
-
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, data: res.data })
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }

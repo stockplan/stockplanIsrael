@@ -54,3 +54,8 @@ export function checkEmptyRow(row: Position): boolean {
 
   return true
 }
+
+export function checkAdmin(email: string) {
+  const adminEmails = [process.env.ADMIN_EMAIL, process.env.ADMIN_EMAIL_TWO]
+  return adminEmails.includes(email)
+}

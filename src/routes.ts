@@ -28,14 +28,4 @@ export const DEFAULT_LOGIN_REDIRECT = "/calculator/lossprofit"
 /**
  * An Array of protected route handlers
  */
-export const protectedApiRoutes = ["/api/user", "/api/position"]
-
-/**
- * Endpoint for adding, updating or removing user stocks. use inside the table client component
- */
-export const UPDATE_USER_ROUTE = "/api/position/my"
-
-/**
- * Endpoint for adding, updating or removing user stocks. use inside the table client component
- */
-export const GET_USER_INITIAL_STOCKS_ROUTE = "/api/users/"
+export const protectedApiRoutes = ["/api/user", "/api/save"]
