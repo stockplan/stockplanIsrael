@@ -6,6 +6,7 @@ import Header from "@/components/Header"
 import { getURL } from "@/utils/helpers"
 import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 import { Toaster } from "@/components/ui/toaster"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -39,6 +40,7 @@ export default async function RootLayout({
         </UnsavedChangesProvider>
         <Footer />
         <Toaster />
+        <SpeedInsights />
       </body>
     </html>
   )

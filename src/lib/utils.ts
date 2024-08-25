@@ -26,7 +26,7 @@ export function getEmptyRow(creator: string = "") {
   } as Position
 }
 
-export const formatDate = (dateString: any) => {
+export const formatDate = (dateString: string) => {
   if (!dateString) return "N/A"
 
   try {

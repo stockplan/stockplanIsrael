@@ -1,107 +1,60 @@
 "use server"
 
-import { createClient } from "@/lib/supabase/client"
+import { createAdminClient } from "@/lib/supabase/admin"
+import { createClient } from "@/lib/supabase/server"
 import { ContactMessageSchema } from "@/schemas"
+import { getURL } from "@/utils/helpers"
 import axios from "axios"
-import SubmitJSON from "submitjson"
 
 import { z } from "zod"
-
-const BASE_URL = process.env.BASE_URL
-
-export async function clearDB() {
-  // const role = await currentRole()
-  // if (role !== "admin") {
-  //   return { error: "Unauthorized" }
-  // }
-
-  try {
-    const response = await axios.delete(`${BASE_URL}/api/position`)
-    return response.data
-  } catch (error: any) {
-    return {
-      success: false,
-      message: `Failed to clear database: ${error.response?.statusText}`,
-      contentType: error.response?.headers["content-type"],
-    }
-  }
-}
-
-export async function getAllUsers() {
-  try {
-    const response = await fetch(`${BASE_URL}/api/user`)
-    return await response.json()
-  } catch (error: any) {
-    console.error(
-      `[getAllUsers]: Failed to fetch users. Error: ${error.message}`
-    )
-    return { success: false, error: error.message }
-  }
-}
-
-export async function getAllPositions() {
-  try {
-    const response = await axios.get(`${BASE_URL}/api/position`)
-    return response.data
-  } catch (error: any) {
-    console.error(
-      `[getAllPositions]: Failed to fetch positions. Error: ${error.message}`
-    )
-    return { success: false, error: error.message }
-  }
-}
 
 export async function sendEmailToAdmin(
   userMessage: z.infer<typeof ContactMessageSchema>
 ) {
-  try {
-    const validatedUserMessage = ContactMessageSchema.safeParse(userMessage)
+  const validatedUserMessage = ContactMessageSchema.safeParse(userMessage)
 
-    if (!validatedUserMessage.success) {
-      console.log(validatedUserMessage.error)
-      return { error: validatedUserMessage.error.message }
-    }
-
-    const { firstName, lastName, description, email } =
-      validatedUserMessage.data
-
-    const toInsetContact = {
-      first_name: firstName,
-      last_name: lastName,
-      email,
-      description,
-    }
-
-    const supabase = createClient()
-    const { error } = await supabase.from("contacts").insert(toInsetContact)
-    if (error) throw error
-    return { success: true }
-  } catch (error) {
-    console.log(error)
+  if (!validatedUserMessage.success) {
+    console.log(validatedUserMessage.error)
+    return { error: validatedUserMessage.error.message }
   }
+
+  const { firstName, lastName, description, email } = validatedUserMessage.data
+
+  const toInsetContact = {
+    first_name: firstName,
+    last_name: lastName,
+    email,
+    description,
+  }
+
+  const supabase = createClient()
+  const { error } = await supabase.from("contacts").insert(toInsetContact)
+  if (error) throw error
+  return { success: true }
 }
 
-export async function sendEmailToAdmin1(
-  userMessage: z.infer<typeof ContactMessageSchema>
-) {
+export async function getUsers() {
+  const supabase = createAdminClient()
+
+  const {
+    data: { users },
+    error,
+  } = await supabase.auth.admin.listUsers()
+
+  if (error) {
+    throw error
+  }
+
+  return users
+}
+
+export async function getUsersWithTickers() {
   try {
-    const validatedUserMessage = ContactMessageSchema.safeParse(userMessage)
-
-    if (!validatedUserMessage.success) {
-      console.log(validatedUserMessage.error)
-      return { error: validatedUserMessage.error.message }
-    }
-
-    const sj = new SubmitJSON({
-      apiKey: process.env.SUBMIT_JSON_API_KEY as string,
-      endpoint: process.env.SUBMIT_JSON_ENDPOINT,
-    })
-
-    const res = await sj.submit(validatedUserMessage.data)
-    console.log(res)
-
-    return { success: "true", data: res }
+    const url = getURL("/api/user")
+    const { data } = await axios.get(url)
+    return data.users
   } catch (error) {
     console.log(error)
+    return null
   }
 }

@@ -1,6 +1,8 @@
+import { User } from "@supabase/supabase-js"
 import { RowData } from "@tanstack/react-table"
 
 import { Mongoose } from "mongoose"
+import { Position } from "./schemas"
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {
@@ -10,6 +12,7 @@ declare module "@tanstack/react-table" {
     ) => void
     removeRow?: (rowIndex: number) => void
     handleDeleteUser?: any
+    handleBlur?: any
   }
 }
 
@@ -18,5 +21,12 @@ declare global {
   var mongoose: {
     conn: Mongoose | null
     promise: Promise<Mongoose> | null
+  }
+}
+
+declare module "@supabase/supabase-js" {
+  interface ExtendedUser extends User {
+    maxTickers: number
+    stockIds?: Position[]
   }
 }

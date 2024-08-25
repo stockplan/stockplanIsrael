@@ -1,12 +1,9 @@
-import Admin from "@/components/admin/Admin"
 import React from "react"
 
-const AdminPage = async ({}) => {
-  return (
-    <div className="min-h-screen bg-gray-100 flex justify-center items-center z-20 relative">
-      <Admin />
-    </div>
-  )
+interface AdminPageProps {}
+
+const AdminPage: React.FC<AdminPageProps> = ({}) => {
+  return <div className="AdminPage">AdminPage</div>
 }
 
 export default AdminPage
