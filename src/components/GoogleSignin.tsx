@@ -7,6 +7,11 @@ import { DEFAULT_LOGIN_REDIRECT } from "@/routes"
 import { useState } from "react"
 import { RiLoader4Fill as Loader } from "react-icons/ri"
 
+const BASE_URL =
+  process.env.NODE_ENV !== "development"
+    ? process.env.NEXT_PUBLIC_BASE_URL
+    : "http://localhost:3000"
+
 const GoogleSignin = () => {
   const [loading, setLoading] = useState(false)
 
@@ -20,7 +25,7 @@ const GoogleSignin = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${process.env.NEXT_PUBLIC_BASE_URL}/auth/callback?next=${DEFAULT_LOGIN_REDIRECT}`,
+          redirectTo: `${BASE_URL}/auth/callback?next=${DEFAULT_LOGIN_REDIRECT}`,
         },
       })
       if (error) throw error

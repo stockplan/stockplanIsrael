@@ -6,12 +6,12 @@ import UserManagement from "../_components/user-table"
 interface UserPageProps {}
 
 const UserPage: React.FC<UserPageProps> = async ({}) => {
-  const users = await getUsersWithTickers()
+  const users = (await getUsersWithTickers()) || []
 
   return (
-    <ContentLayout title="Users">
+    <div className="container pt-8 pb-8 px-4 sm:px-8">
       <UserManagement initialData={users} />
-    </ContentLayout>
+    </div>
   )
 }
 
