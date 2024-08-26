@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 const config = {
   darkMode: ["class"],
@@ -19,15 +19,20 @@ const config = {
       //     lg: "2rem",
       //     xl: "3rem",
       //   },
-      //   screens: {
-      //     sm: "480px",
-      //     md: "768px",
-      //     lg: "976px",
-      //     xl: "1440px",
-      //   },
+      // screens: {
+      //   sm: "480px",
+      //   md: "768px",
+      //   lg: "976px",
+      //   xl: "1440px",
+      // },
     },
 
     extend: {
+      screens: {
+        sm: "400px",
+        md: "500px",
+        lg: "700px",
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
@@ -44,14 +49,16 @@ const config = {
       },
       backgroundImage: {
         main: "url('/img/bl.png')",
+        mobileMain: "url('/img/imgmobileBuildings.svg')",
       },
       colors: {
         "background-main": "#404546",
         header: "#2D5686",
+        hoverHeader: "#3A69A3 ",
       },
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config
+} satisfies Config;
 
-export default config
+export default config;

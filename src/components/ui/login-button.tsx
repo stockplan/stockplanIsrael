@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { Button } from "./button"
-import { Dialog, DialogContent, DialogTrigger } from "./dialog"
-import AuthModal from "../auth/auth-modal"
+import { Button } from "./button";
+import { Dialog, DialogContent, DialogTrigger } from "./dialog";
+import AuthModal from "../auth/auth-modal";
 
 interface LoginButtonProps {
-  variant?: any
-  className?: string
-  children?: React.ReactNode
+  variant?: any;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const LoginButton: React.FC<LoginButtonProps> = ({
@@ -26,7 +26,7 @@ const LoginButton: React.FC<LoginButtonProps> = ({
         <AuthModal />
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default LoginButton
+export default LoginButton;
