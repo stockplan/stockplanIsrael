@@ -34,6 +34,7 @@ const Navbar: React.FC<NavbarProps> = ({ user, setIsContactFormOpen }) => {
                 width={20}
                 height={8}
                 alt="Hamburger"
+                className="w-auto"
               />
             </Button>
           </DropdownMenuTrigger>
