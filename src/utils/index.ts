@@ -47,3 +47,7 @@ export async function getInitialData(userId: string) {
     return []
   }
 }
+
+export function hasDataChanged(arr1: unknown[], arr2: unknown[]) {
+  return JSON.stringify(arr1) === JSON.stringify(arr2)
+}

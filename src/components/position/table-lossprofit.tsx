@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   ColumnDef,
   flexRender,
@@ -26,6 +26,10 @@ import { useSearchParams } from "next/navigation"
 import axios from "axios"
 import SaveButton from "../SaveButton"
 import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges"
+import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
+import { useToast } from "../ui/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+import { hasDataChanged } from "@/utils"
 
 interface DataTableProps {
   columns: ColumnDef<Position>[]
@@ -37,24 +41,46 @@ interface ColumnUpdate {
   [columnId: string]: number | string
 }
 
+const AUTO_SAVE_DELAY = 2000
+
 export function TableLossProfit({
   columns,
   creator,
   userStocks,
 }: DataTableProps) {
   const [tableData, setTableData] = useState<Position[]>(userStocks)
-  const [unsavedChanges, setUnsavedChanges] = useState(false)
+  const originalDataRef = useRef<Position[]>(userStocks)
   const [isLoading, setIsLoading] = useState(false)
+
+  const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
+  const { toast } = useToast()
 
   const searchParams = useSearchParams()
   const ticker = searchParams.get("ticker")
+
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
   useWarnIfUnsavedChanges(unsavedChanges, !!creator)
 
   useEffect(() => {
+    const dataHasChanged = !hasDataChanged(tableData, originalDataRef.current)
+
+    setUnsavedChanges(dataHasChanged)
+  }, [tableData])
+
+  useEffect(() => {
+    const autoSaveTimer = setTimeout(() => {
+      if (unsavedChanges) {
+        saveChanges(tableData)
+      }
+    }, AUTO_SAVE_DELAY)
+
+    return () => clearTimeout(autoSaveTimer)
+  }, [tableData, unsavedChanges])
+
+  useEffect(() => {
     if (!creator) {
-      const emptyRow = getEmptyRow("")
+      const emptyRow = getEmptyRow()
       if (ticker) {
         emptyRow.ticker = ticker
       }
@@ -63,10 +89,16 @@ export function TableLossProfit({
   }, [creator, ticker])
 
   const saveChanges = async (changes: Position[]) => {
-    if (creator) {
+    if (hasDataChanged(changes, originalDataRef.current)) {
+      setUnsavedChanges(false)
+      return
+    }
+
+    if (creator && unsavedChanges) {
       setIsLoading(true)
       try {
         await axios.post("/api/save", { changes })
+        originalDataRef.current = changes
         setUnsavedChanges(false)
       } catch (error) {
         console.error("Failed to save data", error)
@@ -78,6 +110,10 @@ export function TableLossProfit({
 
   const removeRow = (rowIndex: number) => {
     try {
+      if (!creator) {
+        setTableData([getEmptyRow()])
+        return
+      }
       const currentPageIndex = table.getState().pagination.pageIndex
       const pageSize = table.getState().pagination.pageSize
       const rowCountOnCurrentPage = tableData.length % pageSize
@@ -89,8 +125,11 @@ export function TableLossProfit({
       const updatedRows = tableData.filter((_, index) => index !== rowIndex)
       // const rowToDelete = tableData[rowIndex]
 
-      if (updatedRows.length === 0) setTableData([getEmptyRow()])
-      else setTableData(updatedRows)
+      if (updatedRows.length === 0) {
+        setTableData([getEmptyRow(creator)])
+      } else {
+        setTableData(updatedRows)
+      }
 
       setUnsavedChanges(true)
     } catch (error) {
@@ -127,52 +166,64 @@ export function TableLossProfit({
   }
 
   const validateNewRow = (lastRow: Position) => {
+    const validationToast = {
+      title: "",
+      description: "",
+      action: <ToastAction altText="Try again">Try again</ToastAction>,
+    }
+
     // Validate ticker
     if (!lastRow.ticker) {
-      alert("Please enter a ticker symbol in the last row.")
-      return false
+      validationToast.title = "Missing Ticker Symbol"
+      validationToast.description =
+        "Please enter a ticker symbol in the last row."
     }
 
     // Validate askPrice
-    if (lastRow.askPrice === 0) {
-      alert("Please enter an ask price greater than 0 in the last row.")
-      return false
+    else if (lastRow.askPrice === 0) {
+      validationToast.title = "Ask Price Required"
+      validationToast.description =
+        "Please enter an ask price greater than 0 in the last row."
     }
 
     // Validate quantity
-    if (lastRow.quantity === 0) {
-      alert("Please enter a quantity greater than 0 in the last row.")
+    else if (lastRow.quantity === 0) {
+      validationToast.title = "Quantity Needed"
+      validationToast.description =
+        "Please enter a quantity greater than 0 in the last row."
+    }
+
+    if (validationToast.description) {
+      toast(validationToast)
       return false
     }
     return true
   }
 
   const addNewRow = () => {
-    if (!creator) return
-
     const maxTickers = 50
-
-    try {
+    if (!creator || tableData.length >= maxTickers) {
       if (tableData.length >= maxTickers) {
-        alert(`Maximum of ${maxTickers} rows allowed.`)
-        return
+        toast({
+          description: `Maximum of ${maxTickers} rows allowed.`,
+          variant: "destructive",
+        })
       }
-
-      const lastRow = tableData[tableData.length - 1]
-      if (!validateNewRow(lastRow)) return table.lastPage()
-
-      const { pageSize, pageIndex } = table.getState().pagination
-
-      if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
-        table.nextPage()
-      }
-
-      const updatedRows = [...tableData, getEmptyRow(creator)]
-      setTableData(updatedRows)
-      setUnsavedChanges(true)
-    } catch (error) {
-      console.error("Failed to add new row:", error)
+      return
     }
+
+    const lastRow = tableData[tableData.length - 1]
+    if (!validateNewRow(lastRow)) return table.lastPage()
+
+    const { pageSize, pageIndex } = table.getState().pagination
+
+    if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
+      table.nextPage()
+    }
+
+    const updatedRows = [...tableData, getEmptyRow(creator)]
+    setTableData(updatedRows)
+    // setUnsavedChanges(true)
   }
 
   const handleDeleteAll = () => {
