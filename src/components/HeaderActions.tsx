@@ -1,63 +1,65 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { useRouter } from "next/navigation"
-import { User } from "@supabase/supabase-js"
-import { Button } from "./ui/button"
-import dynamic from "next/dynamic"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
-import LoginButton from "./ui/login-button"
-import LogoutBtn from "./LogoutBtn"
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { User } from "@supabase/supabase-js";
+import { Button } from "./ui/button";
+import dynamic from "next/dynamic";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
+import LoginButton from "./ui/login-button";
+import LogoutBtn from "./LogoutBtn";
+import { VscArrowRight } from "react-icons/vsc";
+import Navbar from "./navbar";
 
-const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false })
+const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false });
 
 interface HeaderActionsProps {
-  user: User | null
+  user: User | null;
 }
 
 const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
-  const [val, setVal] = useState("")
-  const [isContactFormOpen, setIsContactFormOpen] = useState(false)
+  const [val, setVal] = useState("");
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
 
-  const router = useRouter()
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase()
+    const value = e.target.value.toUpperCase();
     if (/^[A-Z]*$/.test(value)) {
-      setVal(value)
+      setVal(value);
     }
-  }
+  };
 
   const goToHomepage = () => {
-    setVal("")
-    if (user) return
+    setVal("");
+    if (user) return;
 
-    router.push("/home")
-  }
+    router.push("/home");
+  };
 
   const goToDemo = (e: any) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    if (!val) return
+    if (!val) return;
 
-    router.push(`/calculator/lossprofit?ticker=${val}`)
-    setVal("")
-  }
+    router.push(`/calculator/lossprofit?ticker=${val}`);
+    setVal("");
+  };
 
   return (
     <>
       <div className="cursor-pointer" onClick={goToHomepage}>
         <Image
           src="/img/Logo.png"
-          className="w-auto h-auto"
+          className="sm:w-auto sm:h-auto w-32"
           alt="logo"
           width={166}
           height={37}
         />
       </div>
       <form
-        className="flex items-center bg-white py-1 rounded-sm"
+        className="flex items-center bg-white py-1 lg:rounded-sm rounded-3xl lg:mr-4"
         onSubmit={goToDemo}
       >
         <input
@@ -65,33 +67,35 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
           value={val}
           disabled={!!user}
           onChange={handleChange}
-          className="w-full bg-transparent border-none focus-visible:right-0 focus-visible:outline-none pl-2 pe-28 "
+          className="lg:w-full w-40 md:w-64 bg-transparent border-none focus-visible:right-0 focus-visible:outline-none pl-2 pe-28  "
           placeholder="AAPL"
         />
         <button
-          className={`bg-white pr-2 ${cn(
+          className={`bg-transparent pr-2 ${cn(
             !user ? "cursor-pointer" : "cursor-default"
           )}`}
         >
-          Go
+          <VscArrowRight />
         </button>
       </form>
-      {user ? <LogoutBtn /> : <LoginButton />}
-      {user && (
+      <Navbar user={user} setIsContactFormOpen={setIsContactFormOpen} />
+      <div className="hidden lg:block items-end">
         <Button
           variant="ghost"
-          className="border border-white text-white absolute  right-[162px]"
+          className="border border-white text-white mr-4"
           onClick={() => setIsContactFormOpen(true)}
         >
           Contact
         </Button>
-      )}
+        {user ? <LogoutBtn /> : <LoginButton />}
+      </div>
+
       <ContactFormModal
         isOpen={isContactFormOpen}
         onClose={() => setIsContactFormOpen(false)}
       />
     </>
-  )
-}
+  );
+};
 
-export default HeaderActions
+export default HeaderActions;

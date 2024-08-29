@@ -7,11 +7,11 @@ import { getURL } from "@/utils/helpers"
 import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 import { Toaster } from "@/components/ui/toaster"
 
-const inter = Inter({ subsets: ["latin"] })
+const inter = Inter({ subsets: ["latin"] });
 
-const title = "Plan Your Trade - Stock Market Tools for Traders"
+const title = "Plan Your Trade - Stock Market Tools for Traders";
 const description =
-  "Plan Your Trade offers a suite of calculators and tools designed for traders in the US stock market to pre-plan their trading strategies. This website enables users to estimate potential profits and losses by utilizing various financial calculators, providing a comprehensive approach to stock market trading."
+  "Plan Your Trade offers a suite of calculators and tools designed for traders in the US stock market to pre-plan their trading strategies. This website enables users to estimate potential profits and losses by utilizing various financial calculators, providing a comprehensive approach to stock market trading.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
@@ -21,17 +21,17 @@ export const metadata: Metadata = {
     title: title,
     description: description,
   },
-}
+};
 
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-background-main bg-main bg-no-repeat bg-[left_bottom_-80px]  `}
+        className={`${inter.className} bg-background-main md:bg-main bg-mobileMain  bg-no-repeat md:bg-[left_bottom_-80px] `}
       >
         <UnsavedChangesProvider>
           <Header />
@@ -41,5 +41,5 @@ export default async function RootLayout({
         <Toaster />
       </body>
     </html>
-  )
+  );
 }
