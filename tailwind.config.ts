@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss";
+import type { Config } from "tailwindcss"
 
 const config = {
   darkMode: ["class"],
@@ -52,8 +52,8 @@ const config = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       backgroundImage: {
-        main: "url('/img/bl.png')",
-        mobileMain: "url('/img/imgmobileBuildings.svg')",
+        main: "url('/img/bl-new.png')",
+        mobileMain: "url('/img/mobileBuildings.svg')",
       },
       colors: {
         "background-main": "#404546",
@@ -63,6 +63,6 @@ const config = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+} satisfies Config
 
-export default config;
+export default config
