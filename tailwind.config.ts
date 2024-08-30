@@ -12,10 +12,10 @@ const config = {
   theme: {
     container: {
       center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
+      // padding: "2rem",
+      // screens: {
+      //   "2xl": "1400px",
+      // },
       //   padding: {
       //     DEFAULT: "1rem",
       //     sm: "1rem",
@@ -33,9 +33,9 @@ const config = {
 
     extend: {
       screens: {
-        sm: "400px",
-        md: "500px",
-        lg: "700px",
+        // sm: "400px",
+        // md: "500px",
+        // lg: "700px",
       },
       keyframes: {
         "accordion-down": {

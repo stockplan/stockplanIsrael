@@ -1,65 +1,66 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { User } from "@supabase/supabase-js";
-import { Button } from "./ui/button";
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import { cn } from "@/lib/utils";
-import LoginButton from "./ui/login-button";
-import LogoutBtn from "./LogoutBtn";
-import { VscArrowRight } from "react-icons/vsc";
-import Navbar from "./navbar";
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
+import { User } from "@supabase/supabase-js"
+import { Button } from "./ui/button"
+import dynamic from "next/dynamic"
+import Image from "next/image"
+import { cn } from "@/lib/utils"
+import LoginButton from "./ui/login-button"
+import LogoutBtn from "./LogoutBtn"
+import { VscArrowRight } from "react-icons/vsc"
+import Navbar from "./navbar"
 
-const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false });
+const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false })
 
 interface HeaderActionsProps {
-  user: User | null;
+  user: User | null
 }
 
 const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
-  const [val, setVal] = useState("");
-  const [isContactFormOpen, setIsContactFormOpen] = useState(false);
+  const [val, setVal] = useState("")
+  const [isContactFormOpen, setIsContactFormOpen] = useState(false)
 
-  const router = useRouter();
+  const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.toUpperCase();
+    const value = e.target.value.toUpperCase()
     if (/^[A-Z]*$/.test(value)) {
-      setVal(value);
+      setVal(value)
     }
-  };
+  }
 
   const goToHomepage = () => {
-    setVal("");
-    if (user) return;
+    setVal("")
+    if (user) return
 
-    router.push("/home");
-  };
+    router.push("/home")
+  }
 
   const goToDemo = (e: any) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!val) return;
+    if (!val) return
 
-    router.push(`/calculator/lossprofit?ticker=${val}`);
-    setVal("");
-  };
+    router.push(`/calculator/lossprofit?ticker=${val}`)
+    setVal("")
+  }
 
   return (
     <>
       <div className="cursor-pointer" onClick={goToHomepage}>
         <Image
           src="/img/Logo.png"
-          className="sm:w-auto sm:h-auto w-32"
+          // className="w-32"
           alt="logo"
           width={166}
           height={37}
+          // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         />
       </div>
       <form
-        className="flex items-center bg-white py-1 lg:rounded-sm rounded-3xl lg:mr-4"
+        className="flex items-center bg-white py-1 px-2 lg:rounded-sm rounded-full lg:mr-4"
         onSubmit={goToDemo}
       >
         <input
@@ -67,7 +68,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
           value={val}
           disabled={!!user}
           onChange={handleChange}
-          className="lg:w-full w-40 md:w-64 bg-transparent border-none focus-visible:right-0 focus-visible:outline-none pl-2 pe-28  "
+          className="w-full bg-transparent border-none focus:outline-none pl-2"
           placeholder="AAPL"
         />
         <button
@@ -75,11 +76,11 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
             !user ? "cursor-pointer" : "cursor-default"
           )}`}
         >
-          <VscArrowRight />
+          {val && <VscArrowRight />}
         </button>
       </form>
       <Navbar user={user} setIsContactFormOpen={setIsContactFormOpen} />
-      <div className="hidden lg:block items-end">
+      <div className="hidden lg:flex items-center">
         <Button
           variant="ghost"
           className="border border-white text-white mr-4"
@@ -95,7 +96,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
         onClose={() => setIsContactFormOpen(false)}
       />
     </>
-  );
-};
+  )
+}
 
-export default HeaderActions;
+export default HeaderActions

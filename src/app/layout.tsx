@@ -32,13 +32,15 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-background-main md:bg-main bg-mobileMain bg-[left_bottom_0]  bg-no-repeat md:bg-[left_bottom_-80px] `}
+        className={`${inter.className} bg-background-main bg-main bg-no-repeat bg-[left_bottom_-80px]`}
       >
         <UnsavedChangesProvider>
           <Header />
-          <div className=" min-h-[calc(100%-97px)]  ">{children}</div>
+          <div className=" min-h-[calc(100%-97px)] ">{children}</div>
         </UnsavedChangesProvider>
+
         <Footer />
+
         <Toaster />
         <SpeedInsights />
       </body>

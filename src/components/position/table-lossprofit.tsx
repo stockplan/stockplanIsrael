@@ -17,7 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
-import { Position } from "@/schemas"
+import { lossCalcValidation, Position } from "@/schemas"
 import { Separator } from "../ui/separator"
 import EmptyRow from "./empty-row"
 import Totals from "./totals"

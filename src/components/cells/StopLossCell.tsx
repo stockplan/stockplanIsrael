@@ -38,7 +38,7 @@ const StopLossCell: React.FC<CellType> = ({ row, column, table }) => {
 
     updateData?.(row.index, {
       [column.id]: +stopLoss,
-      expectedLoss: Math.round(expectedLoss),
+      expectedLoss: +expectedLoss,
       expectedLossPercent: Math.round(expectedLossPercent),
     })
   }

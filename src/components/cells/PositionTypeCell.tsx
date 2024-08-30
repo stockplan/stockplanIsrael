@@ -7,12 +7,9 @@ const PositionTypeCell: React.FC<CellType> = ({ row, column, table }) => {
   const positionType = row.getValue(column.id) as string
   const updateData = table.options.meta?.updateData
 
-  // const expectedLoss = row.getValue("expectedLoss")
-  // const expectedLossPercent = row.getValue("expectedLossPercent")
   const quantity = row.getValue("quantity") as number
   const askPrice = row.getValue("askPrice") as number
   const exitPrice = row.getValue("exitPrice") as number
-  const stopLoss = row.getValue("stopLoss") as number
   const cost = row.getValue("cost") as number
 
   const chooseSell = () => {

@@ -33,7 +33,7 @@ const ExpectedProfitCell: React.FC<CellType> = ({ row, column, table }) => {
         expectedProfitPercent: +updatedProfitPer,
       })
     }
-  }, [defaultValue, exitPrice, quantity, askPrice])
+  }, [defaultValue, exitPrice, quantity, askPrice, cost, positionType])
 
   // const displayProfit = Math.max(calculateExpectedProfit(), 0)
 

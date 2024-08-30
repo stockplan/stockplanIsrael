@@ -26,60 +26,54 @@ const Navbar: React.FC<NavbarProps> = ({ user, setIsContactFormOpen }) => {
 
   return (
     <nav className="lg:hidden">
-      <div className=" mx-auto flex justify-between items-center">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button className="bg-header hover:bg-hoverHeader">
-              <IoIosMenu className=" w-8 h-8" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            side="bottom"
-            align="end"
-            className="bg-header text-white w-40"
-          >
-            {!user && (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button className="bg-header hover:bg-hoverHeader p-2">
+            <IoIosMenu className="w-8 h-8" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          side="bottom"
+          align="end"
+          className="bg-header text-white w-40"
+        >
+          {!user && (
+            <DropdownMenuItem asChild>
+              <LoginButton className="text-white py-2 cursor-pointer w-full flex justify-between items-center">
+                <span>Log in</span>
+                <FaUser className="h-5 w-5" />
+              </LoginButton>
+            </DropdownMenuItem>
+          )}
+          {user && (
+            <>
               <DropdownMenuItem asChild>
-                <LoginButton className="text-white py-2 border-none cursor-pointer w-full flex justify-evenly bg-header hover:bg-hoverHeader">
-                  <span>Log in</span>
-                  <FaUser className="h-7 w-7" />
-                </LoginButton>
+                <div
+                  className="text-white py-2 cursor-pointer flex items-center justify-between"
+                  onClick={() => setIsContactFormOpen(true)}
+                >
+                  Contact
+                  <Image
+                    src="/img/Contact iconcontact.svg"
+                    width={20}
+                    height={8}
+                    alt="contact img"
+                  />
+                </div>
               </DropdownMenuItem>
-            )}
-
-            {user && (
-              <>
-                <DropdownMenuItem asChild>
-                  <div
-                    className="text-white  bg-header hover:bg-hoverHeader py-2 cursor-pointer flex items-center justify-between"
-                    onClick={() => {
-                      setIsContactFormOpen(true)
-                    }}
-                  >
-                    Contact
-                    <Image
-                      src="/img/Contact iconcontact.svg"
-                      width={20}
-                      height={8}
-                      alt="contact img"
-                      className="px-3"
-                    />
-                  </div>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <div
-                    className="text-white  bg-header hover:bg-hoverHeader py-2 cursor-pointer"
-                    onClick={handleLogout}
-                  >
-                    Log out
-                  </div>
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <div
+                  className="text-white py-2 cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  Log out
+                </div>
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </nav>
   )
 }
