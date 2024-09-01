@@ -62,7 +62,7 @@ export function DataTablePagination<TData>({
         <PlusIcon className="mr-2 h-4 w-4" />
         Add Another Ticker
       </Button>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+      <div className="hidden flex1 items-center space-x-6 lg:space-x-8">
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
           <Select

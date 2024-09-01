@@ -100,10 +100,6 @@ export function TableLossProfit({
         await axios.post("/api/save", { changes })
         originalDataRef.current = changes
         setUnsavedChanges(false)
-        toast({
-          title: "Success",
-          description: "Changes saved successfully.",
-        })
       } catch (error) {
         console.error("Failed to save data", error)
         toast({
@@ -212,7 +208,7 @@ export function TableLossProfit({
   }
 
   const addNewRow = () => {
-    const maxTickers = 50
+    const maxTickers = 10
     if (!creator || tableData.length >= maxTickers) {
       if (tableData.length >= maxTickers) {
         toast({
