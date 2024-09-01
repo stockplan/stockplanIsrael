@@ -100,8 +100,19 @@ export function TableLossProfit({
         await axios.post("/api/save", { changes })
         originalDataRef.current = changes
         setUnsavedChanges(false)
+        toast({
+          title: "Success",
+          description: "Changes saved successfully.",
+        })
       } catch (error) {
         console.error("Failed to save data", error)
+        toast({
+          title: "Failed to Save Changes",
+          description:
+            "There was an issue saving your changes. Please try again.",
+          variant: "destructive",
+          action: <ToastAction altText="Try again">Try again</ToastAction>,
+        })
       } finally {
         setIsLoading(false)
       }

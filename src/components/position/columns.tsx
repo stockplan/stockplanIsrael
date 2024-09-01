@@ -350,16 +350,16 @@ export const columns: ColumnDef<Position>[] = [
         if (!exitPrice) return 0
         const calc = exitPrice * quantity - askPrice * quantity
         if (positionType === "buy") {
-          return Math.round(calc)
+          return calc
         }
-        return Math.round(calc) * -1
+        return calc * -1
       }
 
       const updateData = table.options.meta?.updateData
 
       useEffect(() => {
         let updatedProfit = Math.max(calculateExpectedProfit(), 0)
-        let updatedProfitPer = Math.round((updatedProfit / cost) * 100)
+        let updatedProfitPer = (updatedProfit / cost) * 100
 
         if (defaultValue !== updatedProfit) {
           updateData?.(row.index, {
@@ -371,9 +371,11 @@ export const columns: ColumnDef<Position>[] = [
 
       // const displayProfit = Math.max(calculateExpectedProfit(), 0)
 
-      const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
-        maximumFractionDigits: 0,
-      })
+      // const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
+      //   maximumFractionDigits: 0,
+      // })
+
+      const formattedProfit = Math.round(defaultValue * 100) / 100
 
       return (
         <div className="text-center w-24 text-green-500">

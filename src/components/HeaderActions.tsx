@@ -49,18 +49,8 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
 
   return (
     <>
-      <div className="cursor-pointer" onClick={goToHomepage}>
-        <Image
-          src="/img/Logo.png"
-          // className="w-32"
-          alt="logo"
-          width={166}
-          height={37}
-          // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </div>
       <form
-        className="flex items-center bg-white py-1 px-2 lg:rounded-sm rounded-full lg:mr-4"
+        className="flex items-center bg-white py-1 px-2 lg:mt-0  rounded-full lg:mr-4 lg:w-auto"
         onSubmit={goToDemo}
       >
         <input
@@ -79,7 +69,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
           {val && <VscArrowRight />}
         </button>
       </form>
-      <Navbar user={user} setIsContactFormOpen={setIsContactFormOpen} />
+      {/* <Navbar user={user} setIsContactFormOpen={setIsContactFormOpen} /> */}
       <div className="hidden lg:flex items-center">
         <Button
           variant="ghost"

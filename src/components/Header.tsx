@@ -1,5 +1,8 @@
 import HeaderActions from "./HeaderActions"
 import getServerUser from "@/utils/auth-helpers/getServerUser"
+import Image from "next/image"
+import NavMobile from "./nav-mobile"
+import Link from "next/link"
 
 const Header = async () => {
   const {
@@ -7,8 +10,22 @@ const Header = async () => {
   } = await getServerUser()
 
   return (
-    <header className="bg-header py-2 px-3 sm:px-8 flex justify-between items-center">
-      <HeaderActions user={user} />
+    <header className="bg-header shadow-lg max-h-14">
+      <div className="block md:hidden">
+        <NavMobile user={user} />
+      </div>
+      <div className="hidden md:flex items-center justify-between h-16 mx-5">
+        <Link href="/home" className="flex relative">
+          <Image
+            src="/img/Logo.png"
+            alt="logo"
+            width={166}
+            height={37}
+            className="saturate-200"
+          />
+        </Link>
+        <HeaderActions user={user} />
+      </div>
     </header>
   )
 }
