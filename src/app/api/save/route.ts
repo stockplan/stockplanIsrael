@@ -1,3 +1,4 @@
+import connectMongo from "@/lib/db"
 import PositionModel, { IPosition } from "@/models/Position"
 import UserModel from "@/models/User"
 import getServerUser from "@/utils/auth-helpers/getServerUser"
@@ -17,6 +18,7 @@ export async function POST(req: NextRequest) {
 
     const { changes }: { changes: IPosition[] } = await req.json()
 
+    await connectMongo()
     // Fetch existing positions to identify which ones need updates or deletions
     const existingPositions = await PositionModel.find({ creator: user.id })
     const existingIds = new Set(

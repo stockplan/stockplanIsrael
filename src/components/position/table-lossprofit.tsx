@@ -41,7 +41,7 @@ interface ColumnUpdate {
   [columnId: string]: number | string
 }
 
-const AUTO_SAVE_DELAY = 2000
+const AUTO_SAVE_DELAY = 10000 * 5
 
 export function TableLossProfit({
   columns,
@@ -102,13 +102,6 @@ export function TableLossProfit({
         setUnsavedChanges(false)
       } catch (error) {
         console.error("Failed to save data", error)
-        toast({
-          title: "Failed to Save Changes",
-          description:
-            "There was an issue saving your changes. Please try again.",
-          variant: "destructive",
-          action: <ToastAction altText="Try again">Try again</ToastAction>,
-        })
       } finally {
         setIsLoading(false)
       }
