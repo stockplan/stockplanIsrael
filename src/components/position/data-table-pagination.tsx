@@ -18,17 +18,24 @@ import { Table } from "@tanstack/react-table"
 import { AlertDialogTrigger } from "../ui/alert-dialog"
 import ConfirmationModal from "../ConfirmationModal"
 import LoginButton from "../ui/login-button"
+import { Position } from "@/schemas"
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
-  handleDeleteAll: () => void
+  table: Table<Position>
+
   handleAddNewTicker: () => void
   creator?: string
+  tableData: Position[]
+  isLoading: boolean
+  unsavedChanges: boolean
 }
 
 export function DataTablePagination<TData>({
   table,
-  handleDeleteAll,
+  tableData,
+  isLoading,
+  unsavedChanges,
+
   handleAddNewTicker,
   creator,
 }: DataTablePaginationProps<TData>) {
@@ -51,7 +58,6 @@ export function DataTablePagination<TData>({
             Delete All
           </Button>
         </AlertDialogTrigger>
-        <ConfirmationModal handleDeleteAll={handleDeleteAll} />
       </AlertDialog>
       <Button
         variant="secondary"
