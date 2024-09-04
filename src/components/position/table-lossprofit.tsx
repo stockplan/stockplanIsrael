@@ -341,7 +341,9 @@ export function TableLossProfit({
 
         <DataTablePagination
           creator={creator}
-          handleDeleteAll={handleDeleteAll}
+          tableData={tableData}
+          isLoading={isLoading}
+          unsavedChanges={unsavedChanges}
           handleAddNewTicker={addNewRow}
           table={table}
         />
