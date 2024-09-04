@@ -252,7 +252,7 @@ export function TableLossProfit({
 
   return (
     <>
-      <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden lg:block landscape:block">
+      <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden md:block lg:block landscape:block">
         <div className="flex items-center justify-between">
           <div className="flex flex-1 justify-between space-x-2 items-center">
             <h3 onClick={() => console.log(tableData)}>
@@ -269,7 +269,7 @@ export function TableLossProfit({
                 <AlertDialogTrigger asChild>
                   <Button className=" text-white text-sm font-['Titillium Web'] bg-background-main">
                     <Image
-                      src="\img\trah-icon-new.svg"
+                      src="\img\trash-icon.svg"
                       width={12}
                       height={13}
                       alt="trash-icon"
@@ -330,17 +330,9 @@ export function TableLossProfit({
           </Table>
         </div>
         <Separator />
-
-        <SaveButton
-          onClick={() => saveChanges(tableData)}
-          isLoading={isLoading}
-          disabled={!unsavedChanges}
-        >
-          Save Changes
-        </SaveButton>
-
         <DataTablePagination
           creator={creator}
+          saveChanges={saveChanges}
           tableData={tableData}
           isLoading={isLoading}
           unsavedChanges={unsavedChanges}
