@@ -144,6 +144,7 @@ export const columns: ColumnDef<Position>[] = [
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as string) || "0"
       const [quantity, setQuantity] = useState<string>(defaultValue)
+      const updateData = table.options.meta?.updateData
 
       useEffect(() => {
         setQuantity(defaultValue)
@@ -153,25 +154,9 @@ export const columns: ColumnDef<Position>[] = [
         if (+quantity === +defaultValue) return
 
         const askPrice = row.getValue("askPrice") as number
-        const exitPrice = row.getValue("exitPrice") as number
-        const positionType = row.getValue("positionType") as string
 
-        const totalCost = +quantity * askPrice
-
-        let expectedProfit = exitPrice * +quantity - askPrice * +quantity
-        expectedProfit =
-          positionType === "buy" ? expectedProfit : expectedProfit * -1
-
-        const expectedProfitPercent = (expectedProfit / totalCost) * 100
-
-        const updateData = table.options.meta?.updateData
-
-        updateData?.(row.index, {
-          [column.id]: +quantity,
-          cost: totalCost,
-          expectedProfit: Math.max(Math.round(expectedProfit), 0),
-          expectedProfitPercent: Math.round(expectedProfitPercent),
-        })
+        const updatedCost = askPrice * +quantity
+        updateData?.(row.index, { [column.id]: +quantity, cost: +updatedCost })
       }
 
       return (
@@ -208,38 +193,12 @@ export const columns: ColumnDef<Position>[] = [
         setAskPrice(defaultValue)
       }, [defaultValue])
 
-      // const handleBlur = () => {
-      //   if (+askPrice === +defaultValue) return
-
-      //   updateData &&
-      //     updateData(row.index, {
-      //       [column.id]: +askPrice,
-      //       cost: quantity * +askPrice,
-      //     })
-      // }
-
       const handleBlur = () => {
         if (+askPrice === +defaultValue) return
 
-        const exitPrice = row.getValue("exitPrice") as number
-        const quantity = row.getValue("quantity") as number
-        const positionType = row.getValue("positionType") as string
+        const updatedCost = +askPrice * quantity
 
-        const totalCost = quantity * +askPrice
-
-        let expectedProfit = exitPrice * quantity - +askPrice * quantity
-        expectedProfit =
-          positionType === "buy" ? expectedProfit : expectedProfit * -1
-
-        const expectedProfitPercent = (expectedProfit / totalCost) * 100
-
-        updateData &&
-          updateData(row.index, {
-            [column.id]: +askPrice,
-            cost: totalCost,
-            expectedProfit: Math.max(Math.round(expectedProfit), 0),
-            expectedProfitPercent: Math.round(expectedProfitPercent),
-          })
+        updateData(row.index, { [column.id]: +askPrice, cost: +updatedCost })
       }
 
       return (
@@ -267,11 +226,9 @@ export const columns: ColumnDef<Position>[] = [
     ),
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as number) || 0
-
       const formattedCost = defaultValue.toLocaleString("en-US", {
         maximumFractionDigits: 0,
       })
-
       return <div className="text-center w-24">${formattedCost}</div>
     },
   },
@@ -307,7 +264,6 @@ export const columns: ColumnDef<Position>[] = [
 
         const expectedProfitPercent = (expectedProfit / totalCost) * 100
 
-        // Update Exit Price and Expected Profit in one go
         updateData?.(row.index, {
           [column.id]: +exitPrice,
           expectedProfit: Math.max(Math.round(expectedProfit), 0),
@@ -320,7 +276,7 @@ export const columns: ColumnDef<Position>[] = [
           className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
           id={`exitPrice-${row.index}`}
           value={exitPrice}
-          onValueChange={(value: any) => setExitPrice(value || "0")}
+          onValueChange={(value?: string) => setExitPrice(value || "0")}
           onBlur={handleBlurExitPrice}
           decimalsLimit={2}
           allowNegativeValue={false}
@@ -350,32 +306,28 @@ export const columns: ColumnDef<Position>[] = [
         if (!exitPrice) return 0
         const calc = exitPrice * quantity - askPrice * quantity
         if (positionType === "buy") {
-          return calc
+          return Math.round(calc)
         }
-        return calc * -1
+        return Math.round(calc) * -1
       }
 
-      const updateData = table.options.meta?.updateData
+      const updateData = table.options.meta?.updateData!
 
       useEffect(() => {
         let updatedProfit = Math.max(calculateExpectedProfit(), 0)
         let updatedProfitPer = (updatedProfit / cost) * 100
 
         if (defaultValue !== updatedProfit) {
-          updateData?.(row.index, {
+          updateData(row.index, {
             [column.id]: +updatedProfit,
             expectedProfitPercent: +updatedProfitPer,
           })
         }
       }, [defaultValue, exitPrice, quantity, askPrice, cost, positionType])
 
-      // const displayProfit = Math.max(calculateExpectedProfit(), 0)
-
-      // const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
-      //   maximumFractionDigits: 0,
-      // })
-
-      const formattedProfit = Math.round(defaultValue * 100) / 100
+      const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
+        maximumFractionDigits: 0,
+      })
 
       return (
         <div className="text-center w-24 text-green-500">
@@ -467,53 +419,29 @@ export const columns: ColumnDef<Position>[] = [
         setStopLoss(initialValue)
       }, [initialValue])
 
-      const updateData = table.options.meta?.updateData
-
-      // const handleBlur = () => {
-      //   if (+initialValue === +stopLoss) return
-
-      //   if (+stopLoss === 0) {
-      //     updateData?.(row.index, {
-      //       [column.id]: 0,
-      //       expectedLoss: 0,
-      //       expectedLossPercent: 0,
-      //     })
-      //     return
-      //   }
-
-      //   let expectedLoss = quantity * +stopLoss - quantity * askPrice
-      //   expectedLoss = positionType === "buy" ? -expectedLoss : expectedLoss
-      //   // expectedLoss = positionType === "buy" ? expectedLoss * -1 : expectedLoss
-
-      //   const expectedLossPercent = (expectedLoss / totalCost) * 100
-
-      //   updateData?.(row.index, {
-      //     [column.id]: +stopLoss,
-      //     expectedLoss: +expectedLoss,
-      //     expectedLossPercent: Math.round(expectedLossPercent),
-      //   })
-      // }
+      const updateData = table.options.meta?.updateData!
 
       const handleBlur = () => {
         if (+initialValue === +stopLoss) return
 
-        const askPrice = row.getValue("askPrice") as number
-        const quantity = row.getValue("quantity") as number
-        const exitPrice = row.getValue("exitPrice") as number
-        const positionType = row.getValue("positionType") as string
+        if (+stopLoss === 0) {
+          updateData(row.index, {
+            [column.id]: 0,
+            expectedLoss: 0,
+            expectedLossPercent: 0,
+          })
+          return
+        }
 
-        const totalCost = quantity * askPrice
+        let expectedLoss = quantity * +stopLoss - quantity * askPrice
+        expectedLoss = positionType === "buy" ? expectedLoss * -1 : expectedLoss
 
-        let expectedProfit = exitPrice * quantity - askPrice * quantity
-        //prettier-ignore
-        expectedProfit = positionType === "buy" ? expectedProfit : expectedProfit * -1
-
-        const expectedProfitPercent = (expectedProfit / totalCost) * 100
+        const expectedLossPercent = (expectedLoss / totalCost) * 100
 
         updateData?.(row.index, {
           [column.id]: +stopLoss,
-          expectedProfit: Math.max(Math.round(expectedProfit), 0),
-          expectedProfitPercent: Math.round(expectedProfitPercent),
+          expectedLoss: +expectedLoss,
+          expectedLossPercent: Math.round(expectedLossPercent),
         })
       }
 
@@ -653,7 +581,7 @@ export const columns: ColumnDef<Position>[] = [
           prefix={prefix}
           className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm text-red-500"
           value={lossPercent}
-          onValueChange={(value: any) => setLossPercent(value || "0")}
+          onValueChange={(value?: string) => setLossPercent(value || "0")}
           onBlur={handleBlur}
         />
       )
