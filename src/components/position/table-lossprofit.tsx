@@ -30,6 +30,10 @@ import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
 import { useToast } from "../ui/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 import { hasDataChanged } from "@/utils"
+import { AlertDialog, AlertDialogTrigger } from "../ui/alert-dialog"
+import { Button } from "../ui/button"
+import Image from "next/image"
+import ConfirmationModal from "../ConfirmationModal"
 
 interface DataTableProps {
   columns: ColumnDef<Position>[]
@@ -248,20 +252,34 @@ export function TableLossProfit({
 
   return (
     <>
-      <div className="space-y-4 text-white bg-[#2D3131] p-3 ">
+      <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden lg:block landscape:block">
         <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center space-x-2">
+          <div className="flex flex-1 justify-between space-x-2 items-center">
             <h3 onClick={() => console.log(tableData)}>
               Quick Profit / Loss Calculator
             </h3>
+            <img
+              src="\img\Logo.svg"
+              width={160}
+              height={42}
+              className="pr-[12%] h-auto w-auto"
+            />
             {creator && (
-              <SaveButton
-                onClick={() => saveChanges(tableData)}
-                isLoading={isLoading}
-                disabled={!unsavedChanges}
-              >
-                Save Changes
-              </SaveButton>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button className=" text-white text-sm font-['Titillium Web'] bg-background-main">
+                    <Image
+                      src="\img\trah-icon-new.svg"
+                      width={12}
+                      height={13}
+                      alt="trash-icon"
+                      className="mr-2"
+                    />
+                    Delete All
+                  </Button>
+                </AlertDialogTrigger>
+                <ConfirmationModal handleDeleteAll={handleDeleteAll} />
+              </AlertDialog>
             )}
           </div>
         </div>
@@ -311,6 +329,15 @@ export function TableLossProfit({
             </TableBody>
           </Table>
         </div>
+        <Separator />
+
+        <SaveButton
+          onClick={() => saveChanges(tableData)}
+          isLoading={isLoading}
+          disabled={!unsavedChanges}
+        >
+          Save Changes
+        </SaveButton>
 
         <DataTablePagination
           creator={creator}
@@ -318,7 +345,6 @@ export function TableLossProfit({
           handleAddNewTicker={addNewRow}
           table={table}
         />
-        <Separator />
         <Totals tableData={tableData} />
       </div>
     </>
