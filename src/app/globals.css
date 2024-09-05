@@ -1,4 +1,10 @@
 @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  height: 100dvh;
+}
 
 /* Firefox */
 * {
@@ -11,15 +17,7 @@
   width: 15px;
 }
 
-@tailwind components;
-
-@tailwind utilities;
-
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   @apply opacity-100; /* Make the buttons always visible */
-}
-
-body {
-  height: 100dvh;
 }

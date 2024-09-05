@@ -32,7 +32,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-background-main bg-main bg-no-repeat bg-[left_bottom_-80px]`}
+        className={`${inter.className} bg-background-main bg-no-repeat bg-mobileMain md:bg-main bg-left-bottom md:bg-[left_bottom_-80px]`}
       >
         <UnsavedChangesProvider>
           <Header />

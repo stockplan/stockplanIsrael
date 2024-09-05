@@ -69,8 +69,7 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
           {val && <VscArrowRight />}
         </button>
       </form>
-      {/* <Navbar user={user} setIsContactFormOpen={setIsContactFormOpen} /> */}
-      <div className="hidden lg:flex items-center">
+      <div className="hidden md:flex items-center">
         <Button
           variant="ghost"
           className="border border-white text-white mr-4"

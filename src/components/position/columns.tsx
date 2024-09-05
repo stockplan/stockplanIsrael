@@ -9,7 +9,6 @@ import { useEffect, useState } from "react"
 import { Input } from "../ui/input"
 import { mutate } from "swr"
 import CurrencyInput from "react-currency-input-field"
-// import DaysToTargetCell from "../cells/DaysToTargetCell"
 
 export type CellType = CellContext<Position, unknown>
 
