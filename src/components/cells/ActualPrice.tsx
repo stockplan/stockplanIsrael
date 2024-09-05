@@ -22,7 +22,6 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
     ([url, currTicker]) => fetcher(url, currTicker),
     {
       fallbackData: actualPrice,
-      refreshInterval: 60000,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
     }
