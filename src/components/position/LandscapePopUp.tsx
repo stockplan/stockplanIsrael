@@ -37,23 +37,21 @@ const LandscapePopUp = () => {
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogContent className="flex flex-col items-center py-5 w-[65%]">
-        <button onClick={handleClose} className="absolute top-4 right-4">
-          <Image
-            src="\img\close-rotate-page.svg"
-            height={11}
-            width={11}
-            alt="closing button"
-          />
-        </button>
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4"
+        ></button>
         <DialogTitle className="text-center text-black text-md font-normal font-['GFS Didot'] inline w-[70%]">
           For optimal view, please rotate your mobile screen
         </DialogTitle>
-        <Image
-          src="\img\Rotate-phone-symbol.svg"
-          height={87}
-          width={86}
-          alt="rotate phone to landscape mode"
-        />
+        <DialogDescription>
+          <Image
+            src="\img\Rotate-phone-symbol.svg"
+            height={88}
+            width={89}
+            alt="rotate phone to landscape mode"
+          />
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   )

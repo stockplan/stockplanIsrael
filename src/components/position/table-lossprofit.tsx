@@ -270,8 +270,8 @@ export function TableLossProfit({
                   <Button className=" text-white text-sm font-['Titillium Web'] bg-background-main">
                     <Image
                       src="\img\trash-icon.svg"
-                      width={12}
-                      height={13}
+                      width={15}
+                      height={20}
                       alt="trash-icon"
                       className="mr-2"
                     />
