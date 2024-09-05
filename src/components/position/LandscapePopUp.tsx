@@ -14,7 +14,9 @@ const LandscapePopUp = () => {
   const [dialogOpen, setDialogOpen] = useState(true)
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 768px)")
+    const mediaQuery = window.matchMedia(
+      "(max-width: 768px) and (orientation: portrait)"
+    )
     const handleMediaQueryChange = (e: MediaQueryListEvent) => {
       setIsPhone(e.matches)
     }
@@ -28,7 +30,6 @@ const LandscapePopUp = () => {
   }, [])
 
   const handleClose = () => {
-    console.log("test")
     setDialogOpen(false)
   }
 
