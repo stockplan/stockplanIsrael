@@ -255,7 +255,7 @@ export const columns: ColumnDef<Position>[] = [
       const updateData = table.options.meta?.updateData
 
       const handleBlurExitPrice = () => {
-        if (+defaultValue === +exitPrice) return
+        if (+defaultValue === +exitPrice || isNaN(+exitPrice)) return
 
         // Calculate Expected Profit
         const calc = +exitPrice * quantity - askPrice * quantity
@@ -263,11 +263,13 @@ export const columns: ColumnDef<Position>[] = [
 
         const expectedProfitPercent = (expectedProfit / totalCost) * 100
 
-        updateData?.(row.index, {
-          [column.id]: +exitPrice,
-          expectedProfit: Math.max(Math.round(expectedProfit), 0),
-          expectedProfitPercent: Math.round(expectedProfitPercent),
-        })
+        if (!isNaN(expectedProfitPercent) && expectedProfitPercent > 0) {
+          updateData?.(row.index, {
+            [column.id]: +exitPrice,
+            expectedProfit: Math.max(Math.round(expectedProfit), 0),
+            expectedProfitPercent: Math.round(expectedProfitPercent),
+          })
+        }
       }
 
       return (
@@ -373,15 +375,17 @@ export const columns: ColumnDef<Position>[] = [
       }, [expectedProfit, initialData])
 
       const handleBlur = () => {
-        if (+initialData === +profitPercent) return
+        if (+initialData === +profitPercent || isNaN(+profitPercent)) return
         const newExpectedProfit = (+profitPercent * totalCost) / 100
         const newExitPrice = newExpectedProfit / quantity + askPrice
 
-        updateData?.(row.index, {
-          [column.id]: +profitPercent,
-          expectedProfit: +newExpectedProfit,
-          exitPrice: newExitPrice,
-        })
+        if (!isNaN(newExitPrice) && newExitPrice > 0) {
+          updateData?.(row.index, {
+            [column.id]: +profitPercent,
+            expectedProfit: +newExpectedProfit,
+            exitPrice: newExitPrice,
+          })
+        }
       }
 
       return (
