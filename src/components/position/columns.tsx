@@ -17,7 +17,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "ticker",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Enter stock name. Displayed in uppercase."
+        tooltipMsg="Enter the stock's ticker symbol (e.g., AAPL, MSFT). The ticker will be displayed in uppercase."
         title="Ticker"
       />
     ),
@@ -68,7 +68,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "actualPrice",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Current stock price (read-only)."
+        tooltipMsg="The current market price of the stock. This value is automatically fetched and cannot be edited."
         title="Actual Price"
       />
     ),
@@ -77,7 +77,10 @@ export const columns: ColumnDef<Position>[] = [
   {
     accessorKey: "positionType",
     header: () => (
-      <DataTableColumnHeader tooltipMsg="Sell or Buy" title="Long / Short" />
+      <DataTableColumnHeader
+        tooltipMsg="Choose 'Buy' if you plan to purchase the stock, or 'Sell' if you plan to sell it."
+        title="Long / Short"
+      />
     ),
     cell: ({ row, column, table }) => {
       const positionType = row.getValue(column.id) as string
@@ -138,7 +141,10 @@ export const columns: ColumnDef<Position>[] = [
   {
     accessorKey: "quantity",
     header: () => (
-      <DataTableColumnHeader tooltipMsg="Quantity" title="Quantity" />
+      <DataTableColumnHeader
+        tooltipMsg="Enter the number of stock units you want to buy or sell."
+        title="Quantity"
+      />
     ),
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as string) || "0"
@@ -176,7 +182,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "askPrice",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Offer price for purchase."
+        tooltipMsg="Enter the price you are willing to pay to purchase the stock."
         title="Ask price"
       />
     ),
@@ -219,7 +225,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "cost",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Purchase cost (view-only)."
+        tooltipMsg="This is the total cost of the purchase based on the 'Ask Price' and 'Quantity'. Formula: Ask Price * Quantity."
         title="Cost"
       />
     ),
@@ -235,7 +241,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "exitPrice",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Exit price for selling."
+        tooltipMsg="Enter the price at which you plan to sell the stock."
         title="Exit price"
       />
     ),
@@ -261,15 +267,16 @@ export const columns: ColumnDef<Position>[] = [
         const calc = +exitPrice * quantity - askPrice * quantity
         const expectedProfit = positionType === "buy" ? calc : calc * -1
 
-        const expectedProfitPercent = (expectedProfit / totalCost) * 100
+        //prettier-ignore
+        const expectedProfitPercent = (expectedProfit / totalCost) * 100;
 
-        if (!isNaN(expectedProfitPercent) && expectedProfitPercent > 0) {
-          updateData?.(row.index, {
-            [column.id]: +exitPrice,
-            expectedProfit: Math.max(Math.round(expectedProfit), 0),
-            expectedProfitPercent: Math.round(expectedProfitPercent),
-          })
-        }
+        updateData?.(row.index, {
+          [column.id]: +exitPrice,
+          expectedProfit: expectedProfit,
+          expectedProfitPercent: expectedProfitPercent,
+        })
+
+        setExitPrice(parseFloat(exitPrice).toFixed(2))
       }
 
       return (
@@ -290,7 +297,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedProfit",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Expected profit (view-only)."
+        tooltipMsg="The expected profit from the transaction. Formula: (Exit Price - Ask Price) * Quantity. Positive for 'Buy', negative for 'Sell'."
         title="Exp. Profit"
       />
     ),
@@ -305,11 +312,9 @@ export const columns: ColumnDef<Position>[] = [
 
       const calculateExpectedProfit = () => {
         if (!exitPrice) return 0
+
         const calc = exitPrice * quantity - askPrice * quantity
-        if (positionType === "buy") {
-          return Math.round(calc)
-        }
-        return Math.round(calc) * -1
+        return positionType === "buy" ? calc : calc * -1
       }
 
       const updateData = table.options.meta?.updateData!
@@ -324,10 +329,10 @@ export const columns: ColumnDef<Position>[] = [
             expectedProfitPercent: +updatedProfitPer,
           })
         }
-      }, [defaultValue, exitPrice, quantity, askPrice, cost, positionType])
+      }, [defaultValue, quantity, askPrice, cost, positionType])
 
       const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
-        maximumFractionDigits: 0,
+        maximumFractionDigits: 2,
       })
 
       return (
@@ -341,7 +346,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedProfitPercent",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Expected profit percentage."
+        tooltipMsg="The expected profit as a percentage of the total cost. Formula: (Expected Profit / Total Cost) * 100. Only positive values are allowed."
         title="Exp. Profit %"
       />
     ),
@@ -351,14 +356,13 @@ export const columns: ColumnDef<Position>[] = [
       const askPrice = row.getValue("askPrice") as number
       const totalCost = row.getValue("cost") as number
       const expectedProfit = row.getValue("expectedProfit") as number
-      const ticker = row.getValue("ticker") as string
       const exitPrice = row.getValue("exitPrice") as number
 
       const updateData = table.options.meta?.updateData
 
       const calculateProfitPercent = () => {
-        if (!totalCost || !ticker || !exitPrice || !quantity || !askPrice)
-          return "0"
+        if (!totalCost || !exitPrice || !quantity || !askPrice) return "0"
+
         const res = (expectedProfit / totalCost) * 100
         return Math.round(res).toString()
       }
@@ -375,7 +379,7 @@ export const columns: ColumnDef<Position>[] = [
       }, [expectedProfit, initialData])
 
       const handleBlur = () => {
-        if (+initialData === +profitPercent || isNaN(+profitPercent)) return
+        if (Math.round(+initialData) === Math.round(+profitPercent)) return
         const newExpectedProfit = (+profitPercent * totalCost) / 100
         const newExitPrice = newExpectedProfit / quantity + askPrice
 
@@ -405,7 +409,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "stopLoss",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Exit price at a loss."
+        tooltipMsg="Enter the stop-loss price. This is the price at which you will sell the stock to limit your loss."
         title="Stop Loss"
       />
     ),
@@ -467,7 +471,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedLoss",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Expected loss (view-only)."
+        tooltipMsg="The expected loss based on the stop-loss price. Formula: (Stop Loss Price - Ask Price) * Quantity. Positive for 'Sell', negative for 'Buy'."
         title="Exp. Loss"
       />
     ),
@@ -527,7 +531,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedLossPercent",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="Expected loss percentage."
+        tooltipMsg="The expected loss as a percentage of the total cost. Formula: (Expected Loss / Total Cost) * 100."
         title="Exp. Loss %"
       />
     ),
@@ -538,7 +542,6 @@ export const columns: ColumnDef<Position>[] = [
       const stopLoss = row.getValue("stopLoss") as number
       const expectedLoss = row.getValue("expectedLoss") as number
       const totalCost = row.getValue("cost") as number
-      const ticker = row.getValue("ticker") as string
       const positionType = row.getValue("positionType") as string
       const updateData = table.options.meta?.updateData
 
@@ -546,8 +549,7 @@ export const columns: ColumnDef<Position>[] = [
 
       useEffect(() => {
         const calcLossPercent = (): string => {
-          if (!totalCost || !quantity || !ticker || !askPrice || !+expectedLoss)
-            return "0"
+          if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0"
           const res = (expectedLoss / totalCost) * 100
           return Math.round(res).toString()
         }
@@ -557,7 +559,7 @@ export const columns: ColumnDef<Position>[] = [
         if (+updatedLossPercent !== +lossPercent) {
           setLossPercent(updatedLossPercent)
         }
-      }, [expectedLoss, totalCost, quantity, ticker, askPrice, stopLoss])
+      }, [expectedLoss, totalCost, quantity, askPrice, stopLoss])
 
       const handleBlur = () => {
         if (+initialData === +lossPercent || +stopLoss === 0) return
