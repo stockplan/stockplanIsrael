@@ -1,34 +1,34 @@
-import connectMongo from "@/lib/db"
-import PositionModel, { IPosition } from "@/models/Position"
-import UserModel from "@/models/User"
-import getServerUser from "@/utils/auth-helpers/getServerUser"
-import { NextRequest, NextResponse } from "next/server"
+import connectMongo from "@/lib/db";
+import PositionModel, { IPosition } from "@/models/Position";
+import UserModel from "@/models/User";
+import getServerUser from "@/utils/auth-helpers/getServerUser";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
   try {
     const {
       data: { user },
-    } = await getServerUser()
+    } = await getServerUser();
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },
         { status: 404 }
-      )
+      );
     }
 
-    const { changes }: { changes: IPosition[] } = await req.json()
+    const { changes }: { changes: IPosition[] } = await req.json();
 
-    await connectMongo()
+    await connectMongo();
     // Fetch existing positions to identify which ones need updates or deletions
-    const existingPositions = await PositionModel.find({ creator: user.id })
+    const existingPositions = await PositionModel.find({ creator: user.id });
     const existingIds = new Set(
       existingPositions.map((pos: any) => pos._id.toString())
-    )
+    );
 
     // Track IDs for bulk operations using 'any' type for simplicity
-    const updateOps: any[] = []
-    const insertOps: any[] = []
-    const newPositions = []
+    const updateOps: any[] = [];
+    const insertOps: any[] = [];
+    const newPositions = [];
 
     // Prepare operations for each change
     changes.forEach((change) => {
@@ -38,18 +38,18 @@ export async function POST(req: NextRequest) {
             filter: { _id: change._id, creator: user.id },
             update: { $set: change },
           },
-        })
-        existingIds.delete(change._id)
+        });
+        existingIds.delete(change._id);
       } else if (!change._id) {
-        change.creator = user.id
+        change.creator = user.id;
         insertOps.push({
           insertOne: {
             document: change,
           },
-        })
-        newPositions.push(change)
+        });
+        newPositions.push(change);
       }
-    })
+    });
 
     const deleteOps =
       existingIds.size > 0
@@ -60,20 +60,20 @@ export async function POST(req: NextRequest) {
               },
             },
           ]
-        : []
+        : [];
 
     // Execute all prepared operations in bulk
-    const bulkOps = [...updateOps, ...insertOps, ...deleteOps]
+    const bulkOps = [...updateOps, ...insertOps, ...deleteOps];
     if (bulkOps.length > 0) {
-      const result = await PositionModel.bulkWrite(bulkOps)
-      console.log(result)
+      const result = await PositionModel.bulkWrite(bulkOps);
+      console.log(result);
 
       if (result.insertedCount > 0) {
-        const insertedIds = insertOps.map((op) => op.insertOne.document._id)
+        const insertedIds = insertOps.map((op) => op.insertOne.document._id);
         await UserModel.updateOne(
           { userId: user.id },
           { $push: { positions: { $each: insertedIds } } }
-        )
+        );
       }
     }
 
@@ -82,15 +82,15 @@ export async function POST(req: NextRequest) {
       await UserModel.updateOne(
         { userId: user.id },
         { $pull: { positions: { $in: Array.from(existingIds) } } }
-      )
+      );
     }
 
     return NextResponse.json({
       success: true,
       message: "Positions updated successfully",
-    })
+    });
   } catch (error: any) {
-    console.error("Error updating positions:", error)
+    console.error("Error updating positions:", error);
     return NextResponse.json(
       {
         success: false,
@@ -98,6 +98,6 @@ export async function POST(req: NextRequest) {
         error: error.message,
       },
       { status: 500 }
-    )
+    );
   }
 }
