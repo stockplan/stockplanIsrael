@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 
 import { Position } from "@/schemas";
 import { TableLossProfit } from "@/components/position/table-lossprofit";
-import { useToast } from "@/components/ui/use-toast";
 
 interface TableLossProfitWrapperProps {
   columns: any;
@@ -18,7 +17,6 @@ const TableLossProfitWrapper: React.FC<TableLossProfitWrapperProps> = ({
   serverUserStocks,
 }) => {
   const [userStocks, setUserStocks] = useState(serverUserStocks);
-  const { toast } = useToast();
 
   useEffect(() => {
     // Check if there's data in localStorage
@@ -26,16 +24,10 @@ const TableLossProfitWrapper: React.FC<TableLossProfitWrapperProps> = ({
     if (localData) {
       const parsedData = JSON.parse(localData);
 
-      // Show a message to the user that local data was loaded
-      toast({
-        description: "Local changes detected. Please save your changes.",
-        variant: "default", // Or 'destructive' if it's an urgent message
-      });
-
       // Use local data instead of server data
       setUserStocks(parsedData);
     }
-  }, [toast]);
+  }, []);
 
   return (
     <TableLossProfit
