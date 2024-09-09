@@ -357,6 +357,7 @@ export const columns: ColumnDef<Position>[] = [
       const totalCost = row.getValue("cost") as number
       const expectedProfit = row.getValue("expectedProfit") as number
       const exitPrice = row.getValue("exitPrice") as number
+      const positionType = row.getValue("positionType") as string
 
       const updateData = table.options.meta?.updateData
 
@@ -379,11 +380,16 @@ export const columns: ColumnDef<Position>[] = [
       }, [expectedProfit, initialData])
 
       const handleBlur = () => {
-        if (Math.round(+initialData) === Math.round(+profitPercent)) return
+        const newProfitPercent = Math.round(+profitPercent)
+        //prettier-ignore
+        if (Math.round(+initialData) === newProfitPercent || isNaN(newProfitPercent)) return
         const newExpectedProfit = (+profitPercent * totalCost) / 100
-        const newExitPrice = newExpectedProfit / quantity + askPrice
+        const newExitPrice =
+          positionType === "buy"
+            ? newExpectedProfit / quantity + askPrice
+            : (askPrice - newExpectedProfit / quantity).toFixed(2)
 
-        if (!isNaN(newExitPrice) && newExitPrice > 0) {
+        if (!isNaN(+newExitPrice) && +newExitPrice > 0) {
           updateData?.(row.index, {
             [column.id]: +profitPercent,
             expectedProfit: +newExpectedProfit,
@@ -458,7 +464,11 @@ export const columns: ColumnDef<Position>[] = [
           id={`stopLoss-${row.index}`}
           name="stopLoss"
           value={stopLoss}
-          onValueChange={(value: any) => setStopLoss(value || "0")}
+          onValueChange={(value, name, values) => {
+            console.log(value, name, values)
+
+            setStopLoss(value || "0")
+          }}
           onBlur={handleBlur}
           allowNegativeValue={false}
           decimalsLimit={2}
@@ -545,15 +555,15 @@ export const columns: ColumnDef<Position>[] = [
       const positionType = row.getValue("positionType") as string
       const updateData = table.options.meta?.updateData
 
+      const calcLossPercent = (): string => {
+        if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0"
+        const res = (expectedLoss / totalCost) * 100
+        return Math.round(res).toString()
+      }
+
       const [lossPercent, setLossPercent] = useState(initialData)
 
       useEffect(() => {
-        const calcLossPercent = (): string => {
-          if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0"
-          const res = (expectedLoss / totalCost) * 100
-          return Math.round(res).toString()
-        }
-
         const updatedLossPercent = calcLossPercent()
 
         if (+updatedLossPercent !== +lossPercent) {
@@ -562,9 +572,13 @@ export const columns: ColumnDef<Position>[] = [
       }, [expectedLoss, totalCost, quantity, askPrice, stopLoss])
 
       const handleBlur = () => {
-        if (+initialData === +lossPercent || +stopLoss === 0) return
+        if (
+          Math.round(+initialData) === Math.round(+lossPercent) ||
+          +stopLoss === 0
+        )
+          return
         const absoluteLoss = Math.abs(+lossPercent)
-        const newExpectedLoss = ((+absoluteLoss * totalCost) / 100) * -1
+        const newExpectedLoss = ((+absoluteLoss * +totalCost) / 100) * -1
         let newStopLoss =
           positionType === "sell"
             ? Math.abs(newExpectedLoss) / quantity + askPrice
@@ -572,7 +586,7 @@ export const columns: ColumnDef<Position>[] = [
         updateData?.(row.index, {
           expectedLossPercent: +lossPercent,
           expectedLoss: Math.round(newExpectedLoss),
-          stopLoss: +Math.max(newStopLoss, 0),
+          stopLoss: Math.max(newStopLoss, 0),
         })
       }
 
