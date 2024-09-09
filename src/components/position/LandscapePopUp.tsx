@@ -1,6 +1,7 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState } from "react"
+import { useScreen } from "usehooks-ts"
 import {
   Dialog,
   DialogContent,
@@ -10,30 +11,27 @@ import {
 import Image from "next/image"
 
 const LandscapePopUp = () => {
-  const [isPhone, setIsPhone] = useState(false)
+  const screen = useScreen()
   const [dialogOpen, setDialogOpen] = useState(true)
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia(
-      "(max-width: 768px) and (orientation: portrait)"
-    )
-    const handleMediaQueryChange = (e: MediaQueryListEvent) => {
-      setIsPhone(e.matches)
-    }
-    setIsPhone(mediaQuery.matches)
+  let isPortrait = false
 
-    mediaQuery.addEventListener("change", handleMediaQueryChange)
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleMediaQueryChange)
+  if (screen?.orientation?.type) {
+    if (
+      screen.orientation.type === "portrait-primary" ||
+      screen.orientation.type === "portrait-secondary"
+    ) {
+      isPortrait = true
     }
-  }, [])
+  }
 
   const handleClose = () => {
     setDialogOpen(false)
   }
 
-  if (!isPhone || !dialogOpen) return null
+  if (!isPortrait || !dialogOpen) {
+    return null
+  }
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -47,7 +45,7 @@ const LandscapePopUp = () => {
         </DialogTitle>
         <DialogDescription>
           <Image
-            src="\img\Rotate-phone-symbol.svg"
+            src="/img/Rotate-phone-symbol.svg"
             height={88}
             width={89}
             alt="rotate phone to landscape mode"
