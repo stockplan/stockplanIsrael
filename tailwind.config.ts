@@ -53,7 +53,7 @@ const config = {
       },
       backgroundImage: {
         main: "url('/img/bl-new.png')",
-        mobileMain: "url('/img/mobileBuildings.svg')",
+        mobileMain: "url('/img/bg-mobile.svg')",
       },
       colors: {
         "background-main": "#404546",

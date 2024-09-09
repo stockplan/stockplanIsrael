@@ -72,7 +72,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
   }
 
   return (
-    <div className="flex items-center justify-between flex-row-reverse">
+    <div className="flex justify-between flex-row-reverse px-2 py-1 gap-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="bg-inherit text-white border-none">
@@ -118,7 +118,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
       </DropdownMenu>
 
       <form
-        className="flex items-center bg-white py-1 px-2 lg:mt-0 rounded-full lg:mr-4 lg:w-auto"
+        className="flex bg-white px-2 lg:mt-0 rounded-full"
         onSubmit={goToDemo}
       >
         <input
@@ -126,7 +126,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
           value={val}
           disabled={!!user}
           onChange={handleChange}
-          className="w-full bg-transparent border-none focus:outline-none pl-2"
+          className="w-full bg-transparent border-none focus:outline-none pl-2 text-sm sm:text-xs placeholder:text-sm sm:placeholder:text-xs"
           placeholder="AAPL"
         />
         <button
