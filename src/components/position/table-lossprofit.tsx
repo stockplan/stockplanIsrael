@@ -105,8 +105,19 @@ export function TableLossProfit({
         await axios.post("/api/save", { changes })
         originalDataRef.current = changes
         setUnsavedChanges(false)
+        localStorage.removeItem("unsavedChanges")
       } catch (error) {
         console.error("Failed to save data", error)
+
+        // Save changes locally in case of API failure
+        try {
+          localStorage.setItem("unsavedChanges", JSON.stringify(changes))
+          setTimeout(() => {
+            window.location.reload()
+          }, 2000)
+        } catch (localError) {
+          console.error("Failed to save changes locally", localError)
+        }
       } finally {
         setIsLoading(false)
       }

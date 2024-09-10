@@ -72,7 +72,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
   }
 
   return (
-    <div className="flex items-center justify-between flex-row-reverse px-2 py-1 gap-3">
+    <div className="flex justify-between flex-row-reverse px-2 py-1 gap-3">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="bg-inherit text-white border-none">

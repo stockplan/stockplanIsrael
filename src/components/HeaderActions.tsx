@@ -70,13 +70,15 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
         </button>
       </form>
       <div className="hidden md:flex items-center">
-        <Button
-          variant="ghost"
-          className="border border-white text-white mr-4"
-          onClick={() => setIsContactFormOpen(true)}
-        >
-          Contact
-        </Button>
+        {user && (
+          <Button
+            variant="ghost"
+            className="border border-white text-white mr-4"
+            onClick={() => setIsContactFormOpen(true)}
+          >
+            Contact
+          </Button>
+        )}
         {user ? <LogoutBtn /> : <LoginButton />}
       </div>
 

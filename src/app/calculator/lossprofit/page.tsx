@@ -4,6 +4,7 @@ import { getEmptyRow } from "@/lib/utils"
 import { redirect } from "next/navigation"
 import getServerUser from "@/utils/auth-helpers/getServerUser"
 import { getInitialData } from "@/utils"
+import TableLossProfitWrapper from "../_components/table-wrapper"
 import LandscapePopUp from "@/components/position/LandscapePopUp"
 
 const Page = async ({}) => {
@@ -16,21 +17,18 @@ const Page = async ({}) => {
 
   const creator = user?.id || ""
 
-  const userStocks = creator ? await getInitialData(creator) : [getEmptyRow("")]
+  const serverUserStocks = creator
+    ? await getInitialData(creator)
+    : [getEmptyRow("")]
 
   return (
-    <>
-      <div className="z-20 relative h-full flex-1 flex-col space-y-8 p-8 md:flex">
-        <TableLossProfit
-          columns={columns}
-          creator={creator}
-          userStocks={userStocks}
-        />
-      </div>
-      <div>
-        <LandscapePopUp />
-      </div>
-    </>
+    <div className="z-20 relative h-full flex-1 flex-col space-y-8 p-8 md:flex">
+      <TableLossProfitWrapper
+        columns={columns}
+        creator={creator}
+        serverUserStocks={serverUserStocks}
+      />
+    </div>
   )
 }
 
