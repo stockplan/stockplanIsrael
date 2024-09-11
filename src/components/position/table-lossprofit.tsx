@@ -1,13 +1,13 @@
-"use client";
+"use client"
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react"
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from "@tanstack/react-table"
 import {
   Table,
   TableBody,
@@ -15,236 +15,236 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { DataTablePagination } from "./data-table-pagination";
-import { lossCalcValidation, Position } from "@/schemas";
-import { Separator } from "../ui/separator";
-import EmptyRow from "./empty-row";
-import Totals from "./totals";
-import { getEmptyRow } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
-import axios from "axios";
-import SaveButton from "../SaveButton";
-import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges";
-import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
-import { useToast } from "../ui/use-toast";
-import { ToastAction } from "@/components/ui/toast";
-import { hasDataChanged } from "@/utils";
-import { useScreen } from "@/hooks/use-screen";
+} from "@/components/ui/table"
+import { DataTablePagination } from "./data-table-pagination"
+import { lossCalcValidation, Position } from "@/schemas"
+import { Separator } from "../ui/separator"
+import EmptyRow from "./empty-row"
+import Totals from "./totals"
+import { getEmptyRow } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
+import axios from "axios"
+import SaveButton from "../SaveButton"
+import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges"
+import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
+import { useToast } from "../ui/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+import { hasDataChanged } from "@/utils"
+import { useScreen } from "@/hooks/use-screen"
 
 interface DataTableProps {
-  columns: ColumnDef<Position>[];
-  creator: string;
-  userStocks: Position[] | [];
+  columns: ColumnDef<Position>[]
+  creator: string
+  userStocks: Position[] | []
 }
 
 interface ColumnUpdate {
-  [columnId: string]: number | string;
+  [columnId: string]: number | string
 }
 
-const AUTO_SAVE_DELAY = 10000 * 5;
+const AUTO_SAVE_DELAY = 10000 * 5
 
 export function TableLossProfit({
   columns,
   creator,
   userStocks,
 }: DataTableProps) {
-  const [tableData, setTableData] = useState<Position[]>(userStocks);
-  const originalDataRef = useRef<Position[]>(userStocks);
-  const [isLoading, setIsLoading] = useState(false);
+  const [tableData, setTableData] = useState<Position[]>(userStocks)
+  const originalDataRef = useRef<Position[]>(userStocks)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext();
-  const { toast } = useToast();
+  const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
+  const { toast } = useToast()
 
-  const searchParams = useSearchParams();
-  const ticker = searchParams.get("ticker");
+  const searchParams = useSearchParams()
+  const ticker = searchParams.get("ticker")
 
-  const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, []);
+  const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
-  useWarnIfUnsavedChanges(unsavedChanges, !!creator);
+  useWarnIfUnsavedChanges(unsavedChanges, !!creator)
 
   useEffect(() => {
-    const dataHasChanged = !hasDataChanged(tableData, originalDataRef.current);
+    const dataHasChanged = !hasDataChanged(tableData, originalDataRef.current)
 
-    setUnsavedChanges(dataHasChanged);
-  }, [tableData]);
+    setUnsavedChanges(dataHasChanged)
+  }, [tableData])
 
   useEffect(() => {
     const autoSaveTimer = setTimeout(() => {
       if (unsavedChanges) {
-        saveChanges(tableData);
+        saveChanges(tableData)
       }
-    }, AUTO_SAVE_DELAY);
+    }, AUTO_SAVE_DELAY)
 
-    return () => clearTimeout(autoSaveTimer);
-  }, [tableData, unsavedChanges]);
+    return () => clearTimeout(autoSaveTimer)
+  }, [tableData, unsavedChanges])
 
   useEffect(() => {
     if (!creator) {
-      const emptyRow = getEmptyRow();
+      const emptyRow = getEmptyRow()
       if (ticker) {
-        emptyRow.ticker = ticker;
+        emptyRow.ticker = ticker
       }
-      setTableData([emptyRow]);
+      setTableData([emptyRow])
     }
-  }, [creator, ticker]);
+  }, [creator, ticker])
 
   const saveChanges = async (changes: Position[]) => {
     if (hasDataChanged(changes, originalDataRef.current)) {
-      setUnsavedChanges(false);
-      return;
+      setUnsavedChanges(false)
+      return
     }
 
     if (creator && unsavedChanges) {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        await axios.post("/api/save", { changes });
-        originalDataRef.current = changes;
-        setUnsavedChanges(false);
-        localStorage.removeItem("unsavedChanges");
+        await axios.post("/api/save", { changes })
+        originalDataRef.current = changes
+        setUnsavedChanges(false)
+        localStorage.removeItem("unsavedChanges")
       } catch (error) {
-        console.error("Failed to save data", error);
+        console.error("Failed to save data", error)
 
         // Save changes locally in case of API failure
         try {
-          localStorage.setItem("unsavedChanges", JSON.stringify(changes));
+          localStorage.setItem("unsavedChanges", JSON.stringify(changes))
           setTimeout(() => {
-            window.location.reload();
-          }, 2000);
+            window.location.reload()
+          }, 2000)
         } catch (localError) {
-          console.error("Failed to save changes locally", localError);
+          console.error("Failed to save changes locally", localError)
         }
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
-  };
+  }
 
   const removeRow = (rowIndex: number) => {
     try {
       if (!creator) {
-        setTableData([getEmptyRow()]);
-        return;
+        setTableData([getEmptyRow()])
+        return
       }
-      const currentPageIndex = table.getState().pagination.pageIndex;
-      const pageSize = table.getState().pagination.pageSize;
-      const rowCountOnCurrentPage = tableData.length % pageSize;
+      const currentPageIndex = table.getState().pagination.pageIndex
+      const pageSize = table.getState().pagination.pageSize
+      const rowCountOnCurrentPage = tableData.length % pageSize
 
       if (rowCountOnCurrentPage === 1 && currentPageIndex > 0) {
-        table.setPageIndex(currentPageIndex - 1);
+        table.setPageIndex(currentPageIndex - 1)
       }
 
-      const updatedRows = tableData.filter((_, index) => index !== rowIndex);
+      const updatedRows = tableData.filter((_, index) => index !== rowIndex)
       // const rowToDelete = tableData[rowIndex]
 
       if (updatedRows.length === 0) {
-        setTableData([getEmptyRow(creator)]);
+        setTableData([getEmptyRow(creator)])
       } else {
-        setTableData(updatedRows);
+        setTableData(updatedRows)
       }
 
-      setUnsavedChanges(true);
+      setUnsavedChanges(true)
     } catch (error) {
-      console.log("error removing rows: ", error);
+      console.log("error removing rows: ", error)
     }
-  };
+  }
 
   const updatePrices = (rowIndex: number, updates: ColumnUpdate) => {
     const updatedPrice = {
       ticker: tableData[rowIndex].ticker,
       price: updates.actualPrice,
-    };
+    }
 
     const updatedTableWithPrices = tableData.map((row) => {
       if (row.ticker === updatedPrice.ticker) {
-        row.actualPrice = +updatedPrice.price;
+        row.actualPrice = +updatedPrice.price
       }
-      return row;
-    });
+      return row
+    })
 
-    setTableData(updatedTableWithPrices);
-  };
+    setTableData(updatedTableWithPrices)
+  }
 
   const updateData = (rowIndex: number, updates: ColumnUpdate) => {
     if (updates.actualPrice) {
-      updatePrices(rowIndex, updates);
-      return;
+      updatePrices(rowIndex, updates)
+      return
     }
 
-    const updatedRows = [...tableData];
-    updatedRows[rowIndex] = { ...updatedRows[rowIndex], ...updates };
-    setTableData(updatedRows);
-    setUnsavedChanges(true);
-  };
+    const updatedRows = [...tableData]
+    updatedRows[rowIndex] = { ...updatedRows[rowIndex], ...updates }
+    setTableData(updatedRows)
+    setUnsavedChanges(true)
+  }
 
   const validateNewRow = (lastRow: Position) => {
     const validationToast = {
       title: "",
       description: "",
       action: <ToastAction altText="Try again">Try again</ToastAction>,
-    };
+    }
 
     // Validate ticker
     if (!lastRow.ticker) {
-      validationToast.title = "Missing Ticker Symbol";
+      validationToast.title = "Missing Ticker Symbol"
       validationToast.description =
-        "Please enter a ticker symbol in the last row.";
+        "Please enter a ticker symbol in the last row."
     }
 
     // Validate askPrice
     else if (lastRow.askPrice === 0) {
-      validationToast.title = "Ask Price Required";
+      validationToast.title = "Ask Price Required"
       validationToast.description =
-        "Please enter an ask price greater than 0 in the last row.";
+        "Please enter an ask price greater than 0 in the last row."
     }
 
     // Validate quantity
     else if (lastRow.quantity === 0) {
-      validationToast.title = "Quantity Needed";
+      validationToast.title = "Quantity Needed"
       validationToast.description =
-        "Please enter a quantity greater than 0 in the last row.";
+        "Please enter a quantity greater than 0 in the last row."
     }
 
     if (validationToast.description) {
-      toast(validationToast);
-      return false;
+      toast(validationToast)
+      return false
     }
-    return true;
-  };
+    return true
+  }
 
   const addNewRow = () => {
-    const maxTickers = 10;
+    const maxTickers = 10
     if (!creator || tableData.length >= maxTickers) {
       if (tableData.length >= maxTickers) {
         toast({
           description: `Maximum of ${maxTickers} rows allowed.`,
           variant: "destructive",
-        });
+        })
       }
-      return;
+      return
     }
 
-    const lastRow = tableData[tableData.length - 1];
-    if (!validateNewRow(lastRow)) return table.lastPage();
+    const lastRow = tableData[tableData.length - 1]
+    if (!validateNewRow(lastRow)) return table.lastPage()
 
-    const { pageSize, pageIndex } = table.getState().pagination;
+    const { pageSize, pageIndex } = table.getState().pagination
 
     if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
-      table.nextPage();
+      table.nextPage()
     }
 
-    const updatedRows = [...tableData, getEmptyRow(creator)];
-    setTableData(updatedRows);
+    const updatedRows = [...tableData, getEmptyRow(creator)]
+    setTableData(updatedRows)
     // setUnsavedChanges(true)
-  };
+  }
 
   const handleDeleteAll = () => {
-    const emptyTable = [getEmptyRow(creator)];
-    setTableData(emptyTable);
-    table.setPageIndex(0);
-    setUnsavedChanges(true);
-    saveChanges(emptyTable);
-  };
+    const emptyTable = [getEmptyRow(creator)]
+    setTableData(emptyTable)
+    table.setPageIndex(0)
+    setUnsavedChanges(true)
+    saveChanges(emptyTable)
+  }
 
   const table = useReactTable({
     data: tableData,
@@ -256,7 +256,7 @@ export function TableLossProfit({
       updateData,
       removeRow,
     },
-  });
+  })
 
   return (
     <>
@@ -294,7 +294,7 @@ export function TableLossProfit({
                           header.getContext()
                         )}
                       </TableHead>
-                    );
+                    )
                   })}
                 </TableRow>
               ))}
@@ -334,5 +334,5 @@ export function TableLossProfit({
         <Totals tableData={tableData} />
       </div>
     </>
-  );
+  )
 }
