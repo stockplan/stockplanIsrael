@@ -42,7 +42,7 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
   if (!creator) {
     return (
-      <div className=" px-2 h-7 relative flex-col justify-start items-start flex md:w-[25%] md:text-xs">
+      <div className=" px-2 h-7 relative flex-col justify-start items-start flex md:w-[15%] md:text-xs">
         <LoginButton
           variant="secondary"
           className="h-8 flex text-white text-sm font-['Titillium Web] bg-background-main self-center"
@@ -60,7 +60,7 @@ export function DataTablePagination<TData>({
         onClick={() => saveChanges(tableData)}
         isLoading={isLoading}
         disabled={!unsavedChanges}
-        className="text-white lg:text-sm font-['Titillium Web'] bg-slate-700 md:w-[25%] text-xs"
+        className="text-white lg:text-sm px-2 font-['Titillium Web'] h-fit bg-slate-700 md:w-fit text-xs"
       >
         <img src="\img\save-icon.svg" className="pr-2" />
         Save Changes
@@ -68,7 +68,7 @@ export function DataTablePagination<TData>({
       <Button
         variant="secondary"
         size="default"
-        className="h-8 flex text-white lg:text-sm font-['Titillium Web] bg-background-main self-center md:w-[28%] text-xs"
+        className="h-8 flex text-white pl-0 pr-3 lg:text-sm font-['Titillium Web] bg-background-main self-center md:w-fit text-xs"
         onClick={() => handleAddNewTicker()}
       >
         <img src="\img\Plus.svg" className="mr-2 h-4 w-4" />

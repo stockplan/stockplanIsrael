@@ -266,8 +266,8 @@ export function TableLossProfit({
     <>
       <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden md:block lg:block landscape:block">
         <div className="flex items-center justify-between">
-          <div className="flex flex-1 justify-between space-x-2 items-center">
-            <h3 onClick={() => console.log(tableData)}>
+          <div className="flex flex-1 justify-start space-x-2 items-center pl-[3%]">
+            <h3 onClick={() => console.log(tableData)} className="mr-[29%]">
               Quick Profit / Loss Calculator
             </h3>
             <img
