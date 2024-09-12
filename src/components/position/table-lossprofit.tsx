@@ -21,7 +21,7 @@ import { lossCalcValidation, Position } from "@/schemas"
 import { Separator } from "../ui/separator"
 import EmptyRow from "./empty-row"
 import Totals from "./totals"
-import { getEmptyRow } from "@/lib/utils"
+import { cn, getEmptyRow } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import axios from "axios"
 import SaveButton from "../SaveButton"
@@ -31,6 +31,11 @@ import { useToast } from "../ui/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 import { hasDataChanged } from "@/utils"
 import { useScreen } from "@/hooks/use-screen"
+import { AlertDialog, AlertDialogTrigger } from "../ui/alert-dialog"
+import { Button } from "../ui/button"
+import Image from "next/image"
+import ConfirmationModal from "../ConfirmationModal"
+import { BsTrashFill } from "react-icons/bs"
 
 interface DataTableProps {
   columns: ColumnDef<Position>[]
@@ -260,23 +265,43 @@ export function TableLossProfit({
 
   return (
     <>
-      <div className="space-y-4 text-white bg-[#2D3131] p-3 ">
-        <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center space-x-2">
-            <h3 onClick={() => console.log(tableData)}>
-              Quick Profit / Loss Calculator
-            </h3>
-            {creator && (
-              <SaveButton
-                onClick={() => saveChanges(tableData)}
-                isLoading={isLoading}
-                disabled={!unsavedChanges}
-              >
-                Save Changes
-              </SaveButton>
+      <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden md:block landscape:block">
+        <div className="flex items-center justify-between ">
+          <h3
+            className="flex-1 text-left"
+            onClick={() => console.log(tableData)}
+          >
+            Quick Profit / Loss Calculator
+          </h3>
+
+          <div
+            className={cn(
+              "flex-1 flex justify-center",
+              !creator && " justify-start mr-[173px] ml-auto"
             )}
+          >
+            <Image
+              alt="logo"
+              src="\img\Logo.svg"
+              width={200}
+              height={42}
+              className="h-auto w-auto"
+            />
+          </div>
+
+          <div className={cn("flex-1 flex justify-end", !creator && "hidden")}>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button className="text-white text-sm bg-background-main">
+                  <BsTrashFill className="mr-2 h-4 w-4" />
+                  Delete All
+                </Button>
+              </AlertDialogTrigger>
+              <ConfirmationModal handleDeleteAll={handleDeleteAll} />
+            </AlertDialog>
           </div>
         </div>
+
         <div className="rounded-md border">
           <Table>
             <TableHeader>
@@ -323,14 +348,16 @@ export function TableLossProfit({
             </TableBody>
           </Table>
         </div>
-
+        <Separator />
         <DataTablePagination
           creator={creator}
-          handleDeleteAll={handleDeleteAll}
+          saveChanges={saveChanges}
+          tableData={tableData}
+          isLoading={isLoading}
+          unsavedChanges={unsavedChanges}
           handleAddNewTicker={addNewRow}
           table={table}
         />
-        <Separator />
         <Totals tableData={tableData} />
       </div>
     </>
