@@ -56,6 +56,7 @@ export function TableLossProfit({
   const [tableData, setTableData] = useState<Position[]>(userStocks)
   const originalDataRef = useRef<Position[]>(userStocks)
   const [isLoading, setIsLoading] = useState(false)
+  const [disableWarn, setDisableWarn] = useState(false)
 
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
   const { toast } = useToast()
@@ -65,12 +66,16 @@ export function TableLossProfit({
 
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
-  useWarnIfUnsavedChanges(unsavedChanges, !!creator)
+  useWarnIfUnsavedChanges(unsavedChanges && !disableWarn, !!creator)
 
   useEffect(() => {
     const dataHasChanged = !hasDataChanged(tableData, originalDataRef.current)
-
-    setUnsavedChanges(dataHasChanged)
+    const localData = localStorage.getItem("unsavedChanges")
+    if (localData) {
+      setUnsavedChanges(true)
+    } else {
+      setUnsavedChanges(dataHasChanged)
+    }
   }, [tableData])
 
   useEffect(() => {
@@ -112,6 +117,7 @@ export function TableLossProfit({
         // Save changes locally in case of API failure
         try {
           localStorage.setItem("unsavedChanges", JSON.stringify(changes))
+          setDisableWarn(true)
           setTimeout(() => {
             window.location.reload()
           }, 2000)
