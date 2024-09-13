@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import React, { useTransition } from "react"
-import { Label } from "./ui/label"
-import { Input } from "./ui/input"
-import { Button } from "./ui/button"
-import { cn } from "@/lib/utils"
+import React, { useState, useTransition } from "react";
+import { Label } from "./ui/label";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { cn } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "./ui/dialog"
-import { sendEmailToAdmin } from "@/actions/admin"
-import { useForm } from "react-hook-form"
-import { ContactMessageSchema } from "@/schemas"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
+} from "./ui/dialog";
+import { sendEmailToAdmin } from "@/actions/admin";
+import { useForm } from "react-hook-form";
+import { ContactMessageSchema } from "@/schemas";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 
 interface ContactFormModalProp {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
@@ -38,10 +38,10 @@ const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
         <ContactForm onSubmitSuccess={onClose} />
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default ContactFormModal
+export default ContactFormModal;
 
 const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   const form = useForm<z.infer<typeof ContactMessageSchema>>({
@@ -52,25 +52,44 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
       lastName: "",
       description: "",
     },
-  })
+  });
 
-  const [isPending, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition();
+  const [emailError, setEmailError] = useState<string | null>(null);
 
+  // Filter function to check if there are non-English characters
+  const hasNonEnglishCharacters = (value: string) => {
+    const pattern = /^[A-Za-z0-9@._%+-]*$/; // Allowed characters
+    return !pattern.test(value);
+  };
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    const fieldName = name as keyof z.infer<typeof ContactMessageSchema>;
+
+    if (fieldName === "email" && hasNonEnglishCharacters(value)) {
+      setEmailError("Email must contain only English characters.");
+    } else {
+      setEmailError(null);
+    }
+
+    form.setValue(fieldName, value); // Update the value in react-hook-form
+  };
   const onSubmit = async (values: z.infer<typeof ContactMessageSchema>) => {
     startTransition(() => {
       sendEmailToAdmin(values)
         .then((data) => {
           if (data?.error) {
-            form.reset()
+            form.reset();
           }
           if (data?.success) {
-            form.reset()
-            onSubmitSuccess()
+            form.reset();
+            onSubmitSuccess();
           }
         })
-        .catch(() => alert("Something went wrong"))
-    })
-  }
+        .catch(() => alert("Something went wrong"));
+    });
+  };
 
   return (
     <form
@@ -129,10 +148,11 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
           maxLength={30}
           required
           className="p-2 text-sm bg-white"
+          onChange={handleChange}
         />
-        {form.formState.errors.email && (
+        {(form.formState.errors.email || emailError) && (
           <p className="text-red-600 text-sm">
-            {form.formState.errors.email.message}
+            {form.formState.errors.email?.message || emailError}
           </p>
         )}
       </div>
@@ -160,5 +180,5 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
         Send
       </Button>
     </form>
-  )
-}
+  );
+};
