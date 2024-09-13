@@ -28,6 +28,7 @@ const Page = async ({}) => {
         creator={creator}
         serverUserStocks={serverUserStocks}
       />
+      <LandscapePopUp />
     </div>
   )
 }
