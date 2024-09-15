@@ -45,10 +45,6 @@ export default async function RootLayout({
           <BuildingSVG />
         </div>
 
-        <div className="block md:hidden w-full max-w-full relative">
-          <BuildingSVGMobile />
-        </div>
-
         <Footer />
         <Toaster />
         <SpeedInsights />

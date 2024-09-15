@@ -4,8 +4,8 @@ import { getEmptyRow } from "@/lib/utils"
 import { redirect } from "next/navigation"
 import getServerUser from "@/utils/auth-helpers/getServerUser"
 import { getInitialData } from "@/utils"
-import TableLossProfitWrapper from "../_components/table-wrapper"
 import LandscapePopUp from "@/components/LandscapePopUp"
+import TableLossProfitWrapper from "../_components/table-wrapper"
 
 const Page = async () => {
   const {

@@ -57,7 +57,7 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
   }, [tableData])
 
   return (
-    <div className="p-4 text-white bg-[#2D3131] rounded-md font-semibold">
+    <div className="p-4 text-white bg-[#2D3131] rounded-md font-semibold text-sm md:text-base">
       <div className="flex justify-between mt-4">
         <div className="text-green-500">
           Total Investment: ${totalInvestment}

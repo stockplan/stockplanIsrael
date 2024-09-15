@@ -268,7 +268,7 @@ export function TableLossProfit({
       <div className="space-y-2 text-white bg-[#2D3131] p-3">
         <div className="flex items-center justify-between ">
           <h3
-            className="flex-1 text-left"
+            className="flex-1 text-left text-sm md:text-base"
             onClick={() => console.log(tableData)}
           >
             Quick Profit / Loss Calculator
@@ -277,7 +277,7 @@ export function TableLossProfit({
           <div
             className={cn(
               "flex-1 flex justify-center",
-              !creator && " justify-start mr-[173px] ml-auto"
+              !creator && " justify-start lg:mr-[173px] ml-auto"
             )}
           >
             <Image
