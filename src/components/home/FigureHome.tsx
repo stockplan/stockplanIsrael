@@ -9,7 +9,7 @@ const FigureHome: React.FC<FigureHomeProps> = ({}) => {
   return (
     <div className="relative w-52 h-48 md:w-80 md:h-80">
       <Image
-        src="/img/homeFigure.png"
+        src="/images/homeFigure.png"
         fill
         alt="Home figure"
         priority
