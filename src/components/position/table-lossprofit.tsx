@@ -40,7 +40,7 @@ import { BsTrashFill } from "react-icons/bs"
 interface DataTableProps {
   columns: ColumnDef<Position>[]
   creator: string
-  userStocks: Position[] | []
+  serverUserStocks: Position[] | []
 }
 
 interface ColumnUpdate {
@@ -52,10 +52,10 @@ const AUTO_SAVE_DELAY = 10000 * 5
 export function TableLossProfit({
   columns,
   creator,
-  userStocks,
+  serverUserStocks,
 }: DataTableProps) {
-  const [tableData, setTableData] = useState<Position[]>(userStocks)
-  const originalDataRef = useRef<Position[]>(userStocks)
+  const [tableData, setTableData] = useState<Position[]>(serverUserStocks)
+  const originalDataRef = useRef<Position[]>(serverUserStocks)
   const [isLoading, setIsLoading] = useState(false)
 
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
@@ -265,7 +265,7 @@ export function TableLossProfit({
 
   return (
     <>
-      <div className="space-y-4 text-white bg-[#2D3131] p-3 hidden md:block landscape:block">
+      <div className="space-y-2 text-white bg-[#2D3131] p-3">
         <div className="flex items-center justify-between ">
           <h3
             className="flex-1 text-left"
@@ -286,6 +286,7 @@ export function TableLossProfit({
               width={200}
               height={42}
               className="h-auto w-auto"
+              priority
             />
           </div>
 
@@ -302,53 +303,59 @@ export function TableLossProfit({
           </div>
         </div>
 
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="hover:bg-inherit">
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        className=" text-white text-sm h-12 text-center font-bold"
-                      >
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody id="TABLE_BODY">
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    className="hover:bg-inherit"
-                    id={"row_" + row.id}
-                    key={row.id}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell id={cell.id} className="h-14" key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+        <div className="overflow-x-auto">
+          <div className="rounded-md border min-w-full">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="hover:bg-inherit">
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className="text-white text-sm h-12 text-center font-bold px-2 sm:px-4"
+                        >
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
-                ))
-              ) : (
-                <EmptyRow />
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody id="TABLE_BODY">
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      className="hover:bg-inherit"
+                      id={"row_" + row.id}
+                      key={row.id}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell
+                          id={cell.id}
+                          className="h-14 text-sm text-center px-2 sm:px-4"
+                          key={cell.id}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : (
+                  <EmptyRow />
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </div>
-        <Separator />
+
         <DataTablePagination
           creator={creator}
           saveChanges={saveChanges}
@@ -358,6 +365,9 @@ export function TableLossProfit({
           handleAddNewTicker={addNewRow}
           table={table}
         />
+
+        <Separator />
+
         <Totals tableData={tableData} />
       </div>
     </>

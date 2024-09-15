@@ -7,6 +7,8 @@ import { getURL } from "@/utils/helpers"
 import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 import { Toaster } from "@/components/ui/toaster"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import { BuildingSVG } from "@/components/BuildingSVG"
+import { BuildingSVGMobile } from "@/components/BuildingSVGMobile"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,15 +34,22 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} bg-background-main bg-no-repeat bg-mobileMain md:bg-main bg-left-bottom md:bg-[left_bottom_-80px]`}
+        className={`${inter.className} flex flex-col min-h-screen relative bg-background-main overflow-x-hidden`}
       >
         <UnsavedChangesProvider>
           <Header />
-          <div className=" min-h-[calc(100%-97px)] ">{children}</div>
+          <main className="flex-grow">{children}</main>
         </UnsavedChangesProvider>
 
-        <Footer />
+        <div className="hidden md:block w-full max-w-full relative">
+          <BuildingSVG />
+        </div>
 
+        <div className="block md:hidden w-full max-w-full relative">
+          <BuildingSVGMobile />
+        </div>
+
+        <Footer />
         <Toaster />
         <SpeedInsights />
       </body>

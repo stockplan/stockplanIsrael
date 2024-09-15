@@ -5,19 +5,24 @@ interface FooterProps {}
 
 const Footer = ({}) => {
   return (
-    <footer className="bg-gray-800 text-white h-auto z-20 fixed bottom-0 w-full px-4 py-2">
-      <div className="flex flex-col sm:flex-row justify-between items-center w-full text-center text-xs md:text-sm lg:text-base">
-        <p className="mb-2 sm:mb-0">
-          {`© ${new Date().getFullYear()} StocksPlan.com, All Rights Reserved.`}
-        </p>
-        <div className="flex space-x-4">
-          <Link href="/privacy" className="hover:text-gray-400">
-            Privacy Statement
-          </Link>
-          <span>|</span>
-          <Link href="/terms" className="hover:text-gray-400">
-            Terms of Service
-          </Link>
+    <footer className="bg-gray-900 text-white py-4">
+      <div className="mx-auto px-4">
+        <div className="flex flex-col-reverse md:flex-row justify-between items-center text-center md:text-left text-xs md:text-sm">
+          <div className=" text-gray-400 text-[10px] md:text-sm md:text-white ">
+            © {new Date().getFullYear()} StocksPlan.com. All Rights Reserved.
+          </div>
+          <div className="flex space-x-4 mb-2 md:mb-0">
+            <Link href="/privacy">
+              <span className="hover:text-gray-400 cursor-pointer">
+                Privacy Statement
+              </span>
+            </Link>
+            <Link href="/terms">
+              <span className="hover:text-gray-400 cursor-pointer">
+                Terms of Service
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
     </footer>
