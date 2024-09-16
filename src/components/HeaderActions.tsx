@@ -49,26 +49,28 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({ user }) => {
 
   return (
     <>
-      <form
-        className="flex items-center bg-white py-1 px-2 lg:mt-0  rounded-full lg:mr-4 lg:w-auto"
-        onSubmit={goToDemo}
-      >
-        <input
-          type="text"
-          value={val}
-          disabled={!!user}
-          onChange={handleChange}
-          className="w-full bg-transparent border-none focus:outline-none pl-2"
-          placeholder="AAPL"
-        />
-        <button
-          className={`bg-transparent pr-2 ${cn(
-            !user ? "cursor-pointer" : "cursor-default"
-          )}`}
+      {!user && (
+        <form
+          className="flex items-center w-1/3 bg-white py-1 px-2 lg:mt-0 rounded-sm mr-4 self-stretch"
+          onSubmit={goToDemo}
         >
-          {val && <VscArrowRight />}
-        </button>
-      </form>
+          <input
+            type="text"
+            value={val}
+            disabled={!!user}
+            onChange={handleChange}
+            className="w-full text-base bg-transparent border-none focus:outline-none pl-2"
+            placeholder="Enter a symbol (for example: AAPL)"
+          />
+          <button
+            className={`bg-transparent pr-2 ${cn(
+              !user ? "cursor-pointer" : "cursor-default"
+            )}`}
+          >
+            {val && <VscArrowRight />}
+          </button>
+        </form>
+      )}
       <div className="hidden md:flex items-center">
         {user && (
           <Button

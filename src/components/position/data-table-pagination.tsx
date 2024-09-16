@@ -40,26 +40,33 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
   return (
     <div className="flex justify-center items-center relative py-4">
-      <Button
-        className="h-10 flex items-center justify-center text-white bg-background-main text-sm px-6"
-        onClick={handleAddNewTicker}
-      >
-        <PlusIcon className="mr-2 h-4 w-4" />
-        Add Another Ticker
-      </Button>
-
+      {!creator && (
+        <LoginButton className="h-10 flex items-center justify-center text-white bg-background-main text-sm px-6">
+          <PlusIcon className="mr-2 h-4 w-4" />
+          Add Another Ticker
+        </LoginButton>
+      )}
       {creator && (
-        <div className="absolute left-0">
-          <SaveButton
-            onClick={() => saveChanges(tableData)}
-            isLoading={isLoading}
-            disabled={!unsavedChanges}
-            className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center"
+        <>
+          <Button
+            className="h-10 flex items-center justify-center text-white bg-background-main text-sm px-6"
+            onClick={handleAddNewTicker}
           >
-            <BsFillSaveFill className="mr-2 h-4 w-4" />
-            Save Changes
-          </SaveButton>
-        </div>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Add Another Ticker
+          </Button>
+          <div className="absolute left-0">
+            <SaveButton
+              onClick={() => saveChanges(tableData)}
+              isLoading={isLoading}
+              disabled={!unsavedChanges}
+              className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center"
+            >
+              <BsFillSaveFill className="mr-2 h-4 w-4" />
+              Save Changes
+            </SaveButton>
+          </div>
+        </>
       )}
     </div>
   )

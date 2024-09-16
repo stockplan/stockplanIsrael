@@ -4,10 +4,10 @@ import { getEmptyRow } from "@/lib/utils"
 import { redirect } from "next/navigation"
 import getServerUser from "@/utils/auth-helpers/getServerUser"
 import { getInitialData } from "@/utils"
+import LandscapePopUp from "@/components/LandscapePopUp"
 import TableLossProfitWrapper from "../_components/table-wrapper"
-import LandscapePopUp from "@/components/position/LandscapePopUp"
 
-const Page = async ({}) => {
+const Page = async () => {
   const {
     data: { user },
     error,
@@ -28,6 +28,7 @@ const Page = async ({}) => {
         creator={creator}
         serverUserStocks={serverUserStocks}
       />
+      <LandscapePopUp />
     </div>
   )
 }

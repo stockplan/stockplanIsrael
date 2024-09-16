@@ -10,18 +10,18 @@ const Header = async () => {
   } = await getServerUser()
 
   return (
-    <header className="bg-header shadow-lg max-h-14">
+    <header className="bg-header shadow-lg py-4">
       <div className="block md:hidden">
         <NavMobile user={user} />
       </div>
-      <div className="hidden md:flex items-center justify-between h-16 mx-5">
-        <Link href="/home" className="flex relative">
+      <div className="hidden md:flex items-center justify-between mx-5">
+        <Link href="/home" className="flex relative h-auto">
           <Image
-            src="/img/Logo.png"
+            src="/images/Logo.png"
             alt="logo"
-            width={166}
-            height={37}
-            className="saturate-200"
+            width={160}
+            height={30}
+            className="saturate-200 w-auto"
           />
         </Link>
         <HeaderActions user={user} />

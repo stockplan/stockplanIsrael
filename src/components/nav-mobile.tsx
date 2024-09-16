@@ -72,7 +72,7 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
   }
 
   return (
-    <div className="flex justify-between flex-row-reverse px-2 py-1 gap-3">
+    <div className="flex justify-between flex-row-reverse px-4  gap-2">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button className="bg-inherit text-white border-none">
@@ -117,34 +117,36 @@ const NavMobile: React.FC<NavMobileProps> = ({ user }) => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <form
-        className="flex bg-white px-2 lg:mt-0 rounded-full"
-        onSubmit={goToDemo}
-      >
-        <input
-          type="text"
-          value={val}
-          disabled={!!user}
-          onChange={handleChange}
-          className="w-full bg-transparent border-none focus:outline-none pl-2 text-sm sm:text-xs placeholder:text-sm sm:placeholder:text-xs"
-          placeholder="AAPL"
-        />
-        <button
-          className={`bg-transparent pr-2 ${cn(
-            !user ? "cursor-pointer" : "cursor-default"
-          )}`}
+      {!user && (
+        <form
+          className="flex bg-white px-2 rounded-full items-center w-full"
+          onSubmit={goToDemo}
         >
-          {val && <VscArrowRight />}
-        </button>
-      </form>
+          <input
+            type="text"
+            value={val}
+            disabled={!!user}
+            onChange={handleChange}
+            className="w-full text-xs bg-transparent border-none focus:outline-none pl-2 "
+            placeholder="Enter a symbol (for example: AAPL)"
+          />
+          <button
+            className={`bg-transparent pr-2 ${cn(
+              !user ? "cursor-pointer" : "cursor-default"
+            )}`}
+          >
+            {val && <VscArrowRight />}
+          </button>
+        </form>
+      )}
 
-      <div className="flex items-center">
+      <div className="flex-shrink-0">
         <Image
-          src="/img/Logo.png"
+          src="/images/Logo.png"
           alt="logo"
-          width={166}
-          height={37}
-          className="saturate-200 object-contain w-32 md:w-40 lg:w-48 h-auto"
+          width={120}
+          height={30}
+          className="object-contain"
           priority
         />
       </div>
