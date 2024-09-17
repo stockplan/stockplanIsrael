@@ -314,7 +314,7 @@ export function TableLossProfit({
                         <TableHead
                           key={header.id}
                           colSpan={header.colSpan}
-                          className="text-white text-sm h-12 text-center font-bold px-2 sm:px-4"
+                          className="text-white text-sm h-12 text-center font-bold "
                         >
                           {flexRender(
                             header.column.columnDef.header,

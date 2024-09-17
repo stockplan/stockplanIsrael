@@ -42,11 +42,11 @@ const LandscapePopUp = () => {
     }
 
     window.addEventListener("orientationchange", handleOrientationChange)
-    window.addEventListener("resize", handleOrientationChange)
+    // window.addEventListener("resize", handleOrientationChange)
 
     return () => {
       window.removeEventListener("orientationchange", handleOrientationChange)
-      window.removeEventListener("resize", handleOrientationChange)
+      // window.removeEventListener("resize", handleOrientationChange)
     }
   }, [])
 
