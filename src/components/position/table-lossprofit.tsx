@@ -264,11 +264,11 @@ export function TableLossProfit({
   })
 
   return (
-    <>
+    <div className="pt-8 absolute z-10 w-full">
       <div className="space-y-2 text-white bg-[#2D3131] p-3">
         <div className="flex items-center justify-between ">
           <h3
-            className="flex-1 text-left text-sm md:text-base"
+            className="flex-1 text-left text-sm"
             onClick={() => console.log(tableData)}
           >
             Quick Profit / Loss Calculator
@@ -337,7 +337,7 @@ export function TableLossProfit({
                       {row.getVisibleCells().map((cell) => (
                         <TableCell
                           id={cell.id}
-                          className="h-14 text-sm text-center px-2 sm:px-4"
+                          className="h-14 text-sm text-center px-2"
                           key={cell.id}
                         >
                           {flexRender(
@@ -370,6 +370,6 @@ export function TableLossProfit({
 
         <Totals tableData={tableData} />
       </div>
-    </>
+    </div>
   )
 }

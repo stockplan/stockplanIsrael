@@ -22,14 +22,14 @@ const Page = async () => {
     : [getEmptyRow("")]
 
   return (
-    <div className="pt-8">
+    <>
       <TableLossProfitWrapper
         columns={columns}
         creator={creator}
         serverUserStocks={serverUserStocks}
       />
       <LandscapePopUp />
-    </div>
+    </>
   )
 }
 

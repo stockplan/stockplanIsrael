@@ -6,17 +6,25 @@ import { Input } from "./ui/input"
 import { Button } from "./ui/button"
 import { cn } from "@/lib/utils"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+  Dialog as BaseDialog,
+  DialogContent as BaseDialogContent,
+  DialogDescription as BaseDialogDescription,
+  DialogHeader as BaseDialogHeader,
+  DialogTitle as BaseDialogTitle,
 } from "./ui/dialog"
+import {
+  Drawer as BaseDrawer,
+  DrawerContent as BaseDrawerContent,
+  DrawerDescription as BaseDrawerDescription,
+  DrawerHeader as BaseDrawerHeader,
+  DrawerTitle as BaseDrawerTitle,
+} from "./ui/drawer"
 import { sendEmailToAdmin } from "@/actions/admin"
 import { useForm } from "react-hook-form"
 import { ContactMessageSchema } from "@/schemas"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
+import { useMediaQuery } from "usehooks-ts"
 
 interface ContactFormModalProp {
   isOpen: boolean
@@ -24,20 +32,30 @@ interface ContactFormModalProp {
 }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
+  const isDesktop = useMediaQuery("(min-width: 768px)")
+
+  const ModalComponent = isDesktop ? BaseDialog : BaseDrawer
+  const ContentComponent = isDesktop ? BaseDialogContent : BaseDrawerContent
+  const HeaderComponent = isDesktop ? BaseDialogHeader : BaseDrawerHeader
+  const TitleComponent = isDesktop ? BaseDialogTitle : BaseDrawerTitle
+  const DescriptionComponent = isDesktop
+    ? BaseDialogDescription
+    : BaseDrawerDescription
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] text-gray-700">
-        <DialogHeader>
-          <DialogTitle className="text-center text-lg sm:text-xl text-gray-700">
+    <ModalComponent open={isOpen} onOpenChange={onClose}>
+      <ContentComponent className="sm:max-w-[425px] text-gray-700">
+        <HeaderComponent>
+          <TitleComponent className="text-center text-lg sm:text-xl text-gray-700">
             Contact us
-          </DialogTitle>
-          <DialogDescription className="text-center text-sm sm:text-base mt-2 text-gray-700">
+          </TitleComponent>
+          <DescriptionComponent className="text-center text-sm sm:text-base mt-2 text-gray-700">
             For any matter, please feel free to contact us.
-          </DialogDescription>
-        </DialogHeader>
+          </DescriptionComponent>
+        </HeaderComponent>
         <ContactForm onSubmitSuccess={onClose} />
-      </DialogContent>
-    </Dialog>
+      </ContentComponent>
+    </ModalComponent>
   )
 }
 
@@ -75,7 +93,7 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className={cn("grid gap-3 py-2")}
+      className={cn("grid gap-3 p-2")}
     >
       <div className="flex flex-col gap-2">
         <Label htmlFor="firstName" className="text-sm sm:text-base">
