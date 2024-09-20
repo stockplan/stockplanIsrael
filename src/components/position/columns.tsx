@@ -318,7 +318,6 @@ export const columns: ColumnDef<Position>[] = [
       };
 
       const updateData = table.options.meta?.updateData!;
-      const updateData = table.options.meta?.updateData!;
 
       let updatedProfit = Math.max(calculateExpectedProfit(), 0);
 
@@ -490,12 +489,6 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as number;
-      const positionType = row.getValue("positionType") as string;
-      const quantity = row.getValue("quantity") as number;
-      const askPrice = row.getValue("askPrice") as number;
-      const stopLoss = row.getValue("stopLoss") as number;
-      const cost = row.getValue("cost") as number;
       const initialValue = row.getValue(column.id) as number;
       const positionType = row.getValue("positionType") as string;
       const quantity = row.getValue("quantity") as number;

@@ -33,13 +33,7 @@ export const ContactMessageSchema = z.object({
     })
     .max(30, {
       message: "Email cannot exceed 30 characters",
-    })
-    .refine(
-      (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
-      {
-        message: "Email must contain only English characters",
-      }
-    ),
+    }),
   firstName: z
     .string()
     .min(1, {

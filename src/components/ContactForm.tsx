@@ -30,15 +30,21 @@ interface ContactFormModalProp {
   isOpen: boolean;
   onClose: () => void;
 }
+function isMobile() {
+  const regex =
+    /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return regex.test(navigator.userAgent);
+}
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  // const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isDesktop = isMobile();
 
-  const ModalComponent = isDesktop ? BaseDialog : BaseDrawer;
-  const ContentComponent = isDesktop ? BaseDialogContent : BaseDrawerContent;
-  const HeaderComponent = isDesktop ? BaseDialogHeader : BaseDrawerHeader;
-  const TitleComponent = isDesktop ? BaseDialogTitle : BaseDrawerTitle;
-  const DescriptionComponent = isDesktop
+  const ModalComponent = !isDesktop ? BaseDialog : BaseDrawer;
+  const ContentComponent = !isDesktop ? BaseDialogContent : BaseDrawerContent;
+  const HeaderComponent = !isDesktop ? BaseDialogHeader : BaseDrawerHeader;
+  const TitleComponent = !isDesktop ? BaseDialogTitle : BaseDrawerTitle;
+  const DescriptionComponent = !isDesktop
     ? BaseDialogDescription
     : BaseDrawerDescription;
 
@@ -76,23 +82,23 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   const [emailError, setEmailError] = useState<string | null>(null);
 
   // Filter function to check if there are non-English characters
-  // const hasNonEnglishCharacters = (value: string) => {
-  //   const pattern = /^[A-Za-z0-9@._%+-]*$/; // Allowed characters
-  //   return !pattern.test(value);
-  // };
+  const hasNonEnglishCharacters = (value: string) => {
+    const pattern = /^[A-Za-z0-9@._%+-]*$/; // Allowed characters
+    return !pattern.test(value);
+  };
 
-  // const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  //   const { name, value } = event.target;
-  //   const fieldName = name as keyof z.infer<typeof ContactMessageSchema>;
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    const fieldName = name as keyof z.infer<typeof ContactMessageSchema>;
 
-  //   if (fieldName === "email" && hasNonEnglishCharacters(value)) {
-  //     setEmailError("Email must contain only English characters.");
-  //   } else {
-  //     setEmailError(null);
-  //   }
+    if (fieldName === "email" && hasNonEnglishCharacters(value)) {
+      setEmailError("Email must contain only English characters.");
+    } else {
+      setEmailError(null);
+    }
 
-  //   form.setValue(fieldName, value); // Update the value in react-hook-form
-  // };
+    form.setValue(fieldName, value); // Update the value in react-hook-form
+  };
 
   const onSubmit = async (values: z.infer<typeof ContactMessageSchema>) => {
     startTransition(() => {
@@ -167,7 +173,7 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
           maxLength={30}
           required
           className="p-2 text-sm bg-white"
-          // onChange={handleChange}
+          onChange={handleChange}
         />
         {(form.formState.errors.email || emailError) && (
           <p className="text-red-600 text-sm">
