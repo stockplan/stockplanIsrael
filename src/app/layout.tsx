@@ -8,7 +8,6 @@ import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 import { Toaster } from "@/components/ui/toaster"
 import { SpeedInsights } from "@vercel/speed-insights/next"
 import { BuildingSVG } from "@/components/BuildingSVG"
-import { BuildingSVGMobile } from "@/components/BuildingSVGMobile"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -41,8 +40,8 @@ export default async function RootLayout({
           <main className="flex-grow">{children}</main>
         </UnsavedChangesProvider>
 
-        <div className="hidden md:block w-full max-w-full relative">
-          <BuildingSVG />
+        <div className="hidden md:flex max-w-full relative">
+          <BuildingSVG className="max-w-full" />
         </div>
 
         <Footer />

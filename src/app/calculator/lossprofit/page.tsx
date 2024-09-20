@@ -22,14 +22,14 @@ const Page = async () => {
     : [getEmptyRow("")]
 
   return (
-    <div className="z-20 relative h-full flex-1 flex-col space-y-8 p-8 md:flex">
+    <>
       <TableLossProfitWrapper
         columns={columns}
         creator={creator}
         serverUserStocks={serverUserStocks}
       />
       <LandscapePopUp />
-    </div>
+    </>
   )
 }
 

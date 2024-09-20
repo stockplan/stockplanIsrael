@@ -13,7 +13,7 @@ const titilliumWeb = Titillium_Web({
 const ContentHome: React.FC<ContentHomeProps> = ({}) => {
   return (
     <div
-      className={`${titilliumWeb.className} flex flex-col shrink space-y-6 text-white max-w-xl w-full items-center lg:items-start`}
+      className={`${titilliumWeb.className} flex flex-1 flex-col shrink space-y-6 text-white max-w-xl w-full items-center lg:items-start`}
     >
       <h1 className="text-[#E4EDF2] text-2xl md:text-3xl lg:text-4xl font-semibold text-center lg:text-left">
         Plan Your Trade
