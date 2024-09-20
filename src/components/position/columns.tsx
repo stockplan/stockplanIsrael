@@ -319,8 +319,9 @@ export const columns: ColumnDef<Position>[] = [
 
       const updateData = table.options.meta?.updateData!
 
+      let updatedProfit = Math.max(calculateExpectedProfit(), 0)
+
       useEffect(() => {
-        let updatedProfit = Math.max(calculateExpectedProfit(), 0)
         let updatedProfitPer = (updatedProfit / cost) * 100
 
         if (defaultValue !== updatedProfit) {
@@ -331,7 +332,7 @@ export const columns: ColumnDef<Position>[] = [
         }
       }, [defaultValue, quantity, askPrice, cost, positionType])
 
-      const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
+      const formattedProfit = (updatedProfit || 0).toLocaleString("en-US", {
         maximumFractionDigits: 2,
       })
 
@@ -465,8 +466,6 @@ export const columns: ColumnDef<Position>[] = [
           name="stopLoss"
           value={stopLoss}
           onValueChange={(value, name, values) => {
-            console.log(value, name, values)
-
             setStopLoss(value || "0")
           }}
           onBlur={handleBlur}
@@ -492,9 +491,10 @@ export const columns: ColumnDef<Position>[] = [
       const askPrice = row.getValue("askPrice") as number
       const stopLoss = row.getValue("stopLoss") as number
       const cost = row.getValue("cost") as number
+      const expectedLossPercent = row.getValue("expectedLossPercent") as number
 
       const calculateLoss = () => {
-        if (!stopLoss || stopLoss === 0) return null
+        if (!stopLoss || (stopLoss === 0 && !expectedLossPercent)) return null
         if (stopLoss >= askPrice && positionType === "buy") return 0
 
         const lossCalculation = quantity * stopLoss - quantity * askPrice
@@ -572,11 +572,7 @@ export const columns: ColumnDef<Position>[] = [
       }, [expectedLoss, totalCost, quantity, askPrice, stopLoss])
 
       const handleBlur = () => {
-        if (
-          Math.round(+initialData) === Math.round(+lossPercent) ||
-          +stopLoss === 0
-        )
-          return
+        if (Math.round(+initialData) === Math.round(+lossPercent)) return
         const absoluteLoss = Math.abs(+lossPercent)
         const newExpectedLoss = ((+absoluteLoss * +totalCost) / 100) * -1
         let newStopLoss =
