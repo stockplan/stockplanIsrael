@@ -1,4 +1,4 @@
-import * as z from "zod"
+import * as z from "zod";
 
 export const LoginSchema = z.object({
   email: z.string().email({
@@ -8,7 +8,7 @@ export const LoginSchema = z.object({
     message: "Password is required",
   }),
   code: z.optional(z.string()),
-})
+});
 
 export const RegisterSchema = z
   .object({
@@ -23,7 +23,7 @@ export const RegisterSchema = z
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  })
+  });
 
 export const ContactMessageSchema = z.object({
   email: z
@@ -33,7 +33,13 @@ export const ContactMessageSchema = z.object({
     })
     .max(30, {
       message: "Email cannot exceed 30 characters",
-    }),
+    })
+    .refine(
+      (value) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value),
+      {
+        message: "Email must contain only English characters",
+      }
+    ),
   firstName: z
     .string()
     .min(1, {
@@ -58,7 +64,7 @@ export const ContactMessageSchema = z.object({
     .max(500, {
       message: "Description cannot exceed 4 lines or 500 characters",
     }),
-})
+});
 
 export const lossCalcValidation = z
   .object({
@@ -105,7 +111,7 @@ export const lossCalcValidation = z
           code: "custom",
           message: "Cost must be equal to askPrice multiplied by quantity",
           path: ["cost"],
-        })
+        });
       }
     }
 
@@ -114,22 +120,22 @@ export const lossCalcValidation = z
       const expectedProfit =
         data.positionType === "buy"
           ? (data.exitPrice - data.askPrice) * data.quantity
-          : (data.askPrice - data.exitPrice) * data.quantity * -1
+          : (data.askPrice - data.exitPrice) * data.quantity * -1;
 
-      console.log(data.expectedProfit, expectedProfit)
+      console.log(data.expectedProfit, expectedProfit);
 
       if (data.expectedProfit !== expectedProfit) {
         ctx.addIssue({
           code: "custom",
           message: "Expected profit calculation is incorrect",
           path: ["expectedProfit"],
-        })
+        });
       }
     }
 
     // Expected profit percent should match the calculation, but only if cost and expectedProfit are greater than 0
     if (data.cost > 0 && data.expectedProfit > 0) {
-      const expectedProfitPercent = (data.expectedProfit / data.cost) * 100
+      const expectedProfitPercent = (data.expectedProfit / data.cost) * 100;
 
       if (data.expectedProfitPercent !== expectedProfitPercent) {
         ctx.addIssue({
@@ -137,7 +143,7 @@ export const lossCalcValidation = z
           message:
             "Expected profit percent must be equal to expected profit divided by total cost times 100",
           path: ["expectedProfitPercent"],
-        })
+        });
       }
     }
 
@@ -148,11 +154,11 @@ export const lossCalcValidation = z
       data.quantity > 0 &&
       data.askPrice > 0
     ) {
-      const calculatedProfit = (data.expectedProfitPercent / 100) * data.cost
+      const calculatedProfit = (data.expectedProfitPercent / 100) * data.cost;
       const calculatedExitPrice =
         data.positionType === "buy"
           ? calculatedProfit / data.quantity + data.askPrice
-          : data.askPrice - calculatedProfit / data.quantity
+          : data.askPrice - calculatedProfit / data.quantity;
 
       if (
         data.expectedProfit !== calculatedProfit ||
@@ -163,7 +169,7 @@ export const lossCalcValidation = z
           message:
             "Expected Profit and Exit Price must be updated based on Expected Profit Percent",
           path: ["expectedProfitPercent"],
-        })
+        });
       }
     }
 
@@ -172,20 +178,20 @@ export const lossCalcValidation = z
       const expectedLoss =
         data.positionType === "buy"
           ? (data.stopLoss - data.askPrice) * data.quantity * -1
-          : (data.askPrice - data.stopLoss) * data.quantity
+          : (data.askPrice - data.stopLoss) * data.quantity;
 
       if (data.expectedLoss !== expectedLoss) {
         ctx.addIssue({
           code: "custom",
           message: "Expected loss calculation is incorrect",
           path: ["expectedLoss"],
-        })
+        });
       }
     }
 
     // Expected loss percent should match the calculation, but only if cost and expectedLoss are greater than 0
     if (data.cost > 0 && data.expectedLoss > 0) {
-      const expectedLossPercent = (data.expectedLoss / data.cost) * 100
+      const expectedLossPercent = (data.expectedLoss / data.cost) * 100;
 
       if (data.expectedLossPercent !== expectedLossPercent) {
         ctx.addIssue({
@@ -193,7 +199,7 @@ export const lossCalcValidation = z
           message:
             "Expected loss percent must be equal to expected loss divided by total cost times 100",
           path: ["expectedLossPercent"],
-        })
+        });
       }
     }
 
@@ -202,7 +208,7 @@ export const lossCalcValidation = z
       const stopLoss =
         data.positionType === "buy"
           ? data.askPrice - data.expectedLoss / data.quantity
-          : data.askPrice + data.expectedLoss / data.quantity
+          : data.askPrice + data.expectedLoss / data.quantity;
 
       if (data.stopLoss !== stopLoss) {
         ctx.addIssue({
@@ -210,26 +216,26 @@ export const lossCalcValidation = z
           message:
             "Stop Loss must be calculated based on expected loss and position type",
           path: ["stopLoss"],
-        })
+        });
       }
     }
-  })
+  });
 
 export interface Position {
-  _id?: string
-  creator?: string
-  ticker: string
-  positionType: string
-  quantity: number
-  actualPrice: number
-  askPrice: number
-  cost: number
-  exitPrice: number
-  expectedProfit: number
-  expectedProfitPercent: number
-  stopLoss: number
-  expectedLoss: number
-  expectedLossPercent: number
-  daysLeft?: number
-  entryDate?: string
+  _id?: string;
+  creator?: string;
+  ticker: string;
+  positionType: string;
+  quantity: number;
+  actualPrice: number;
+  askPrice: number;
+  cost: number;
+  exitPrice: number;
+  expectedProfit: number;
+  expectedProfitPercent: number;
+  stopLoss: number;
+  expectedLoss: number;
+  expectedLossPercent: number;
+  daysLeft?: number;
+  entryDate?: string;
 }

@@ -1,16 +1,16 @@
-"use client"
+"use client";
 
-import { CellContext, ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "./data-table-column-header"
-import { DataTableRowActions } from "./data-table-row-actions"
-import { Position } from "@/schemas"
-import ActualPriceCell from "../cells/ActualPrice"
-import { useEffect, useState } from "react"
-import { Input } from "../ui/input"
-import { mutate } from "swr"
-import CurrencyInput from "react-currency-input-field"
+import { CellContext, ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableRowActions } from "./data-table-row-actions";
+import { Position } from "@/schemas";
+import ActualPriceCell from "../cells/ActualPrice";
+import { useEffect, useState } from "react";
+import { Input } from "../ui/input";
+import { mutate } from "swr";
+import CurrencyInput from "react-currency-input-field";
 
-export type CellType = CellContext<Position, unknown>
+export type CellType = CellContext<Position, unknown>;
 
 export const columns: ColumnDef<Position>[] = [
   {
@@ -22,16 +22,16 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ getValue, row, column, table }) => {
-      const initialValue = getValue() as string
-      const [localTicker, setLocalTicker] = useState<string>(initialValue)
-      const updateData = table.options.meta!.updateData!
+      const initialValue = getValue() as string;
+      const [localTicker, setLocalTicker] = useState<string>(initialValue);
+      const updateData = table.options.meta!.updateData!;
 
       const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.toUpperCase()
+        const value = e.target.value.toUpperCase();
         if (/^[A-Z]*$/.test(value)) {
-          setLocalTicker(value)
+          setLocalTicker(value);
         }
-      }
+      };
 
       const handleBlur = () => {
         if (initialValue !== localTicker) {
@@ -39,19 +39,19 @@ export const columns: ColumnDef<Position>[] = [
             updateData(row.index, {
               [column.id]: "",
               actualPrice: 0,
-            })
+            });
           } else {
             updateData(row.index, {
               [column.id]: localTicker,
-            })
-            mutate(["/api/tickerPrice", localTicker])
+            });
+            mutate(["/api/tickerPrice", localTicker]);
           }
         }
-      }
+      };
 
       useEffect(() => {
-        setLocalTicker(initialValue)
-      }, [initialValue])
+        setLocalTicker(initialValue);
+      }, [initialValue]);
 
       return (
         <Input
@@ -61,7 +61,7 @@ export const columns: ColumnDef<Position>[] = [
           onChange={handleChange}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
@@ -83,38 +83,38 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const positionType = row.getValue(column.id) as string
-      const updateData = table.options.meta?.updateData
+      const positionType = row.getValue(column.id) as string;
+      const updateData = table.options.meta?.updateData;
 
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const exitPrice = row.getValue("exitPrice") as number
-      const cost = row.getValue("cost") as number
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const exitPrice = row.getValue("exitPrice") as number;
+      const cost = row.getValue("cost") as number;
 
       const chooseSell = () => {
         //prettier-ignore
         const expProfit = Math.max((+exitPrice * quantity - askPrice * quantity) * -1, 0)
-        const expectedProfitPercent = (expProfit / cost) * 100
+        const expectedProfitPercent = (expProfit / cost) * 100;
         updateData?.(row.index, {
           [column.id]: "sell",
           expectedProfit: +expProfit,
           expectedProfitPercent: +expectedProfitPercent,
-        })
-      }
+        });
+      };
 
       const chooseBuy = () => {
         const expProfit = Math.max(
           +exitPrice * quantity - askPrice * quantity,
           0
-        )
-        const expectedProfitPercent = (expProfit / cost) * 100
+        );
+        const expectedProfitPercent = (expProfit / cost) * 100;
 
         updateData?.(row.index, {
           [column.id]: "buy",
           expectedProfit: +expProfit,
           expectedProfitPercent: +expectedProfitPercent,
-        })
-      }
+        });
+      };
 
       return (
         <div className="flex gap-2 w-28 items-center justify-center">
@@ -135,7 +135,7 @@ export const columns: ColumnDef<Position>[] = [
             Sell
           </button>
         </div>
-      )
+      );
     },
   },
   {
@@ -147,22 +147,22 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as string) || "0"
-      const [quantity, setQuantity] = useState<string>(defaultValue)
-      const updateData = table.options.meta?.updateData
+      const defaultValue = (row.getValue(column.id) as string) || "0";
+      const [quantity, setQuantity] = useState<string>(defaultValue);
+      const updateData = table.options.meta?.updateData;
 
       useEffect(() => {
-        setQuantity(defaultValue)
-      }, [defaultValue])
+        setQuantity(defaultValue);
+      }, [defaultValue]);
 
       const handleBlurQuantity = () => {
-        if (+quantity === +defaultValue) return
+        if (+quantity === +defaultValue) return;
 
-        const askPrice = row.getValue("askPrice") as number
+        const askPrice = row.getValue("askPrice") as number;
 
-        const updatedCost = askPrice * +quantity
-        updateData?.(row.index, { [column.id]: +quantity, cost: +updatedCost })
-      }
+        const updatedCost = askPrice * +quantity;
+        updateData?.(row.index, { [column.id]: +quantity, cost: +updatedCost });
+      };
 
       return (
         <CurrencyInput
@@ -175,7 +175,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           allowDecimals={false}
         />
-      )
+      );
     },
   },
   {
@@ -187,24 +187,24 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as string) || "0"
-      const [askPrice, setAskPrice] = useState<string>(defaultValue)
+      const defaultValue = (row.getValue(column.id) as string) || "0";
+      const [askPrice, setAskPrice] = useState<string>(defaultValue);
 
-      const quantity = row.getValue("quantity") as number
+      const quantity = row.getValue("quantity") as number;
 
-      const updateData = table.options.meta?.updateData!
+      const updateData = table.options.meta?.updateData!;
 
       useEffect(() => {
-        setAskPrice(defaultValue)
-      }, [defaultValue])
+        setAskPrice(defaultValue);
+      }, [defaultValue]);
 
       const handleBlur = () => {
-        if (+askPrice === +defaultValue) return
+        if (+askPrice === +defaultValue) return;
 
-        const updatedCost = +askPrice * quantity
+        const updatedCost = +askPrice * quantity;
 
-        updateData(row.index, { [column.id]: +askPrice, cost: +updatedCost })
-      }
+        updateData(row.index, { [column.id]: +askPrice, cost: +updatedCost });
+      };
 
       return (
         <CurrencyInput
@@ -218,7 +218,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -230,11 +230,11 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as number) || 0
+      const defaultValue = (row.getValue(column.id) as number) || 0;
       const formattedCost = defaultValue.toLocaleString("en-US", {
         maximumFractionDigits: 0,
-      })
-      return <div className="text-center w-24">${formattedCost}</div>
+      });
+      return <div className="text-center w-24">${formattedCost}</div>;
     },
   },
   {
@@ -246,26 +246,26 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as string) || "0"
-      const [exitPrice, setExitPrice] = useState<string>(defaultValue)
+      const defaultValue = (row.getValue(column.id) as string) || "0";
+      const [exitPrice, setExitPrice] = useState<string>(defaultValue);
 
-      const positionType = row.getValue("positionType") as string
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const totalCost = row.getValue("cost") as number
+      const positionType = row.getValue("positionType") as string;
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const totalCost = row.getValue("cost") as number;
 
       useEffect(() => {
-        setExitPrice(defaultValue)
-      }, [defaultValue])
+        setExitPrice(defaultValue);
+      }, [defaultValue]);
 
-      const updateData = table.options.meta?.updateData
+      const updateData = table.options.meta?.updateData;
 
       const handleBlurExitPrice = () => {
-        if (+defaultValue === +exitPrice || isNaN(+exitPrice)) return
+        if (+defaultValue === +exitPrice || isNaN(+exitPrice)) return;
 
         // Calculate Expected Profit
-        const calc = +exitPrice * quantity - askPrice * quantity
-        const expectedProfit = positionType === "buy" ? calc : calc * -1
+        const calc = +exitPrice * quantity - askPrice * quantity;
+        const expectedProfit = positionType === "buy" ? calc : calc * -1;
 
         //prettier-ignore
         const expectedProfitPercent = (expectedProfit / totalCost) * 100;
@@ -274,10 +274,10 @@ export const columns: ColumnDef<Position>[] = [
           [column.id]: +exitPrice,
           expectedProfit: expectedProfit,
           expectedProfitPercent: expectedProfitPercent,
-        })
+        });
 
-        setExitPrice(parseFloat(exitPrice).toFixed(2))
-      }
+        setExitPrice(parseFloat(exitPrice).toFixed(2));
+      };
 
       return (
         <CurrencyInput
@@ -290,7 +290,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -302,44 +302,44 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = row.getValue(column.id) as number
+      const defaultValue = row.getValue(column.id) as number;
 
-      const positionType = row.getValue("positionType") as string
-      const exitPrice = row.getValue("exitPrice") as number
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const cost = row.getValue("cost") as number
+      const positionType = row.getValue("positionType") as string;
+      const exitPrice = row.getValue("exitPrice") as number;
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const cost = row.getValue("cost") as number;
 
       const calculateExpectedProfit = () => {
-        if (!exitPrice) return 0
+        if (!exitPrice) return 0;
 
-        const calc = exitPrice * quantity - askPrice * quantity
-        return positionType === "buy" ? calc : calc * -1
-      }
+        const calc = exitPrice * quantity - askPrice * quantity;
+        return positionType === "buy" ? calc : calc * -1;
+      };
 
-      const updateData = table.options.meta?.updateData!
+      const updateData = table.options.meta?.updateData!;
 
       useEffect(() => {
-        let updatedProfit = Math.max(calculateExpectedProfit(), 0)
-        let updatedProfitPer = (updatedProfit / cost) * 100
+        let updatedProfit = Math.max(calculateExpectedProfit(), 0);
+        let updatedProfitPer = (updatedProfit / cost) * 100;
 
         if (defaultValue !== updatedProfit) {
           updateData(row.index, {
             [column.id]: +updatedProfit,
             expectedProfitPercent: +updatedProfitPer,
-          })
+          });
         }
-      }, [defaultValue, quantity, askPrice, cost, positionType])
+      }, [defaultValue, quantity, askPrice, cost, positionType]);
 
       const formattedProfit = (defaultValue || 0).toLocaleString("en-US", {
         maximumFractionDigits: 2,
-      })
+      });
 
       return (
         <div className="text-center w-24 text-green-500">
           ${formattedProfit}
         </div>
-      )
+      );
     },
   },
   {
@@ -351,52 +351,52 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialData = row.getValue(column.id) as string
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const totalCost = row.getValue("cost") as number
-      const expectedProfit = row.getValue("expectedProfit") as number
-      const exitPrice = row.getValue("exitPrice") as number
-      const positionType = row.getValue("positionType") as string
+      const initialData = row.getValue(column.id) as string;
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const totalCost = row.getValue("cost") as number;
+      const expectedProfit = row.getValue("expectedProfit") as number;
+      const exitPrice = row.getValue("exitPrice") as number;
+      const positionType = row.getValue("positionType") as string;
 
-      const updateData = table.options.meta?.updateData
+      const updateData = table.options.meta?.updateData;
 
       const calculateProfitPercent = () => {
-        if (!totalCost || !exitPrice || !quantity || !askPrice) return "0"
+        if (!totalCost || !exitPrice || !quantity || !askPrice) return "0";
 
-        const res = (expectedProfit / totalCost) * 100
-        return Math.round(res).toString()
-      }
+        const res = (expectedProfit / totalCost) * 100;
+        return Math.round(res).toString();
+      };
 
-      const [profitPercent, setProfitPercent] = useState(initialData)
+      const [profitPercent, setProfitPercent] = useState(initialData);
 
       useEffect(() => {
-        const newProfitPercent = calculateProfitPercent()
+        const newProfitPercent = calculateProfitPercent();
 
         if (newProfitPercent !== profitPercent) {
-          setProfitPercent(newProfitPercent)
+          setProfitPercent(newProfitPercent);
           // updateData?.(row.index, { [column.id]: +newProfitPercent })
         }
-      }, [expectedProfit, initialData])
+      }, [expectedProfit, initialData]);
 
       const handleBlur = () => {
-        const newProfitPercent = Math.round(+profitPercent)
+        const newProfitPercent = Math.round(+profitPercent);
         //prettier-ignore
         if (Math.round(+initialData) === newProfitPercent || isNaN(newProfitPercent)) return
-        const newExpectedProfit = (+profitPercent * totalCost) / 100
+        const newExpectedProfit = (+profitPercent * totalCost) / 100;
         const newExitPrice =
           positionType === "buy"
             ? newExpectedProfit / quantity + askPrice
-            : (askPrice - newExpectedProfit / quantity).toFixed(2)
+            : (askPrice - newExpectedProfit / quantity).toFixed(2);
 
         if (!isNaN(+newExitPrice) && +newExitPrice > 0) {
           updateData?.(row.index, {
             [column.id]: +profitPercent,
             expectedProfit: +newExpectedProfit,
             exitPrice: newExitPrice,
-          })
+          });
         }
-      }
+      };
 
       return (
         <CurrencyInput
@@ -408,7 +408,7 @@ export const columns: ColumnDef<Position>[] = [
           onValueChange={(value) => setProfitPercent(value || "0")}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
@@ -420,43 +420,44 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = (row.getValue(column.id) as string) || "0"
-      const [stopLoss, setStopLoss] = useState<string>(initialValue)
+      const initialValue = (row.getValue(column.id) as string) || "0";
+      const [stopLoss, setStopLoss] = useState<string>(initialValue);
 
-      const positionType = row.getValue("positionType") as string
-      const askPrice = row.getValue("askPrice") as number
-      const quantity = row.getValue("quantity") as number
-      const totalCost = row.getValue("cost") as number
+      const positionType = row.getValue("positionType") as string;
+      const askPrice = row.getValue("askPrice") as number;
+      const quantity = row.getValue("quantity") as number;
+      const totalCost = row.getValue("cost") as number;
 
       useEffect(() => {
-        setStopLoss(initialValue)
-      }, [initialValue])
+        setStopLoss(initialValue);
+      }, [initialValue]);
 
-      const updateData = table.options.meta?.updateData!
+      const updateData = table.options.meta?.updateData!;
 
       const handleBlur = () => {
-        if (+initialValue === +stopLoss) return
+        if (+initialValue === +stopLoss) return;
 
         if (+stopLoss === 0) {
           updateData(row.index, {
             [column.id]: 0,
             expectedLoss: 0,
             expectedLossPercent: 0,
-          })
-          return
+          });
+          return;
         }
 
-        let expectedLoss = quantity * +stopLoss - quantity * askPrice
-        expectedLoss = positionType === "buy" ? expectedLoss * -1 : expectedLoss
+        let expectedLoss = quantity * +stopLoss - quantity * askPrice;
+        expectedLoss =
+          positionType === "buy" ? expectedLoss * -1 : expectedLoss;
 
-        const expectedLossPercent = (expectedLoss / totalCost) * 100
+        const expectedLossPercent = (expectedLoss / totalCost) * 100;
 
         updateData?.(row.index, {
           [column.id]: +stopLoss,
           expectedLoss: +expectedLoss,
           expectedLossPercent: Math.round(expectedLossPercent),
-        })
-      }
+        });
+      };
 
       return (
         <CurrencyInput
@@ -465,16 +466,16 @@ export const columns: ColumnDef<Position>[] = [
           name="stopLoss"
           value={stopLoss}
           onValueChange={(value, name, values) => {
-            console.log(value, name, values)
+            // console.log(value, name, values)
 
-            setStopLoss(value || "0")
+            setStopLoss(value || "0");
           }}
           onBlur={handleBlur}
           allowNegativeValue={false}
           decimalsLimit={2}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -486,55 +487,55 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as number
-      const positionType = row.getValue("positionType") as string
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const stopLoss = row.getValue("stopLoss") as number
-      const cost = row.getValue("cost") as number
+      const initialValue = row.getValue(column.id) as number;
+      const positionType = row.getValue("positionType") as string;
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const stopLoss = row.getValue("stopLoss") as number;
+      const cost = row.getValue("cost") as number;
 
       const calculateLoss = () => {
-        if (!stopLoss || stopLoss === 0) return null
-        if (stopLoss >= askPrice && positionType === "buy") return 0
+        if (!stopLoss || stopLoss === 0) return null;
+        if (stopLoss >= askPrice && positionType === "buy") return 0;
 
-        const lossCalculation = quantity * stopLoss - quantity * askPrice
+        const lossCalculation = quantity * stopLoss - quantity * askPrice;
 
         if (positionType === "buy") {
-          return Math.round(lossCalculation) * -1
+          return Math.round(lossCalculation) * -1;
         }
-        return Math.round(lossCalculation)
-      }
+        return Math.round(lossCalculation);
+      };
 
-      const updateData = table.options.meta?.updateData
+      const updateData = table.options.meta?.updateData;
 
       useEffect(() => {
-        let updatedLoss = calculateLoss()
-        if (updatedLoss === null) return
-        let updatedLossPer = Math.round((+updatedLoss / cost) * 100)
+        let updatedLoss = calculateLoss();
+        if (updatedLoss === null) return;
+        let updatedLossPer = Math.round((+updatedLoss / cost) * 100);
         if (updatedLoss !== null && +updatedLoss !== +initialValue) {
           updateData?.(row.index, {
             [column.id]: +updatedLoss,
             expectedLossPercent: +updatedLossPer,
-          })
+          });
         }
-      }, [initialValue, stopLoss, quantity, askPrice, cost, positionType])
+      }, [initialValue, stopLoss, quantity, askPrice, cost, positionType]);
 
-      const displayLoss = calculateLoss()
+      const displayLoss = calculateLoss();
 
       const formattedLoss =
         displayLoss !== null
           ? displayLoss.toLocaleString("en-US", {
               maximumFractionDigits: 0,
             })
-          : ""
+          : "";
 
-      const prefix = displayLoss && displayLoss > 0 ? "-" : ""
+      const prefix = displayLoss && displayLoss > 0 ? "-" : "";
 
       return (
         <div className="text-center w-24 text-red-500">
           {formattedLoss !== "" ? `$${prefix}${formattedLoss}` : ""}
         </div>
-      )
+      );
     },
   },
   {
@@ -546,51 +547,51 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialData = row.getValue(column.id) as string
-      const quantity = row.getValue("quantity") as number
-      const askPrice = row.getValue("askPrice") as number
-      const stopLoss = row.getValue("stopLoss") as number
-      const expectedLoss = row.getValue("expectedLoss") as number
-      const totalCost = row.getValue("cost") as number
-      const positionType = row.getValue("positionType") as string
-      const updateData = table.options.meta?.updateData
+      const initialData = row.getValue(column.id) as string;
+      const quantity = row.getValue("quantity") as number;
+      const askPrice = row.getValue("askPrice") as number;
+      const stopLoss = row.getValue("stopLoss") as number;
+      const expectedLoss = row.getValue("expectedLoss") as number;
+      const totalCost = row.getValue("cost") as number;
+      const positionType = row.getValue("positionType") as string;
+      const updateData = table.options.meta?.updateData;
 
       const calcLossPercent = (): string => {
-        if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0"
-        const res = (expectedLoss / totalCost) * 100
-        return Math.round(res).toString()
-      }
+        if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0";
+        const res = (expectedLoss / totalCost) * 100;
+        return Math.round(res).toString();
+      };
 
-      const [lossPercent, setLossPercent] = useState(initialData)
+      const [lossPercent, setLossPercent] = useState(initialData);
 
       useEffect(() => {
-        const updatedLossPercent = calcLossPercent()
+        const updatedLossPercent = calcLossPercent();
 
         if (+updatedLossPercent !== +lossPercent) {
-          setLossPercent(updatedLossPercent)
+          setLossPercent(updatedLossPercent);
         }
-      }, [expectedLoss, totalCost, quantity, askPrice, stopLoss])
+      }, [expectedLoss, totalCost, quantity, askPrice, stopLoss]);
 
       const handleBlur = () => {
         if (
-          Math.round(+initialData) === Math.round(+lossPercent) ||
-          +stopLoss === 0
+          Math.round(+initialData) === Math.round(+lossPercent)
+          // +stopLoss === 0
         )
-          return
-        const absoluteLoss = Math.abs(+lossPercent)
-        const newExpectedLoss = ((+absoluteLoss * +totalCost) / 100) * -1
+          return;
+        const absoluteLoss = Math.abs(+lossPercent);
+        const newExpectedLoss = ((+absoluteLoss * +totalCost) / 100) * -1;
         let newStopLoss =
           positionType === "sell"
             ? Math.abs(newExpectedLoss) / quantity + askPrice
-            : newExpectedLoss / quantity + askPrice
+            : newExpectedLoss / quantity + askPrice;
         updateData?.(row.index, {
           expectedLossPercent: +lossPercent,
           expectedLoss: Math.round(newExpectedLoss),
           stopLoss: Math.max(newStopLoss, 0),
-        })
-      }
+        });
+      };
 
-      const prefix = +lossPercent > 0 ? "-" : ""
+      const prefix = +lossPercent > 0 ? "-" : "";
 
       return (
         <CurrencyInput
@@ -603,11 +604,11 @@ export const columns: ColumnDef<Position>[] = [
           onValueChange={(value?: string) => setLossPercent(value || "0")}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
     id: "actions",
     cell: ({ row, table }) => <DataTableRowActions row={row} table={table} />,
   },
-]
+];
