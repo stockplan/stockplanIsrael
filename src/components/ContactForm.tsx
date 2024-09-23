@@ -30,23 +30,23 @@ interface ContactFormModalProp {
   isOpen: boolean;
   onClose: () => void;
 }
-function isMobile() {
+function isMobileCheck() {
   const regex =
     /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
   return regex.test(navigator.userAgent);
 }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  // const isDesktop = useMediaQuery("(min-width: 768px)");
-  const isDesktop = isMobile();
+  // const isMobile = useMediaQuery("(min-width: 768px)");
+  const isMobile = isMobileCheck();
 
-  const ModalComponent = !isDesktop ? BaseDialog : BaseDrawer;
-  const ContentComponent = !isDesktop ? BaseDialogContent : BaseDrawerContent;
-  const HeaderComponent = !isDesktop ? BaseDialogHeader : BaseDrawerHeader;
-  const TitleComponent = !isDesktop ? BaseDialogTitle : BaseDrawerTitle;
-  const DescriptionComponent = !isDesktop
-    ? BaseDialogDescription
-    : BaseDrawerDescription;
+  const ModalComponent = isMobile ? BaseDrawer : BaseDialog;
+  const ContentComponent = isMobile ? BaseDrawerContent : BaseDialogContent;
+  const HeaderComponent = isMobile ? BaseDrawerHeader : BaseDialogHeader;
+  const TitleComponent = isMobile ? BaseDrawerTitle : BaseDialogTitle;
+  const DescriptionComponent = isMobile
+    ? BaseDrawerDescription
+    : BaseDialogDescription;
 
   return (
     <ModalComponent open={isOpen} onOpenChange={onClose}>
