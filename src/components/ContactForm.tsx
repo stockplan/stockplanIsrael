@@ -37,7 +37,6 @@ function isMobileCheck() {
 }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  // const isMobile = useMediaQuery("(min-width: 768px)");
   const isMobile = isMobileCheck();
 
   const ModalComponent = isMobile ? BaseDrawer : BaseDialog;
