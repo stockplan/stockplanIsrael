@@ -631,7 +631,7 @@ export const columns: ColumnDef<Position>[] = [
           askPrice
         )
 
-        // Update the state and table data
+        //Update the state and table data
         updateData?.(row.index, {
           [column.id]: +lossPercent,
           expectedLoss: +newExpectedLoss,
