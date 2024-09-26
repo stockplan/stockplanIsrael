@@ -1,4 +1,6 @@
+import { signout } from "@/actions/logout"
 import { LogoutButton } from "@/components/LogoutButton"
+import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 export default function NotFound() {
@@ -12,9 +14,14 @@ export default function NotFound() {
           you back on track!`}
         </p>
 
-        <LogoutButton className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-          Return Home
-        </LogoutButton>
+        <form action={signout}>
+          <Button
+            type="submit"
+            className="inline-block bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Return Home
+          </Button>
+        </form>
       </div>
       <p className="mt-4 text-gray-500">
         Need help? Contact support at{" "}

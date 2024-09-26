@@ -41,18 +41,20 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
       ? (totalLoss / totalInvestment) * 100
       : 0
 
+    const formatNumber = (value: number) => {
+      if (value % 1 === 0) return value.toString() // If it's a whole number
+      const decimalValue = value.toFixed(2) // Always two decimals
+      return decimalValue.endsWith("0")
+        ? parseFloat(decimalValue).toString()
+        : decimalValue
+    }
+
     return {
-      totalInvestment: totalInvestment.toLocaleString("en-US", {
-        maximumFractionDigits: 0,
-      }),
-      totalProfit: totalProfit.toLocaleString("en-US", {
-        maximumFractionDigits: 0,
-      }),
-      totalLoss: totalLoss.toLocaleString("en-US", {
-        maximumFractionDigits: 0,
-      }),
-      totalProfitPercent: totalProfitPercent.toFixed(0),
-      totalLossPercent: totalLossPercent.toFixed(0),
+      totalInvestment: formatNumber(totalInvestment),
+      totalProfit: formatNumber(totalProfit),
+      totalLoss: formatNumber(totalLoss),
+      totalProfitPercent: formatNumber(totalProfitPercent),
+      totalLossPercent: formatNumber(totalLossPercent),
     }
   }, [tableData])
 

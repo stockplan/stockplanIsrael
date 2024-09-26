@@ -1,29 +1,29 @@
-"use client";
+"use client"
 
-import { signout } from "@/actions/logout";
-import { Button } from "./ui/button";
-import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
+import { signout } from "@/actions/logout"
+import { Button } from "./ui/button"
+import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
 
 interface LogoutBtnProps {}
 
 const LogoutBtn: React.FC<LogoutBtnProps> = ({}) => {
-  const { unsavedChanges } = useUnsavedChangesContext();
+  const { unsavedChanges } = useUnsavedChangesContext()
 
   const handleLogout = async () => {
-    await signout();
-  };
+    await signout()
+  }
 
   return (
     <Button
-      disabled={unsavedChanges}
+      // disabled={unsavedChanges}
       variant="ghost"
       className="border border-white text-white"
       onClick={handleLogout}
     >
       Log out
     </Button>
-  );
-};
+  )
+}
 
 // const LogoutBtn: React.FC<LogoutBtnProps> = ({
 //   className = "border border-white text-white",
@@ -40,4 +40,4 @@ const LogoutBtn: React.FC<LogoutBtnProps> = ({}) => {
 //   );
 // };
 
-export default LogoutBtn;
+export default LogoutBtn

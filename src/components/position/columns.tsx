@@ -9,6 +9,15 @@ import { useEffect, useState } from "react"
 import { Input } from "../ui/input"
 import { mutate } from "swr"
 import CurrencyInput from "react-currency-input-field"
+import {
+  calculateCost,
+  calculateExitPriceFromProfitPercent,
+  calculateExpectedLoss,
+  calculateExpectedLossPercent,
+  calculateExpectedProfit,
+  calculateExpectedProfitPercent,
+  calculateStopLossFromLossPercent,
+} from "@/utils/calc-helpers"
 
 export type CellType = CellContext<Position, unknown>
 
@@ -93,8 +102,11 @@ export const columns: ColumnDef<Position>[] = [
 
       const chooseSell = () => {
         //prettier-ignore
-        const expProfit = Math.max((+exitPrice * quantity - askPrice * quantity) * -1, 0)
-        const expectedProfitPercent = (expProfit / cost) * 100
+        const expProfit = calculateExpectedProfit("sell", askPrice, exitPrice, quantity)
+        const expectedProfitPercent = calculateExpectedProfitPercent(
+          exitPrice,
+          cost
+        )
         updateData?.(row.index, {
           [column.id]: "sell",
           expectedProfit: +expProfit,
@@ -103,11 +115,12 @@ export const columns: ColumnDef<Position>[] = [
       }
 
       const chooseBuy = () => {
-        const expProfit = Math.max(
-          +exitPrice * quantity - askPrice * quantity,
-          0
+        //prettier-ignore
+        const expProfit = calculateExpectedProfit("buy", askPrice, exitPrice, quantity)
+        const expectedProfitPercent = calculateExpectedProfitPercent(
+          exitPrice,
+          cost
         )
-        const expectedProfitPercent = (expProfit / cost) * 100
 
         updateData?.(row.index, {
           [column.id]: "buy",
@@ -159,8 +172,8 @@ export const columns: ColumnDef<Position>[] = [
         if (+quantity === +defaultValue) return
 
         const askPrice = row.getValue("askPrice") as number
+        const updatedCost = calculateCost(askPrice, quantity)
 
-        const updatedCost = askPrice * +quantity
         updateData?.(row.index, { [column.id]: +quantity, cost: +updatedCost })
       }
 
@@ -189,9 +202,6 @@ export const columns: ColumnDef<Position>[] = [
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as string) || "0"
       const [askPrice, setAskPrice] = useState<string>(defaultValue)
-
-      const quantity = row.getValue("quantity") as number
-
       const updateData = table.options.meta?.updateData!
 
       useEffect(() => {
@@ -201,6 +211,7 @@ export const columns: ColumnDef<Position>[] = [
       const handleBlur = () => {
         if (+askPrice === +defaultValue) return
 
+        const quantity = row.getValue("quantity") as number
         const updatedCost = +askPrice * quantity
 
         updateData(row.index, { [column.id]: +askPrice, cost: +updatedCost })
@@ -252,7 +263,6 @@ export const columns: ColumnDef<Position>[] = [
       const positionType = row.getValue("positionType") as string
       const quantity = row.getValue("quantity") as number
       const askPrice = row.getValue("askPrice") as number
-      const totalCost = row.getValue("cost") as number
 
       useEffect(() => {
         setExitPrice(defaultValue)
@@ -263,20 +273,23 @@ export const columns: ColumnDef<Position>[] = [
       const handleBlurExitPrice = () => {
         if (+defaultValue === +exitPrice || isNaN(+exitPrice)) return
 
-        // Calculate Expected Profit
-        const calc = +exitPrice * quantity - askPrice * quantity
-        const expectedProfit = positionType === "buy" ? calc : calc * -1
+        const expectedProfit = calculateExpectedProfit(
+          positionType,
+          askPrice,
+          exitPrice,
+          quantity
+        )
+
+        const cost = calculateCost(askPrice, quantity)
 
         //prettier-ignore
-        const expectedProfitPercent = (expectedProfit / totalCost) * 100;
+        const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, cost)
 
         updateData?.(row.index, {
           [column.id]: +exitPrice,
           expectedProfit: expectedProfit,
           expectedProfitPercent: expectedProfitPercent,
         })
-
-        setExitPrice(parseFloat(exitPrice).toFixed(2))
       }
 
       return (
@@ -297,7 +310,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedProfit",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="The expected profit from the transaction. Formula: (Exit Price - Ask Price) * Quantity. Positive for 'Buy', negative for 'Sell'."
+        tooltipMsg="Buy: Quantity * (Exit Price−Ask Price), Sell: Quantity * (Ask Price − Exit Price) "
         title="Exp. Profit"
       />
     ),
@@ -309,28 +322,35 @@ export const columns: ColumnDef<Position>[] = [
       const quantity = row.getValue("quantity") as number
       const askPrice = row.getValue("askPrice") as number
       const cost = row.getValue("cost") as number
-
-      const calculateExpectedProfit = () => {
-        if (!exitPrice) return 0
-
-        const calc = exitPrice * quantity - askPrice * quantity
-        return positionType === "buy" ? calc : calc * -1
-      }
-
+      const stopLoss = row.getValue("stopLoss") as number
+      const expectedProfitPercent = row.getValue(
+        "expectedProfitPercent"
+      ) as number
       const updateData = table.options.meta?.updateData!
 
-      let updatedProfit = Math.max(calculateExpectedProfit(), 0)
+      let updatedProfit = calculateExpectedProfit(
+        positionType,
+        askPrice,
+        exitPrice,
+        quantity
+      )
 
       useEffect(() => {
-        let updatedProfitPer = (updatedProfit / cost) * 100
+        const updatedProfitPercent = calculateExpectedProfitPercent(
+          updatedProfit,
+          cost
+        )
 
-        if (defaultValue !== updatedProfit) {
+        if (
+          +defaultValue !== +updatedProfit ||
+          expectedProfitPercent !== updatedProfitPercent
+        ) {
           updateData(row.index, {
             [column.id]: +updatedProfit,
-            expectedProfitPercent: +updatedProfitPer,
+            expectedProfitPercent: +updatedProfitPercent,
           })
         }
-      }, [defaultValue, quantity, askPrice, cost, positionType])
+      }, [defaultValue, quantity, askPrice, cost, positionType, stopLoss])
 
       const formattedProfit = (updatedProfit || 0).toLocaleString("en-US", {
         maximumFractionDigits: 2,
@@ -338,7 +358,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <div className="text-center w-24 text-green-500">
-          ${formattedProfit}
+          {formattedProfit !== "" ? `$${formattedProfit}` : "0"}
         </div>
       )
     },
@@ -355,58 +375,78 @@ export const columns: ColumnDef<Position>[] = [
       const initialData = row.getValue(column.id) as string
       const quantity = row.getValue("quantity") as number
       const askPrice = row.getValue("askPrice") as number
-      const totalCost = row.getValue("cost") as number
+      const cost = row.getValue("cost") as number
       const expectedProfit = row.getValue("expectedProfit") as number
-      const exitPrice = row.getValue("exitPrice") as number
       const positionType = row.getValue("positionType") as string
-
+      const [isEditing, setIsEditing] = useState(false)
+      const exitPrice = row.getValue("exitPrice") as number
       const updateData = table.options.meta?.updateData
-
-      const calculateProfitPercent = () => {
-        if (!totalCost || !exitPrice || !quantity || !askPrice) return "0"
-
-        const res = (expectedProfit / totalCost) * 100
-        return Math.round(res).toString()
-      }
 
       const [profitPercent, setProfitPercent] = useState(initialData)
 
       useEffect(() => {
-        const newProfitPercent = calculateProfitPercent()
+        if (!isEditing) {
+          const newExpectedLoss = calculateExpectedProfit(
+            positionType,
+            askPrice,
+            exitPrice,
+            quantity
+          )
+          const newProfitPercent = calculateExpectedProfitPercent(
+            newExpectedLoss,
+            cost
+          )
 
-        if (newProfitPercent !== profitPercent) {
-          setProfitPercent(newProfitPercent)
-          // updateData?.(row.index, { [column.id]: +newProfitPercent })
+          if (+newProfitPercent !== +profitPercent) {
+            setProfitPercent(newProfitPercent.toString())
+          }
         }
-      }, [expectedProfit, initialData])
+      }, [
+        expectedProfit,
+        cost,
+        quantity,
+        askPrice,
+        positionType,
+        expectedProfit,
+        isEditing,
+      ])
+
+      //       Expected Profit = Expected Profit % * cost / 100
+      //       Exit Price = (Expected Profit / Quantity) + Ask Price
 
       const handleBlur = () => {
-        const newProfitPercent = Math.round(+profitPercent)
+        setIsEditing(false)
         //prettier-ignore
-        if (Math.round(+initialData) === newProfitPercent || isNaN(newProfitPercent)) return
-        const newExpectedProfit = (+profitPercent * totalCost) / 100
-        const newExitPrice =
-          positionType === "buy"
-            ? newExpectedProfit / quantity + askPrice
-            : (askPrice - newExpectedProfit / quantity).toFixed(2)
+        if (+initialData === +profitPercent || isNaN(+profitPercent)) return
 
-        if (!isNaN(+newExitPrice) && +newExitPrice > 0) {
-          updateData?.(row.index, {
-            [column.id]: +profitPercent,
-            expectedProfit: +newExpectedProfit,
-            exitPrice: newExitPrice,
-          })
-        }
+        const newExpectedProfit = (+profitPercent * cost) / 100
+
+        const newExitPrice = calculateExitPriceFromProfitPercent(
+          positionType,
+          askPrice,
+          profitPercent,
+          cost,
+          quantity
+        )
+
+        updateData?.(row.index, {
+          [column.id]: +profitPercent,
+          expectedProfit: +newExpectedProfit,
+          exitPrice: +newExitPrice,
+        })
       }
 
       return (
         <CurrencyInput
-          allowDecimals={false}
           allowNegativeValue={false}
+          decimalsLimit={2}
           suffix="%"
           className="flex h-9 w-24 text-center border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm  text-green-500"
           value={profitPercent}
-          onValueChange={(value) => setProfitPercent(value || "0")}
+          onValueChange={(value) => {
+            setProfitPercent(value || "0")
+            setIsEditing(true)
+          }}
           onBlur={handleBlur}
         />
       )
@@ -423,32 +463,26 @@ export const columns: ColumnDef<Position>[] = [
     cell: ({ row, column, table }) => {
       const initialValue = (row.getValue(column.id) as string) || "0"
       const [stopLoss, setStopLoss] = useState<string>(initialValue)
-
-      const positionType = row.getValue("positionType") as string
-      const askPrice = row.getValue("askPrice") as number
-      const quantity = row.getValue("quantity") as number
-      const totalCost = row.getValue("cost") as number
+      const updateData = table.options.meta?.updateData!
 
       useEffect(() => {
         setStopLoss(initialValue)
       }, [initialValue])
 
-      const updateData = table.options.meta?.updateData!
-
       const handleBlur = () => {
         if (+initialValue === +stopLoss) return
 
-        if (+stopLoss === 0) {
-          updateData(row.index, {
-            [column.id]: 0,
-            expectedLoss: 0,
-            expectedLossPercent: 0,
-          })
-          return
-        }
+        const positionType = row.getValue("positionType") as string
+        const askPrice = row.getValue("askPrice") as number
+        const quantity = row.getValue("quantity") as number
+        const totalCost = row.getValue("cost") as number
 
-        let expectedLoss = quantity * +stopLoss - quantity * askPrice
-        expectedLoss = positionType === "buy" ? expectedLoss * -1 : expectedLoss
+        let expectedLoss = calculateExpectedLoss(
+          positionType,
+          askPrice,
+          stopLoss,
+          quantity
+        )
 
         const expectedLossPercent = (expectedLoss / totalCost) * 100
 
@@ -480,7 +514,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedLoss",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="The expected loss based on the stop-loss price. Formula: (Stop Loss Price - Ask Price) * Quantity. Positive for 'Sell', negative for 'Buy'."
+        tooltipMsg={`Buy: (stopLoss - askPrice) * quantity. \t\t\n    Sell: (askPrice - stopLoss) * quantity `}
         title="Exp. Loss"
       />
     ),
@@ -491,27 +525,23 @@ export const columns: ColumnDef<Position>[] = [
       const askPrice = row.getValue("askPrice") as number
       const stopLoss = row.getValue("stopLoss") as number
       const cost = row.getValue("cost") as number
-      const expectedLossPercent = row.getValue("expectedLossPercent") as number
-
-      const calculateLoss = () => {
-        if (!stopLoss || (stopLoss === 0 && !expectedLossPercent)) return null
-        if (stopLoss >= askPrice && positionType === "buy") return 0
-
-        const lossCalculation = quantity * stopLoss - quantity * askPrice
-
-        if (positionType === "buy") {
-          return Math.round(lossCalculation) * -1
-        }
-        return Math.round(lossCalculation)
-      }
-
+      const expectedLossPercent = row.getValue("expectedLossPercent")
       const updateData = table.options.meta?.updateData
 
+      let updatedLoss = calculateExpectedLoss(
+        positionType,
+        askPrice,
+        stopLoss,
+        quantity
+      )
+
       useEffect(() => {
-        let updatedLoss = calculateLoss()
-        if (updatedLoss === null) return
-        let updatedLossPer = Math.round((+updatedLoss / cost) * 100)
-        if (updatedLoss !== null && +updatedLoss !== +initialValue) {
+        let updatedLossPer = calculateExpectedLossPercent(updatedLoss, cost)
+
+        if (
+          expectedLossPercent !== updatedLossPer &&
+          +updatedLoss !== +initialValue
+        ) {
           updateData?.(row.index, {
             [column.id]: +updatedLoss,
             expectedLossPercent: +updatedLossPer,
@@ -519,20 +549,16 @@ export const columns: ColumnDef<Position>[] = [
         }
       }, [initialValue, stopLoss, quantity, askPrice, cost, positionType])
 
-      const displayLoss = calculateLoss()
-
       const formattedLoss =
-        displayLoss !== null
-          ? displayLoss.toLocaleString("en-US", {
-              maximumFractionDigits: 0,
+        updatedLoss !== null
+          ? updatedLoss.toLocaleString("en-US", {
+              maximumFractionDigits: 2,
             })
           : ""
 
-      const prefix = displayLoss && displayLoss > 0 ? "-" : ""
-
       return (
         <div className="text-center w-24 text-red-500">
-          {formattedLoss !== "" ? `$${prefix}${formattedLoss}` : ""}
+          {formattedLoss !== "" ? `$${formattedLoss}` : ""}
         </div>
       )
     },
@@ -541,7 +567,7 @@ export const columns: ColumnDef<Position>[] = [
     accessorKey: "expectedLossPercent",
     header: () => (
       <DataTableColumnHeader
-        tooltipMsg="The expected loss as a percentage of the total cost. Formula: (Expected Loss / Total Cost) * 100."
+        tooltipMsg={`Formula: (Expected Loss / Total Cost) * 100.`}
         title="Exp. Loss %"
       />
     ),
@@ -550,53 +576,80 @@ export const columns: ColumnDef<Position>[] = [
       const quantity = row.getValue("quantity") as number
       const askPrice = row.getValue("askPrice") as number
       const stopLoss = row.getValue("stopLoss") as number
-      const expectedLoss = row.getValue("expectedLoss") as number
       const totalCost = row.getValue("cost") as number
       const positionType = row.getValue("positionType") as string
       const updateData = table.options.meta?.updateData
 
-      const calcLossPercent = (): string => {
-        if (!totalCost || !quantity || !askPrice || !+expectedLoss) return "0"
-        const res = (expectedLoss / totalCost) * 100
-        return Math.round(res).toString()
-      }
-
       const [lossPercent, setLossPercent] = useState(initialData)
+      const [isEditing, setIsEditing] = useState(false)
 
       useEffect(() => {
-        const updatedLossPercent = calcLossPercent()
+        if (!isEditing) {
+          // Calculate expected loss based on the stop loss, quantity, and position type
+          const updatedExpectedLoss = calculateExpectedLoss(
+            positionType,
+            askPrice,
+            stopLoss,
+            quantity
+          )
 
-        if (+updatedLossPercent !== +lossPercent) {
-          setLossPercent(updatedLossPercent)
+          const updatedLossPercent = calculateExpectedLossPercent(
+            updatedExpectedLoss,
+            totalCost
+          )
+
+          // Update the lossPercent state only if the calculated value differs from the current state
+          if (+updatedLossPercent !== +lossPercent) {
+            setLossPercent(updatedLossPercent.toString()) // Set lossPercent with two decimal precision
+          }
         }
-      }, [expectedLoss, totalCost, quantity, askPrice, stopLoss])
+      }, [
+        stopLoss,
+        totalCost,
+        quantity,
+        askPrice,
+        positionType,
+        lossPercent,
+        isEditing,
+      ])
 
       const handleBlur = () => {
-        if (Math.round(+initialData) === Math.round(+lossPercent)) return
-        const absoluteLoss = Math.abs(+lossPercent)
-        const newExpectedLoss = ((+absoluteLoss * +totalCost) / 100) * -1
-        let newStopLoss =
-          positionType === "sell"
-            ? Math.abs(newExpectedLoss) / quantity + askPrice
-            : newExpectedLoss / quantity + askPrice
+        setIsEditing(false) // Stop editing
+
+        // Do not update if the input hasn't changed
+        if (+initialData === +lossPercent || isNaN(+lossPercent)) return
+
+        // Calculate the new expected loss based on the user-defined percent
+        const newExpectedLoss = (+lossPercent / 100) * totalCost * -1
+
+        // Recalculate the stop loss value from the user-defined expected loss
+        const newStopLoss = calculateStopLossFromLossPercent(
+          positionType,
+          lossPercent,
+          totalCost,
+          quantity,
+          askPrice
+        )
+
+        // Update the state and table data
         updateData?.(row.index, {
-          expectedLossPercent: +lossPercent,
-          expectedLoss: Math.round(newExpectedLoss),
+          [column.id]: +lossPercent,
+          expectedLoss: +newExpectedLoss,
           stopLoss: Math.max(newStopLoss, 0),
         })
       }
 
-      const prefix = +lossPercent > 0 ? "-" : ""
-
       return (
         <CurrencyInput
-          allowDecimals={false}
-          allowNegativeValue={false}
+          decimalsLimit={2}
+          allowNegativeValue={true}
           suffix="%"
-          prefix={prefix}
           className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm text-red-500"
           value={lossPercent}
-          onValueChange={(value?: string) => setLossPercent(value || "0")}
+          onValueChange={(value?: string) => {
+            setLossPercent(value || "0")
+            setIsEditing(true) // Set editing mode to true when the user changes the input
+          }}
           onBlur={handleBlur}
         />
       )
