@@ -5,7 +5,12 @@ import { usePathname } from "next/navigation"
 export const BuildingSVG = (props: any) => {
   const pathname = usePathname()
 
-  if (pathname === "/privacy" || pathname === "/terms") return null
+  if (
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
+    pathname.startsWith("/admin")
+  )
+    return null
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

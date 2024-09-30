@@ -42,11 +42,15 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
       : 0
 
     const formatNumber = (value: number) => {
-      if (value % 1 === 0) return value.toString() // If it's a whole number
-      const decimalValue = value.toFixed(2) // Always two decimals
-      return decimalValue.endsWith("0")
-        ? parseFloat(decimalValue).toString()
-        : decimalValue
+      const parts = value.toString().split(".")
+      parts[0] = parseInt(parts[0], 10).toLocaleString("en-US")
+      if (parts.length > 1) {
+        const decimalValue = parseFloat("0." + parts[1]).toFixed(2)
+        parts[1] = decimalValue.endsWith("0")
+          ? parseFloat(decimalValue).toString().split(".")[1] || "0"
+          : decimalValue.split(".")[1]
+      }
+      return parts.join(".")
     }
 
     return {

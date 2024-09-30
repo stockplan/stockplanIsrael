@@ -243,7 +243,7 @@ export const columns: ColumnDef<Position>[] = [
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as number) || 0
       const formattedCost = defaultValue.toLocaleString("en-US", {
-        maximumFractionDigits: 0,
+        maximumFractionDigits: 2,
       })
       return <div className="text-center w-24">${formattedCost}</div>
     },
@@ -489,7 +489,7 @@ export const columns: ColumnDef<Position>[] = [
         updateData?.(row.index, {
           [column.id]: +stopLoss,
           expectedLoss: +expectedLoss,
-          expectedLossPercent: Math.round(expectedLossPercent),
+          expectedLossPercent: +expectedLossPercent,
         })
       }
 
@@ -614,28 +614,30 @@ export const columns: ColumnDef<Position>[] = [
       ])
 
       const handleBlur = () => {
-        setIsEditing(false) // Stop editing
+        setIsEditing(false)
+        const newExpectedLossPercent =
+          +lossPercent > 0 ? +lossPercent * -1 : +lossPercent
 
-        // Do not update if the input hasn't changed
-        if (+initialData === +lossPercent || isNaN(+lossPercent)) return
-
-        // Calculate the new expected loss based on the user-defined percent
-        const newExpectedLoss = (+lossPercent / 100) * totalCost * -1
-
-        // Recalculate the stop loss value from the user-defined expected loss
-        const newStopLoss = calculateStopLossFromLossPercent(
-          positionType,
-          lossPercent,
-          totalCost,
-          quantity,
-          askPrice
+        if (
+          +initialData === newExpectedLossPercent ||
+          isNaN(newExpectedLossPercent)
         )
+          return
+
+        // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
+        const newExpectedLoss =
+          ((newExpectedLossPercent * totalCost) / 100) * -1
+
+        // Stop Loss = (Expected Loss / Quantity) + Ask Price
+        let newStopLoss = newExpectedLoss / quantity + askPrice
+
+        newStopLoss = +newStopLoss.toFixed(2)
 
         //Update the state and table data
         updateData?.(row.index, {
-          [column.id]: +lossPercent,
+          [column.id]: newExpectedLossPercent,
           expectedLoss: +newExpectedLoss,
-          stopLoss: Math.max(newStopLoss, 0),
+          stopLoss: newStopLoss,
         })
       }
 

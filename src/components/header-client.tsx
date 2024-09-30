@@ -26,6 +26,7 @@ import {
 // import AuthModal from "./auth/auth-modal"
 import { Button } from "./ui/button"
 import { MdContactSupport } from "react-icons/md"
+import Logo from "./logo"
 
 const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false })
 const AuthModal = dynamic(() => import("./auth/auth-modal"), { ssr: false })
@@ -52,16 +53,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
   return (
     <header className={cn(`bg-header shadow-lg py-2`)}>
       <div className="flex items-center justify-between mx-5">
-        <div className="cursor-pointer" onClick={() => router.push("/home")}>
-          <Image
-            src="/images/logo-sm.png"
-            priority
-            alt="logo"
-            width={125}
-            height={37}
-            className="h-auto w-auto shrink-0"
-          />
-        </div>
+        <Logo className="cursor-pointer h-auto" isNavigate />
 
         {!user && (
           <form
@@ -121,7 +113,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
         <div className={cn("md:hidden flex space-x-2", user ?? "w-full")}>
           {!user && (
             <form
-              className="flex flex-1 bg-white px-2 rounded-full mx-2 "
+              className="flex flex-1 bg-white px-2 rounded-full mx-3 "
               onSubmit={(e) => {
                 e.preventDefault()
                 if (inputValue) {
