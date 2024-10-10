@@ -27,7 +27,8 @@ export function calculateExpectedProfit(
   positionType: string,
   askPrice: val,
   exitPrice: val,
-  quantity: val
+  quantity: val,
+  initialValue?: val
 ): number {
   askPrice = safeNumber(askPrice)
   exitPrice = safeNumber(exitPrice)
@@ -35,9 +36,11 @@ export function calculateExpectedProfit(
 
   if (!exitPrice || !askPrice || !quantity) return 0
 
-  const profitPerUnit =
-    positionType === "buy" ? exitPrice - askPrice : askPrice - exitPrice
-  const profit = profitPerUnit * quantity
+  //prettier-ignore
+  const profitPerUnit =  positionType === "buy" ? exitPrice - askPrice : askPrice - exitPrice
+
+  let profit = profitPerUnit * quantity
+
   return Math.max(profit, 0)
 }
 
@@ -90,11 +93,11 @@ export function calculateExpectedLoss(
   stopLoss = safeNumber(stopLoss)
   quantity = safeNumber(quantity)
 
-  if (!quantity) return 0
+  if (!quantity || !stopLoss || !askPrice) return 0
 
   // Calculate the loss for 'buy' and 'sell' positions correctly
   const loss =
-    positionType === "buy"
+    positionType === "sell"
       ? (askPrice - stopLoss) * quantity
       : (stopLoss - askPrice) * quantity
 
@@ -135,58 +138,31 @@ export function calculateExpectedLossPercent(
  * For 'sell' positions: Exit Price = Ask Price - (Desired Profit % * Cost) / (100 * Quantity)
  */
 export function calculateExitPriceFromProfitPercent(
-  positionType: string,
   askPrice: val,
-  desiredProfitPercent: val,
-  cost: val,
+  expectedProfit: val,
   quantity: val
 ): number {
   askPrice = safeNumber(askPrice)
+  expectedProfit = safeNumber(expectedProfit)
   quantity = safeNumber(quantity)
-  cost = safeNumber(cost)
-  desiredProfitPercent = safeNumber(desiredProfitPercent)
 
-  if (!askPrice || !quantity || !cost) return 0
-
-  const desiredProfit = (desiredProfitPercent / 100) * cost
-
-  const newExitValue =
-    positionType === "buy"
-      ? desiredProfit / quantity + askPrice
-      : askPrice - desiredProfit / quantity
-
-  if (isNaN(newExitValue) && +newExitValue < 0) return 0
-
-  return +newExitValue.toFixed(2)
+  if (expectedProfit === 0 || quantity === 0) return askPrice
+  let exitPrice = expectedProfit / quantity + askPrice
+  return Math.max(+exitPrice.toFixed(2), 0)
 }
 
 export function calculateStopLossFromLossPercent(
-  positionType: string,
-  desiredLossPercent: val,
-  cost: val,
+  newExpectedLoss: val,
   quantity: val,
   askPrice: val
 ): number {
   quantity = safeNumber(quantity)
-  cost = safeNumber(cost)
-  desiredLossPercent = safeNumber(desiredLossPercent)
+  newExpectedLoss = safeNumber(newExpectedLoss)
   askPrice = safeNumber(askPrice)
 
-  if (!askPrice || !quantity || !cost) return 0
+  if (!askPrice || !quantity || !newExpectedLoss) return 0
 
-  // Calculate desired loss from the percentage
-  const desiredLoss = (desiredLossPercent / 100) * cost
-
-  // Calculate the stop loss based on the position type
-  let stopLoss =
-    positionType === "buy"
-      ? askPrice - desiredLoss / quantity
-      : askPrice + desiredLoss / quantity
-
-  stopLoss =
-    positionType === "buy"
-      ? Math.max(stopLoss, 0)
-      : Math.max(stopLoss, askPrice)
-
-  return +stopLoss.toFixed(2)
+  // Stop Loss = (Expected Loss / Quantity) + Ask Price
+  let newStopLoss = newExpectedLoss / quantity + askPrice
+  return +newStopLoss.toFixed(2)
 }
