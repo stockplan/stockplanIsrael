@@ -31,15 +31,10 @@ interface ContactFormModalProp {
   isOpen: boolean;
   onClose: () => void;
 }
-// function isMobileCheck() {
-//   const regex =
-//     /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-//   return regex.test(navigator.userAgent);
-// }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
   const isMobile = useIsMobile();
-
+  //in landscape mobile content need to make it widther and shorter
   const ModalComponent = isMobile ? BaseDrawer : BaseDialog;
   const ContentComponent = isMobile ? BaseDrawerContent : BaseDialogContent;
   const HeaderComponent = isMobile ? BaseDrawerHeader : BaseDialogHeader;

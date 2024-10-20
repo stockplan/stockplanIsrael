@@ -1,6 +1,6 @@
 "use client";
 import useIsMobile from "@/hooks/useIsMobile";
-import MobileLayout from "@/components/mobile/MobileLayout";
+import MobileLossprofitLayout from "@/components/mobile/MobileLossprofitLayout";
 import TableLossProfitWrapper from "@/app/calculator/_components/table-wrapper";
 import { Position } from "@/schemas";
 import { ColumnDef } from "@tanstack/react-table";
@@ -19,7 +19,7 @@ const MobileOrDesktopLayout: React.FC<MobileOrDesktopLayoutProps> = ({
   const isMobile = useIsMobile(); // Use the hook inside this client-side component
 
   return isMobile ? (
-    <MobileLayout
+    <MobileLossprofitLayout
       columns={columns}
       creator={creator}
       serverUserStocks={serverUserStocks}
