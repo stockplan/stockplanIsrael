@@ -25,19 +25,20 @@ import { ContactMessageSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMediaQuery } from "usehooks-ts";
+import useIsMobile from "@/hooks/useIsMobile";
 
 interface ContactFormModalProp {
   isOpen: boolean;
   onClose: () => void;
 }
-function isMobileCheck() {
-  const regex =
-    /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-  return regex.test(navigator.userAgent);
-}
+// function isMobileCheck() {
+//   const regex =
+//     /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+//   return regex.test(navigator.userAgent);
+// }
 
 const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  const isMobile = isMobileCheck();
+  const isMobile = useIsMobile();
 
   const ModalComponent = isMobile ? BaseDrawer : BaseDialog;
   const ContentComponent = isMobile ? BaseDrawerContent : BaseDialogContent;
