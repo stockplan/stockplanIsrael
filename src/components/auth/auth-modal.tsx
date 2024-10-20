@@ -49,7 +49,7 @@ const AuthModal = ({
               alt="logo"
               height={40}
               width={200}
-              className="h-auto w-auto"
+              // className="h-auto w-auto"
             />
           </div>
           <TitleComponent className="mb-8 text-3xl text-center text-cyan-900 dark:text-white font-bold">

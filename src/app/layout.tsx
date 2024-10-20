@@ -46,7 +46,6 @@ export default async function RootLayout({
 
         <Footer />
         <Toaster />
-        <SpeedInsights />
       </body>
     </html>
   )

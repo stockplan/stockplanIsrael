@@ -4,7 +4,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
+import {
+  HoverCard,
+  HoverCardTrigger,
+  HoverCardContent,
+} from "@/components/ui/hover-card"
 interface TooltipContainerProps {
   children: React.ReactNode
   msg: string
@@ -15,14 +19,12 @@ const TooltipContainer: React.FC<TooltipContainerProps> = ({
   msg,
 }) => {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger className="cursor-auto">{children}</TooltipTrigger>
-        <TooltipContent>
-          <p>{msg}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <HoverCard>
+      <HoverCardTrigger className="cursor-auto">{children}</HoverCardTrigger>
+      <HoverCardContent>
+        <p>{msg}</p>
+      </HoverCardContent>
+    </HoverCard>
   )
 }
 
