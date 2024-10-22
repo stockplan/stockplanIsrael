@@ -47,15 +47,3 @@ export async function getUsers() {
 
   return users
 }
-
-export async function getUsersWithTickers() {
-  try {
-    const url = getURL("/api/user")
-    const res = await fetch(url)
-    const data = await res.json()
-    return data.users
-  } catch (error) {
-    console.log(error)
-    return []
-  }
-}

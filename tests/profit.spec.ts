@@ -5,7 +5,7 @@ test.describe("Profit and Loss Calculator Tests", () => {
     page,
   }) => {
     // נווט לעמוד המחשבון
-    await page.goto("/calculator/lossprofit")
+    await page.goto("/home/calculator/lossprofit")
 
     // איתור השדות והאלמנטים
     const quantityInput = page.locator("input#quantity-0")
@@ -88,7 +88,7 @@ test.describe("Profit and Loss Calculator Tests", () => {
     page,
   }) => {
     // נווט לעמוד המחשבון
-    await page.goto("/calculator/lossprofit")
+    await page.goto("/home/calculator/lossprofit")
 
     // איתור השדות והאלמנטים
     const quantityInput = page.locator("input#quantity-0")

@@ -6,8 +6,8 @@ export const BuildingSVG = (props: any) => {
   const pathname = usePathname()
 
   if (
-    pathname === "/privacy" ||
-    pathname === "/terms" ||
+    pathname === "/home/privacy" ||
+    pathname === "/home/terms" ||
     pathname.startsWith("/admin")
   )
     return null

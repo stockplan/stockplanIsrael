@@ -1,13 +1,9 @@
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import Footer from "@/components/Footer"
-import Header from "@/components/Header"
 import { getURL } from "@/utils/helpers"
-import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 import { Toaster } from "@/components/ui/toaster"
-import { SpeedInsights } from "@vercel/speed-insights/next"
-import { BuildingSVG } from "@/components/BuildingSVG"
+import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -32,19 +28,8 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.className} flex flex-col min-h-screen relative bg-background-main overflow-x-hidden`}
-      >
-        <UnsavedChangesProvider>
-          <Header />
-          <main className="flex-grow">{children}</main>
-        </UnsavedChangesProvider>
-
-        <div className="hidden md:flex max-w-full relative">
-          <BuildingSVG className="max-w-full" />
-        </div>
-
-        <Footer />
+      <body id={"root"} className={`${inter.className} relative `}>
+        <UnsavedChangesProvider>{children}</UnsavedChangesProvider>
         <Toaster />
       </body>
     </html>

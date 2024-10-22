@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 
 import { format } from "date-fns"
-import { Position } from "@/schemas"
+import { Position } from "@/types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -26,7 +26,7 @@ export function getEmptyRow(creator: string = "") {
   } as Position
 }
 
-export const formatDate = (dateString: string) => {
+export const formatDate = (dateString?: string) => {
   if (!dateString) return "N/A"
 
   try {

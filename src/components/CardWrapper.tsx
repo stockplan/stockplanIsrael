@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { AuthHeader } from "./AuthHeader"
+import { AuthHeader } from "./auth/AuthHeader"
 import { BackButton } from "./BackButton"
 import GoogleSignin from "./GoogleSignin"
 

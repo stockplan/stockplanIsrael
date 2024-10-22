@@ -26,8 +26,8 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
       return { error: error.message }
     }
 
-    // revalidatePath("/calculator/lossprofit", "page")
-    redirect("/calculator/lossprofit")
+    revalidatePath("/home/calculator/[type]", "page")
+    redirect("/home/calculator/lossprofit")
 
     return { success: "Login success" }
   } catch (error) {

@@ -3,7 +3,7 @@
  * These routes do not require authentication
  * @type {string[]}
  */
-export const publicRoutes = ["/home", "/terms", "/privacy"]
+export const publicRoutes = ["/home"]
 
 /**
  * An array of routes that are used for authentication
@@ -23,7 +23,7 @@ export const apiAuthPrefix = "/api/auth"
  * The default redirect path after logging in
  * @type {string}
  */
-export const DEFAULT_LOGIN_REDIRECT = "/calculator/lossprofit"
+export const DEFAULT_LOGIN_REDIRECT = "/home/calculator/lossprofit"
 
 /**
  * An Array of protected route handlers

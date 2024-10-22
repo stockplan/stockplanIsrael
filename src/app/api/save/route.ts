@@ -1,14 +1,15 @@
 import connectMongo from "@/lib/db"
+import { createClient } from "@/lib/supabase/server"
 import PositionModel, { IPosition } from "@/models/Position"
 import UserModel from "@/models/User"
-import getServerUser from "@/utils/auth-helpers/getServerUser"
+import { getUser } from "@/utils/supabase-helpers/queries"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function POST(req: NextRequest) {
   try {
-    const {
-      data: { user },
-    } = await getServerUser()
+    const supabase = createClient()
+
+    const { user } = await getUser(supabase)
     if (!user) {
       return NextResponse.json(
         { success: false, message: "User not found" },

@@ -35,7 +35,7 @@ const ContentHome: React.FC<ContentHomeProps> = ({}) => {
         </p>
       </div>
       <Link
-        href="/calculator/lossprofit"
+        href="/home/calculator/lossprofit"
         className="bg-[#3974A9] hover:bg-[#2d5a87] transition-colors duration-200  px-6 md:px-8 py-2 lg:self-start inline-flex items-center justify-center whitespace-nowrap rounded-md text-lg md:text-xl  font-medium"
       >
         Try it for free!

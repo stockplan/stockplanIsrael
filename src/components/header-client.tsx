@@ -2,7 +2,6 @@
 "use client"
 
 import React, { useState } from "react"
-import Image from "next/image"
 import dynamic from "next/dynamic"
 import { User } from "@supabase/supabase-js"
 import { useRouter } from "next/navigation"
@@ -11,7 +10,7 @@ import { FaMailchimp, FaUser } from "react-icons/fa"
 import { VscArrowRight, VscSignOut } from "react-icons/vsc"
 import { signout } from "@/actions/logout"
 import { cn } from "@/lib/utils"
-import LogoutBtn from "./LogoutBtn"
+import LogoutBtn from "./auth/LogoutBtn"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -28,14 +27,17 @@ import { Button } from "./ui/button"
 import { MdContactSupport } from "react-icons/md"
 import Logo from "./logo"
 
-const ContactFormModal = dynamic(() => import("./ContactForm"), { ssr: false })
+const ContactFormModal = dynamic(() => import("./modals/contact-form"), {
+  ssr: false,
+})
 const AuthModal = dynamic(() => import("./auth/auth-modal"), { ssr: false })
 
 interface HeaderClientProps {
   user: User | null
+  isAdmin: boolean
 }
 
-const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
+const HeaderClient: React.FC<HeaderClientProps> = ({ user, isAdmin }) => {
   const [isContactFormOpen, setIsContactFormOpen] = useState(false)
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [inputValue, setInputValue] = useState("")
@@ -51,7 +53,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
   }
 
   return (
-    <header className={cn(`bg-header shadow-lg py-2`)}>
+    <header className={cn(`bg-header shadow-lg py-2`)} id="header-main">
       <div className="flex items-center justify-between mx-5">
         <Logo className="cursor-pointer h-auto" isNavigate />
 
@@ -62,7 +64,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
               e.preventDefault()
               if (inputValue) {
                 router.push(
-                  `/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
+                  `/home/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
                 )
                 setInputValue("")
               }
@@ -98,6 +100,15 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
                 Contact
               </Button>
               <LogoutBtn />
+              {isAdmin && (
+                <Button
+                  variant="ghost"
+                  className=" text-white bg-green-700 ml-4 px-4 py-2 rounded"
+                  onClick={() => router.push("/admin")}
+                >
+                  Manager
+                </Button>
+              )}
             </>
           ) : (
             <Button
@@ -118,7 +129,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user }) => {
                 e.preventDefault()
                 if (inputValue) {
                   router.push(
-                    `/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
+                    `/home/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
                   )
                   setInputValue("")
                 }

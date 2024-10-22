@@ -40,17 +40,18 @@ export async function updateSession(request: NextRequest) {
   const isTablePath = request.nextUrl.pathname.startsWith("/calculator")
   const isHomePath = request.nextUrl.pathname.startsWith("/home")
   const isAuthPath = request.nextUrl.pathname.startsWith("/auth")
+  const isAdminPath = request.nextUrl.pathname.startsWith("/admin")
   const isApiAuthRoute = request.nextUrl.pathname.startsWith("/api")
 
   if (isApiAuthRoute) {
     return NextResponse.next()
   }
 
-  if (user && isHomePath) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/calculator/lossprofit"
-    return NextResponse.redirect(url)
-  }
+  // if (user && isHomePath) {
+  //   const url = request.nextUrl.clone()
+  //   url.pathname = "/home/calculator/lossprofit"
+  //   return NextResponse.redirect(url)
+  // }
 
   // if (!user && !isHomePath && !isAuthPath) {
   //   if (isTablePath) {
