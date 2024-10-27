@@ -8,31 +8,13 @@ import {
   getPaginationRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-// import {
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableHead,
-//   TableHeader,
-//   TableRow,
-// } from "@/components/ui/table"
-// import { DataTablePagination } from "./data-table-pagination"
-// import { Position } from "@/schemas"
 import { Separator } from "../ui/separator";
-// import EmptyRow from "./empty-row"
-// import Totals from "./totals"
-// import { cn, getEmptyRow } from "@/lib/utils"
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
-// import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges"
-// import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
 import { useToast } from "../ui/use-toast";
-// import { ToastAction } from "@/components/ui/toast"
-// import { hasDataChanged } from "@/utils"
 import { AlertDialog, AlertDialogTrigger } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
 import Image from "next/image";
-// import ConfirmationModal from "../ConfirmationModal"
 import { BsTrashFill } from "react-icons/bs";
 import { Position } from "@/types";
 import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
