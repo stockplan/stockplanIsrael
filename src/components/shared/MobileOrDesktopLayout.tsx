@@ -1,9 +1,11 @@
 "use client";
 import useIsMobile from "@/hooks/useIsMobile";
 import MobileLossprofitLayout from "@/components/mobile/MobileLossprofitLayout";
-import TableLossProfitWrapper from "@/app/calculator/_components/table-wrapper";
-import { Position } from "@/schemas";
+// import TableLossProfitWrapper from "@/app/calculator/_components/table-wrapper";
+// import { Position } from "@/schemas";
 import { ColumnDef } from "@tanstack/react-table";
+import { Position } from "@/types";
+import TableLossProfitWrapper from "@/app/home/calculator/_components/table-wrapper";
 
 interface MobileOrDesktopLayoutProps {
   columns: ColumnDef<Position>[];

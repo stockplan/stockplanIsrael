@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { Position } from "@/schemas"
+import { Position } from "@/types"
 
 interface Props {
   isOpen: boolean

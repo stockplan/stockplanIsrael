@@ -1,5 +1,4 @@
-import { Position } from "@/schemas"
-import { Model, models, model, Schema } from "mongoose"
+import { models, model, Schema } from "mongoose"
 import { IPosition } from "./Position"
 
 export interface IUser {

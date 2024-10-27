@@ -1,16 +1,23 @@
 import React from "react"
-import { ContentLayout } from "../_components/content-layout"
-import { getUsersWithTickers } from "@/actions/admin"
-import UserManagement from "../_components/user-table"
+import UserGrid from "../_components/users-grid"
 
-interface UserPageProps {}
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? process.env.NEXT_PUBLIC_VERCEL_URL
+    : typeof window !== "undefined"
+    ? window.location.origin
+    : "http://localhost:3000"
 
-const UserPage: React.FC<UserPageProps> = async ({}) => {
-  const users = (await getUsersWithTickers()) || []
+const UserPage = async () => {
+  const response = await fetch(`${BASE_URL}/api/user`)
+  const data = await response.json()
+  const userTableData = data.users || []
 
   return (
-    <div className="container pt-8 pb-8 px-4 sm:px-8">
-      <UserManagement initialData={users} />
+    <div className="h-full w-full">
+      <div className="h-full w-full rounded-lg ">
+        <UserGrid tableData={userTableData} />
+      </div>
     </div>
   )
 }

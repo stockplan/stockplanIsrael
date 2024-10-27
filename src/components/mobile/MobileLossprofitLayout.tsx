@@ -2,11 +2,13 @@
 
 import React, { useRef, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
-import { Position } from "@/schemas";
+// import { Position } from "@/schemas";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import MobileMainTicker from "./MobileMainTicker";
-import Totals from "../position/totals";
+import Totals from "@/app/home/calculator/_components/totals";
+import { Position } from "@/types";
+// import Totals from "../position/totals";
 
 interface MobileLayoutProps {
   columns: ColumnDef<Position>[]; // need to change it from table

@@ -1,13 +1,13 @@
 import { createClient } from "@/lib/supabase/server"
-import getServerUser from "@/utils/auth-helpers/getServerUser"
+import { getUser } from "@/utils/supabase-helpers/queries"
+
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
   try {
-    const {
-      data: { user },
-      error,
-    } = await getServerUser()
+    const supabase = createClient()
+
+    const { user, error } = await getUser(supabase)
 
     if (!user) {
       return NextResponse.json(

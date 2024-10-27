@@ -214,22 +214,3 @@ export const lossCalcValidation = z
       }
     }
   });
-
-export interface Position {
-  _id?: string;
-  creator?: string;
-  ticker: string;
-  positionType: string;
-  quantity: number;
-  actualPrice: number;
-  askPrice: number;
-  cost: number;
-  exitPrice: number;
-  expectedProfit: number;
-  expectedProfitPercent: number;
-  stopLoss: number;
-  expectedLoss: number;
-  expectedLossPercent: number;
-  daysLeft?: number;
-  entryDate?: string;
-}

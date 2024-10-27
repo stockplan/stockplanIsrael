@@ -70,6 +70,7 @@ export function calculateExpectedLossPercent(
 }
 
 export function calculateExitPriceFromProfitPercent(
+  positionType: string,
   askPrice: val,
   expectedProfit: val,
   quantity: val
@@ -79,7 +80,15 @@ export function calculateExitPriceFromProfitPercent(
   quantity = safeNumber(quantity)
 
   if (expectedProfit === 0 || quantity === 0) return askPrice
-  let exitPrice = expectedProfit / quantity + askPrice
+  // let exitPrice = expectedProfit / quantity + askPrice
+  let exitPrice = 0
+  if (positionType === "buy") {
+    exitPrice = expectedProfit / quantity + askPrice
+  } else if (positionType === "sell") {
+    const profitPerUnit = expectedProfit / quantity
+    exitPrice = askPrice * (1 - profitPerUnit / askPrice)
+  }
+
   return safeNumber(exitPrice)
 }
 

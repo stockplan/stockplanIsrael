@@ -64,14 +64,14 @@ const AuthModal = ({
           <div className="text-xs">
             By proceeding, you agree to our{" "}
             <Link
-              href="/terms"
+              href="/home/terms"
               className="underline text-blue-600 dark:text-blue-400"
             >
               Terms of Use
             </Link>{" "}
             and confirm you have read our{" "}
             <Link
-              href="/privacy"
+              href="/home/privacy"
               className="underline text-blue-600 dark:text-blue-400"
             >
               Privacy and Cookie Statement

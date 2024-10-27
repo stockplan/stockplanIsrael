@@ -25,8 +25,8 @@ interface ITickerData {
 // prettier-ignore
 const positionFetcher =  () =>  fetch("/api/position").then((res) => res.json())
 
+// prettier-ignore
 const TickerManagement = ({}) => {
-  // prettier-ignore
   const { data: positions = [], isLoading } = useSWR("/api/position", positionFetcher, {
     revalidateOnFocus: true,  
   })
