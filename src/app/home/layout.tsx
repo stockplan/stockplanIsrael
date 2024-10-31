@@ -7,7 +7,7 @@ export default function HomeLayout({
   children: React.ReactNode
 }) {
   return (
-    <section className="flex flex-col justify-between min-h-screen bg-background-main">
+    <section className="flex flex-col justify-between h-screen bg-background-main">
       <Header />
       <div className="flex-grow">{children}</div>
       <Footer />

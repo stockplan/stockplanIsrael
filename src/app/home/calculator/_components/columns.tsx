@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { mutate } from "swr"
 import CurrencyInput from "react-currency-input-field"
 import {
+  allowNegativeValue,
   calculateCost,
   calculateExitPriceFromProfitPercent,
   calculateExpectedLoss,
@@ -16,9 +17,10 @@ import {
   calculateExpectedProfit,
   calculateExpectedProfitPercent,
   calculateStopLossFromLossPercent,
+  formatFractionDigits,
 } from "@/utils/calc-helpers"
-import { formatFractionDigits } from "@/utils/helpers"
 import { ColumnNames, Position } from "@/types"
+import { NumericFormat } from "react-number-format"
 
 export type CellType = CellContext<Position, unknown>
 
@@ -182,7 +184,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <CurrencyInput
-          className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
+          className="flex w-24 h-9  border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
           name="quantity"
           id={`quantity-${row.index}`}
           value={quantity}
@@ -260,8 +262,17 @@ export const columns: ColumnDef<Position>[] = [
     ),
     cell: ({ row, column, table }) => {
       const defaultValue = (row.getValue(column.id) as number) || 0
-      const formattedCost = formatFractionDigits(defaultValue)
-      return <div className="text-center w-24">${formattedCost}</div>
+      return (
+        <NumericFormat
+          value={defaultValue}
+          prefix="$"
+          allowNegative={false}
+          decimalScale={2}
+          displayType="text"
+          className="text-center w-24 block"
+          thousandSeparator
+        />
+      )
     },
   },
   {
@@ -281,7 +292,7 @@ export const columns: ColumnDef<Position>[] = [
       const askPrice = row.getValue(ColumnNames.AskPrice) as number
 
       useEffect(() => {
-        setExitPrice(formatFractionDigits(+defaultValue))
+        setExitPrice(defaultValue)
       }, [defaultValue])
 
       const updateData = table.options.meta?.updateData
@@ -334,10 +345,17 @@ export const columns: ColumnDef<Position>[] = [
           setExpectedProfit(+initialValue.toFixed(2))
         }
       }, [initialValue])
-      const formatted = formatFractionDigits(initialValue)
 
       return (
-        <div className="text-center w-24 text-green-500">${expectedProfit}</div>
+        <NumericFormat
+          value={expectedProfit}
+          prefix="$"
+          allowNegative={false}
+          decimalScale={2}
+          displayType="text"
+          className="text-center w-24 text-green-500 block"
+          thousandSeparator
+        />
       )
     },
   },
@@ -363,7 +381,7 @@ export const columns: ColumnDef<Position>[] = [
         if (+initialValue < 0) {
           setProfitPercent("0")
         } else {
-          setProfitPercent(formatFractionDigits(+initialValue))
+          setProfitPercent(initialValue)
         }
       }, [initialValue])
 
@@ -390,7 +408,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           decimalsLimit={2}
           suffix="%"
-          className="flex h-9 w-24 text-center border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm  text-green-500"
+          className="flex h-9 w-24 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm  text-green-500"
           value={profitPercent}
           onValueChange={(value, name, values) => {
             setProfitPercent(value || "0")
@@ -414,8 +432,8 @@ export const columns: ColumnDef<Position>[] = [
       const updateData = table.options.meta?.updateData!
 
       useEffect(() => {
-        if (+initialValue > 0) {
-          setStopLoss(formatFractionDigits(+initialValue))
+        if (+initialValue < 0) {
+          setStopLoss(initialValue)
         } else {
           setStopLoss(initialValue)
         }
@@ -486,7 +504,15 @@ export const columns: ColumnDef<Position>[] = [
       }, [initialValue])
 
       return (
-        <div className="text-center w-24 text-red-500">${expectedLoss}</div>
+        <NumericFormat
+          value={expectedLoss}
+          prefix="$"
+          allowNegative
+          decimalScale={2}
+          displayType="text"
+          className="text-center w-24 text-red-500 block"
+          thousandSeparator
+        />
       )
     },
   },
@@ -499,7 +525,7 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as string
+      const initialValue = row.getValue(column.id) as string | number
       const quantity = row.getValue(ColumnNames.Quantity) as number
       const askPrice = row.getValue(ColumnNames.AskPrice) as number
       const cost = row.getValue(ColumnNames.Cost) as number
@@ -509,19 +535,20 @@ export const columns: ColumnDef<Position>[] = [
 
       useEffect(() => {
         if (+initialValue > 0) {
-          setLossPercent("0")
+          setLossPercent(0)
         } else {
-          setLossPercent(formatFractionDigits(+initialValue))
+          setLossPercent(initialValue)
         }
       }, [initialValue])
 
       const handleBlur = () => {
-        const newLossPer = +lossPercent > 0 ? +lossPercent * -1 : +lossPercent
+        const negativeValue =
+          +lossPercent > 0 ? +lossPercent * -1 : +lossPercent
         const formattedVal = formatFractionDigits(+initialValue)
 
-        setLossPercent(newLossPer + "")
+        if (+formattedVal > 0 && negativeValue === 0) return
 
-        if (+formattedVal === +newLossPer) return
+        if (+formattedVal === +negativeValue) return
 
         const absValue = Math.abs(+lossPercent)
         // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
@@ -535,7 +562,7 @@ export const columns: ColumnDef<Position>[] = [
         )
 
         updateData?.(row.index, {
-          [column.id]: newLossPer,
+          [column.id]: +lossPercent,
           expectedLoss: +newExpectedLoss,
           stopLoss: newStopLoss,
         })
@@ -546,13 +573,12 @@ export const columns: ColumnDef<Position>[] = [
           decimalsLimit={2}
           allowNegativeValue={true}
           suffix="%"
-          className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm text-red-500"
+          className="flex w-24 h-9 text-center border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm text-red-500"
           value={lossPercent}
           onValueChange={(value, name, values) => {
             setLossPercent(value || "0")
           }}
           onBlur={handleBlur}
-          // transformRawValue={(val) => `-${val}`}
         />
       )
     },

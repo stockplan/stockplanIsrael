@@ -2,7 +2,7 @@ import { User } from "@supabase/supabase-js"
 import { RowData } from "@tanstack/react-table"
 
 import { Mongoose } from "mongoose"
-import { Position } from "./schemas"
+import { Position } from "./types"
 
 declare module "@tanstack/react-table" {
   interface TableMeta<TData extends RowData> {

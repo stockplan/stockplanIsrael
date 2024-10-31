@@ -3,9 +3,11 @@ import FigureHome from "@/components/home/FigureHome"
 
 const HomePage = async ({}) => {
   return (
-    <div className="flex flex-col-reverse py-5 items-center justify-center w-full lg:flex-row lg:justify-between lg:px-12">
-      <ContentHome />
-      <FigureHome />
+    <div className="lg:px-12 py-2 bg-background-main">
+      <div className="flex flex-col-reverse items-center justify-center lg:flex-row lg:justify-between ">
+        <ContentHome />
+        <FigureHome />
+      </div>
     </div>
   )
 }

@@ -5,10 +5,10 @@ import { BuildingSVG } from "./BuildingSVG"
 const Footer = ({}) => {
   return (
     <section id="footer-main">
-      <div className="hidden md:flex max-w-full relative">
-        <BuildingSVG className="max-w-full" />
+      <div className="hidden lg:flex max-w-full ">
+        <BuildingSVG className="max-w-full absolute z-0 bottom-0" />
       </div>
-      <footer className="bg-gray-900 text-white py-4">
+      <footer className="bg-gray-900 text-white py-4 z-10 relative">
         <div className="mx-auto px-4">
           <div className="flex flex-col-reverse md:flex-row justify-between items-center text-center md:text-left text-xs md:text-sm">
             <div className=" text-gray-400 text-[10px] md:text-sm md:text-white ">

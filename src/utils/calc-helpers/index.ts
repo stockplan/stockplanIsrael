@@ -1,8 +1,31 @@
+import { NumberFormatValues } from "react-number-format"
+
 type val = string | number
 
 function safeNumber(value: any): number {
-  const num = parseFloat(value)
-  return isNaN(num) ? 0 : num
+  // Validate that value is either a string or a number
+  if (typeof value !== "string" && typeof value !== "number") {
+    throw new Error("Invalid input: value must be a string or number.")
+  }
+
+  // Convert to number and validate if it's finite and not NaN
+  const num = Number(value)
+
+  if (isNaN(num) || !isFinite(num)) {
+    return 0
+  }
+
+  // Return integers as they are
+  if (Number.isInteger(num)) return num
+
+  // Split integer and decimal parts to check decimal length
+  const decimalPart = num.toString().split(".")[1]
+
+  // Return as-is if there is only one decimal place
+  if (decimalPart && decimalPart.length === 1) return num
+
+  // Round to two decimal places if there are more than two decimal places
+  return Math.round(num * 100) / 100
 }
 
 export function calculateCost(askPrice: val, quantity: val): number {
@@ -106,4 +129,31 @@ export function calculateStopLossFromLossPercent(
   // Stop Loss = (Expected Loss / Quantity) + Ask Price
   let newStopLoss = newExpectedLoss / quantity + askPrice
   return safeNumber(newStopLoss)
+}
+
+export function formatFractionDigits(num?: number | null): string {
+  if (num) {
+    num = safeNumber(num)
+    return String(num)
+  }
+  return "0"
+}
+
+export function allowNegativeValue(values: NumberFormatValues) {
+  if (+values.value < 0 || values.value.startsWith("-")) return false
+  return true
+}
+
+export function compareNumbers(num1: number, num2: number): boolean {
+  // Validation for finite numbers only
+  if (!Number.isFinite(num1) || !Number.isFinite(num2)) {
+    throw new Error("Invalid input: both inputs must be finite numbers.")
+  }
+
+  // Format both numbers to two decimal places by using a toFixed string comparison
+  const formattedNum1 = num1.toFixed(2)
+  const formattedNum2 = num2.toFixed(2)
+
+  // Comparing the formatted values
+  return formattedNum1 === formattedNum2
 }
