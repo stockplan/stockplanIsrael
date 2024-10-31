@@ -17,7 +17,7 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
 
   const updateData = table.options.meta!.updateData!
 
-  const { data, error, isLoading } = useSWR(
+  const { data, error, isLoading, isValidating } = useSWR(
     ticker ? ["/api/tickerPrice", ticker] : null,
     ([url, currTicker]) => fetcher(url, currTicker),
     {
@@ -53,7 +53,7 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
 
   return (
     <div className={`px-6 w-24 text-center ${error ? "text-red-500" : ""}`}>
-      {isLoading ? (
+      {isValidating ? (
         <ClipLoader color="#ffffff" size={25} />
       ) : (
         `$${formattedPrice}`

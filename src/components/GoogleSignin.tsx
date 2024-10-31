@@ -39,11 +39,11 @@ const GoogleSignin = () => {
     <Button
       onClick={signinWithGoogle}
       variant="outline"
-      className="h-12 px-6 border-2 border-gray-300 rounded-full transition duration-300 hover:border-blue-400 flex items-center justify-center space-x-4 bg-white dark:bg-gray-800 shadow-sm"
-      disabled={loading} // Disable button while loading
+      className="h-12 px-6 border-2 border-gray-800 rounded-full transition duration-300 hover:border-blue-400 flex items-center justify-center space-x-4 shadow-sm"
+      disabled={loading}
     >
       {loading ? (
-        <Loader className="animate-spin h-5 w-5 text-gray-700 dark:text-white" />
+        <Loader className="animate-spin h-5 w-5 text-gray-700 " />
       ) : (
         <>
           <FcGoogle className="h-5 w-5" />

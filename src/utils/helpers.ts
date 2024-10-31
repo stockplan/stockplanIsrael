@@ -21,12 +21,3 @@ export const getURL = (path: string = "") => {
   // Concatenate the URL and the path.
   return path ? `${url}/${path}` : url
 }
-
-export function formatFractionDigits(num?: number | null): string {
-  if (num) {
-    return num.toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    })
-  }
-  return "0"
-}
