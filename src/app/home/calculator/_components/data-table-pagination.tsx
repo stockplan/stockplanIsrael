@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { PlusIcon } from "@radix-ui/react-icons"
-import { Table } from "@tanstack/react-table"
-import SaveButton from "@/components/SaveButton"
-import { BsFillSaveFill } from "react-icons/bs"
-import { useState } from "react"
-import AuthModal from "@/components/auth/auth-modal"
-import { Position } from "@/types"
+import { Button } from "@/components/ui/button";
+import { Table } from "@tanstack/react-table";
+import SaveButton from "@/components/SaveButton";
+import { BsFillSaveFill } from "react-icons/bs";
+import { useState } from "react";
+import AuthModal from "@/components/auth/auth-modal";
+import { Position } from "@/types";
+import { PlusIcon } from "@radix-ui/react-icons";
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
-  handleAddNewTicker: () => void
-  creator?: string
-  saveChanges: (changes: Position[]) => Promise<void>
-  tableData: Position[]
-  isLoading: boolean
-  unsavedChanges: boolean
+  table: Table<TData>;
+  handleAddNewTicker: () => void;
+  creator?: string;
+  saveChanges: (changes: Position[]) => Promise<void>;
+  tableData: Position[];
+  isLoading: boolean;
+  unsavedChanges: boolean;
 }
 
 export function DataTablePagination<TData>({
@@ -27,7 +27,7 @@ export function DataTablePagination<TData>({
   isLoading,
   unsavedChanges,
 }: DataTablePaginationProps<TData>) {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="flex justify-center items-center relative py-4">
@@ -35,7 +35,7 @@ export function DataTablePagination<TData>({
         <Button
           className="h-10 flex items-center justify-center text-white bg-background-main text-sm px-6"
           onClick={() => {
-            setIsAuthModalOpen(true)
+            setIsAuthModalOpen(true);
           }}
         >
           <PlusIcon className="mr-2 h-4 w-4" />
@@ -66,7 +66,7 @@ export function DataTablePagination<TData>({
       )}
       <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </div>
-  )
+  );
 }
 
 {

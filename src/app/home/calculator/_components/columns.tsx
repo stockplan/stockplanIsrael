@@ -448,6 +448,7 @@ export const columns: ColumnDef<Position>[] = [
         const cost = row.getValue(ColumnNames.Cost) as number;
 
         let expectedLoss = calculateExpectedLoss(
+          //why use let here and not const?
           positionType,
           askPrice,
           stopLoss,
@@ -546,7 +547,7 @@ export const columns: ColumnDef<Position>[] = [
           +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
         const formattedVal = formatFractionDigits(+initialValue);
 
-        if (+formattedVal > 0 && negativeValue === 0) return;
+        if (+formattedVal > 0 && negativeValue === 0) return; // is this ever going to be true?
 
         if (+formattedVal === +negativeValue) return;
 
