@@ -4,10 +4,12 @@ import PositionModel from "@/models/Position"
 import UserModel from "@/models/User"
 import { NextRequest, NextResponse } from "next/server"
 
-type Params = { params: { userId: string } }
+type Params = Promise<{ userId: string }>
 
-export async function GET(_: NextRequest, { params }: Params) {
+export async function GET(_: NextRequest, segmentData: { params: Params }) {
   try {
+    const params = await segmentData.params
+
     const { userId } = params
 
     if (!userId) {

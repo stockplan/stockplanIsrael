@@ -13,7 +13,7 @@ const BASE_URL =
     : "http://localhost:3000"
 
 const StocksPage = async ({}) => {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { user } = await getUser(supabase)
   if (!user || !user.email) {

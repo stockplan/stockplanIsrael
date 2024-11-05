@@ -4,7 +4,7 @@ import { checkAdmin } from "@/lib/utils"
 import { getUser } from "@/utils/supabase-helpers/queries"
 
 const Header = async () => {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { user } = await getUser(supabase)
   const isAdmin = (user && user.email && checkAdmin(user.email)) || false

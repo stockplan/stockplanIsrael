@@ -1,11 +1,12 @@
 import { createClient } from "@/lib/supabase/server"
 import { getUser } from "@/utils/supabase-helpers/queries"
 
-import { NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
+import { type NextRequest } from "next/server"
 
 export async function GET(req: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { user, error } = await getUser(supabase)
 
@@ -26,7 +27,6 @@ export async function GET(req: NextRequest) {
     let data = null
 
     if (contacts) {
-      const supabase = createClient()
       data = await supabase.from("contacts").select("*")
     }
 

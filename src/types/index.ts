@@ -1,4 +1,4 @@
-import { ComponentType } from "react"
+import { ComponentType, type JSX } from "react";
 
 export enum ColumnNames {
   Ticker = "ticker",

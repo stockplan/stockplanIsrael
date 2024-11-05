@@ -2,8 +2,8 @@ import React from "react"
 
 const TermsPage: React.FC = () => {
   return (
-    <div className="py-8 ">
-      <div className="container mx-auto p-8 bg-gray-800 shadow-lg rounded-lg text-gray-100 mb-20">
+    <div className="py-8 max-h-[87vh] overflow-y-auto">
+      <div className="container mx-auto p-8 bg-gray-800 shadow-lg rounded-lg text-gray-100">
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 text-white text-center">
           Terms of Service
         </h1>
@@ -11,7 +11,7 @@ const TermsPage: React.FC = () => {
           {`Welcome to StocksPlan.com! These Terms of Service ("Terms") govern your use of StocksPlan.com (the "Service"), provided by STOCKSPLAN.COM. By accessing or using the Service, you agree to be bound by these Terms. If you do not agree to these Terms, please do not use the Service.`}
         </p>
 
-        <div className="space-y-8">
+        <div className="flex flex-col">
           <Section
             title="1. Use of the Service"
             content={[
