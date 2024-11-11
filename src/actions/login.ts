@@ -13,7 +13,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
     return { error: "Invalid fields!" }
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const data = validatedFields.data
 

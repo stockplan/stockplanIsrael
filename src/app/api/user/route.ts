@@ -8,7 +8,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: Request) {
   try {
-    const supabase = createAdminClient()
+    const supabase = await createAdminClient()
 
     const {
       data: { users },
@@ -108,7 +108,7 @@ export async function DELETE(req: NextRequest) {
       PositionModel.deleteMany({ _id: { $in: positionIds } }),
     ])
 
-    const supabase = createAdminClient()
+    const supabase = await createAdminClient()
     const res = await supabase.auth.admin.deleteUser(id)
 
     return NextResponse.json({ success: true, data: res.data })

@@ -10,17 +10,19 @@ import React from "react";
 import MobileOrDesktopLayout from "@/components/shared/MobileOrDesktopLayout";
 
 interface CalcPageProps {
-  params: { type: string };
+  params: Promise<{ type: string }>;
 }
 
 const TablePage = async ({ params }: CalcPageProps) => {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { user, error } = await getUser(supabase);
 
   if (error && user) return redirect("/home");
 
-  switch (params.type) {
+  const { type } = await params;
+
+  switch (type) {
     case "lossprofit":
       const creator = user?.id || "";
 
@@ -36,7 +38,7 @@ const TablePage = async ({ params }: CalcPageProps) => {
         />
       );
     default:
-      return <div className="CalcPage">Table now found {params.type}</div>;
+      return <div className="CalcPage">Table now found {type}</div>;
   }
 };
 

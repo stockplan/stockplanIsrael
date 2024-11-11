@@ -6,7 +6,7 @@ import { headers } from "next/headers"
 import * as z from "zod"
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
-  const origin = headers().get("origin")
+  const origin = (await headers()).get("origin")
   const validatedFields = RegisterSchema.safeParse(values)
 
   if (!validatedFields.success) {
@@ -14,7 +14,7 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
   }
 
   try {
-    const supabase = createClient()
+    const supabase = await createClient()
 
     const { email, password } = validatedFields.data
 

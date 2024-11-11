@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 export async function signout() {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { error } = await supabase.auth.signOut()
 
@@ -13,6 +13,6 @@ export async function signout() {
     redirect("/error")
   }
 
-  revalidatePath("/home", "page")
+  // revalidatePath("/home", "page")
   redirect("/home")
 }

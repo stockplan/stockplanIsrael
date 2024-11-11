@@ -27,14 +27,14 @@ export async function sendEmailToAdmin(
     description,
   }
 
-  const supabase = createClient()
+  const supabase = await createClient()
   const { error } = await supabase.from("contacts").insert(toInsetContact)
   if (error) throw error
   return { success: true }
 }
 
 export async function getUsers() {
-  const supabase = createAdminClient()
+  const supabase = await createAdminClient()
 
   const {
     data: { users },

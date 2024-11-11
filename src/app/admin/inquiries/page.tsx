@@ -3,7 +3,7 @@ import { getContactMessages } from "@/utils/supabase-helpers/queries"
 import React from "react"
 
 const AdminInquiriesPage = async () => {
-  const supabase = createClient()
+  const supabase = await createClient()
   const messages = (await getContactMessages(supabase)) || []
 
   return (

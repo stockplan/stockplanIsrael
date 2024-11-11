@@ -1,8 +1,5 @@
 import connectMongo from "@/lib/db"
-import { createClient } from "@/lib/supabase/server"
-import { checkAdmin } from "@/lib/utils"
 import PositionModel from "@/models/Position"
-import { getUser } from "@/utils/supabase-helpers/queries"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {

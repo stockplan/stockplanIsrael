@@ -9,7 +9,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createClient()
+  const supabase = await createClient()
   const [{ user, error }, userDetails] = await Promise.all([
     getUser(supabase),
     getUserDetails(supabase),

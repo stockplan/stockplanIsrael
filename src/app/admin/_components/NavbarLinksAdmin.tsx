@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { UserContext } from "@/contexts/layout"
 import { useSidebarToggle } from "@/hooks/use-sidebar-toggle"
+import Link from "next/link"
 import React, { useContext } from "react"
 import { FiAlignJustify } from "react-icons/fi"
 import {
@@ -42,21 +43,21 @@ export default function HeaderLinks(props: { [x: string]: any }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56 p-2">
-          <a target="blank" href="#" className="w-full">
+          <Link target="blank" href="#" className="w-full">
             <Button variant="outline" className="mb-2 w-full">
               Pricing
             </Button>
-          </a>
-          <a target="blank" href="mailto:hello@horizon-ui.com">
+          </Link>
+          <Link target="blank" href="mailto:hello@horizon-ui.com">
             <Button variant="outline" className="mb-2 w-full">
               Help & Support
             </Button>
-          </a>
-          <a target="blank" href="/#faqs">
+          </Link>
+          <Link target="blank" href="/#faqs">
             <Button variant="outline" className="w-full">
               FAQs & More
             </Button>
-          </a>
+          </Link>
         </DropdownMenuContent>
       </DropdownMenu>
       <form action={signout}>
@@ -68,7 +69,7 @@ export default function HeaderLinks(props: { [x: string]: any }) {
         </Button>
       </form>
 
-      <a className="w-full" href="#">
+      <Link className="w-full" href="#">
         <Avatar className="h-9 min-w-9 md:min-h-10 md:min-w-10">
           <AvatarImage src={user?.user_metadata.avatar_url} />
           <AvatarFallback className="font-bold">
@@ -77,7 +78,7 @@ export default function HeaderLinks(props: { [x: string]: any }) {
               : `${user?.email![0].toUpperCase()}`}
           </AvatarFallback>
         </Avatar>
-      </a>
+      </Link>
     </div>
   )
 }
