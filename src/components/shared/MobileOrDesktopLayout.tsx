@@ -20,7 +20,6 @@ const MobileOrDesktopLayout: React.FC<MobileOrDesktopLayoutProps> = ({
 
   return isMobile ? (
     <MobileLossprofitLayout
-      columns={columns}
       creator={creator}
       serverUserStocks={serverUserStocks}
     />
