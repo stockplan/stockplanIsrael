@@ -1,53 +1,57 @@
+import { Position } from "@/types"
 import { getURL } from "./helpers"
-
-export async function fetchStockPrice(ticker: string): Promise<{
-  ticker: string
-  price: number
-}> {
-  if (!ticker) return { ticker: "", price: 0 }
-  const apiKey = process.env.API_KEY
-  const API_URL = `https://finnhub.io/api/v1/quote?symbol=${ticker}&token=${apiKey}`
-  try {
-    const response = await fetch(API_URL)
-    if (!response.ok) {
-      return { ticker: "", price: 0 }
-    }
-    const data = await response.json()
-    if (!data.c) {
-      throw new Error("No price available")
-    }
-    return { ticker, price: data.c }
-  } catch (error) {
-    console.error(`Failed to fetch stock price for ${ticker}: ${error}`)
-    return { ticker: "", price: 0 }
-  }
-}
+import axios from "axios"
 
 export async function getInitialData(userId: string) {
   try {
     const redirectUrl = getURL(`/api/users/${userId}`)
-    const response = await fetch(redirectUrl)
-    if (!response.ok) {
-      console.error(`Error: ${response.statusText}`)
-      return []
-    }
-
-    const contentType = response.headers.get("content-type")
-    if (!contentType || !contentType.includes("application/json")) {
-      console.error("Expected JSON response but got:", contentType)
-      const text = await response.text()
-      console.error("Response body:", text)
-      return []
-    }
-
-    const stocks = await response.json()
-    return stocks
+    const response = await axios.get(redirectUrl)
+    return Array.isArray(response.data) ? response.data : []
   } catch (error) {
     console.error("Error fetching initial data:", error)
     return []
   }
 }
 
-export function hasDataChanged(arr1: unknown[], arr2: unknown[]) {
+export function hasDataChanged1(arr1: Position[], arr2: Position[]) {
   return JSON.stringify(arr1) === JSON.stringify(arr2)
+}
+
+//prettier-ignore
+export function hasDataChanged(arr1: Position[], arr2: Position[]): boolean {
+  // Check if both arrays have the same length
+  if (arr1.length !== arr2.length) {
+    return false;
+  }
+
+  // Iterate through each element in the arrays
+  for (let i = 0; i < arr1.length; i++) {
+    const obj1 = arr1[i];
+    const obj2 = arr2[i];
+
+    // Extract keys without 'actualPrice', '_id', and 'id' for comparison
+    const keys1 = Object.keys(obj1).filter(
+      (key) => key !== "actualPrice" && key !== "_id" && key !== "id"
+    ) as (keyof Position)[]; // casting keys to keyof Position
+    const keys2 = Object.keys(obj2).filter(
+      (key) => key !== "actualPrice" && key !== "_id" && key !== "id"
+    ) as (keyof Position)[];
+
+    // Check if both objects have the same keys (excluding 'actualPrice', '_id', 'id')
+    if (
+      keys1.length !== keys2.length ||
+      !keys1.every((key) => keys2.includes(key))
+    ) {
+      return false;
+    }
+
+    // Compare each key-value pair, ignoring 'actualPrice'
+    for (const key of keys1) {
+      if (obj1[key] !== obj2[key]) {
+        return false;
+      }
+    }
+  }
+
+  return true;
 }

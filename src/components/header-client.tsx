@@ -1,36 +1,17 @@
 // HeaderClient.tsx
 "use client"
 
-import React, { useState } from "react"
-import dynamic from "next/dynamic"
+import { useState } from "react"
 import { User } from "@supabase/supabase-js"
-import { useRouter } from "next/navigation"
-import { IoIosMenu } from "react-icons/io"
-import { FaMailchimp, FaUser } from "react-icons/fa"
-import { VscArrowRight, VscSignOut } from "react-icons/vsc"
-import { signout } from "@/actions/logout"
+import { VscArrowRight } from "react-icons/vsc"
 import { cn } from "@/lib/utils"
 import LogoutBtn from "./auth/LogoutBtn"
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-  DropdownMenuShortcut,
-  DropdownMenuGroup,
-} from "./ui/dropdown-menu"
-
-// import AuthModal from "./auth/auth-modal"
 import { Button } from "./ui/button"
-import { MdContactSupport } from "react-icons/md"
 import Logo from "./logo"
-
-const ContactFormModal = dynamic(() => import("./modals/contact-form"), {
-  ssr: false,
-})
-const AuthModal = dynamic(() => import("./auth/auth-modal"), { ssr: false })
+import ContactFormDialog from "./modals/contact-dialog"
+import HeaderNavMobile from "./header-nav-mobile"
+import LoginFormDialog from "./modals/login-dialog"
+import Form from "next/form"
 
 interface HeaderClientProps {
   user: User | null
@@ -42,39 +23,31 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user, isAdmin }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const [inputValue, setInputValue] = useState("")
 
-  const router = useRouter()
-
-  const handleLogout = async () => {
-    await signout()
-  }
-
   const handleAuthModalOpen = () => {
     setIsAuthModalOpen(true)
   }
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (/^[a-zA-Z]*$/.test(e.target.value)) {
+      setInputValue(e.target.value.toUpperCase())
+    }
+  }
   return (
     <header className={cn(`bg-header shadow-lg py-2`)} id="header-main">
       <div className="flex items-center justify-between mx-5">
         <Logo className="cursor-pointer h-auto" isNavigate />
 
         {!user && (
-          <form
-            className="hidden md:flex items-center w-1/3 bg-white py-1 px-2 lg:mt-0 rounded-sm mr-4 self-stretch"
-            onSubmit={(e) => {
-              e.preventDefault()
-              if (inputValue) {
-                router.push(
-                  `/home/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
-                )
-                setInputValue("")
-              }
-            }}
+          <Form
+            onSubmit={() => setInputValue("")}
+            className="flex items-center rounded-full w-full md:w-1/3 mx-2 bg-white py-1 px-2 lg:mt-0 md:rounded-sm self-stretch"
+            action={`/home/calculator/lossprofit`}
           >
             <input
               name="ticker"
               type="text"
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              onChange={handleChange}
               className="w-full text-sm bg-transparent border-none focus:outline-none pl-2"
               placeholder="Enter a symbol (for example: AAPL)"
             />
@@ -86,7 +59,7 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user, isAdmin }) => {
                 <VscArrowRight />
               </button>
             )}
-          </form>
+          </Form>
         )}
 
         <div className="hidden md:flex items-center">
@@ -101,13 +74,14 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user, isAdmin }) => {
               </Button>
               <LogoutBtn />
               {isAdmin && (
-                <Button
-                  variant="ghost"
-                  className=" text-white bg-green-700 ml-4 px-4 py-2 rounded"
-                  onClick={() => router.push("/admin")}
-                >
-                  Manager
-                </Button>
+                <Form action="/admin">
+                  <Button
+                    variant="ghost"
+                    className=" text-white bg-green-700 ml-4 px-4 py-2 rounded"
+                  >
+                    Manager
+                  </Button>
+                </Form>
               )}
             </>
           ) : (
@@ -121,90 +95,18 @@ const HeaderClient: React.FC<HeaderClientProps> = ({ user, isAdmin }) => {
           )}
         </div>
 
-        <div className={cn("md:hidden flex space-x-2", user ?? "w-full")}>
-          {!user && (
-            <form
-              className="flex flex-1 bg-white px-2 rounded-full mx-3 "
-              onSubmit={(e) => {
-                e.preventDefault()
-                if (inputValue) {
-                  router.push(
-                    `/home/calculator/lossprofit?ticker=${inputValue.toUpperCase()}`
-                  )
-                  setInputValue("")
-                }
-              }}
-            >
-              <input
-                name="ticker"
-                type="text"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                className="w-full text-xs bg-transparent border-none focus:outline-none pl-2"
-                placeholder="Enter a symbol (for example: AAPL)"
-              />
-              {inputValue && (
-                <button
-                  type="submit"
-                  className="bg-transparent pr-2 cursor-pointer"
-                >
-                  <VscArrowRight />
-                </button>
-              )}
-            </form>
-          )}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="bg-inherit text-white border-none flex-shrink-0">
-                <IoIosMenu className="w-8 h-8" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuLabel>Plan Your Trade</DropdownMenuLabel>
-              <DropdownMenuSeparator className="bg-gray-700" />
-              <DropdownMenuGroup>
-                {!user ? (
-                  <DropdownMenuItem
-                    onClick={handleAuthModalOpen}
-                    className="cursor-pointer"
-                  >
-                    <span>Log in</span>
-                    <DropdownMenuShortcut>
-                      <FaUser className="h-5 w-5" />
-                    </DropdownMenuShortcut>
-                  </DropdownMenuItem>
-                ) : (
-                  <>
-                    <DropdownMenuItem
-                      onClick={() => setIsContactFormOpen(true)}
-                      className="cursor-pointer"
-                    >
-                      <span>Contact</span>
-                      <DropdownMenuShortcut>
-                        <MdContactSupport className="h-5 w-5" />
-                      </DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleLogout}>
-                      <span>Logout</span>
-                      <DropdownMenuShortcut>
-                        <VscSignOut className="h-5 w-5" />
-                      </DropdownMenuShortcut>
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+        <HeaderNavMobile user={user!} />
       </div>
 
-      <ContactFormModal
+      <ContactFormDialog
         isOpen={isContactFormOpen}
         onClose={() => setIsContactFormOpen(false)}
       />
 
-      <AuthModal open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
+      <LoginFormDialog
+        open={isAuthModalOpen}
+        onOpenChange={setIsAuthModalOpen}
+      />
     </header>
   )
 }

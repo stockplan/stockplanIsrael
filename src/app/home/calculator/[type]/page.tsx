@@ -1,5 +1,4 @@
 import LandscapePopUp from "@/components/LandscapePopUp"
-import { columns } from "@/app/home/calculator/_components/columns"
 import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit"
 import { createClient } from "@/lib/supabase/server"
 import { getEmptyRow } from "@/lib/utils"
@@ -10,28 +9,30 @@ import React from "react"
 
 interface CalcPageProps {
   params: Promise<{ type: string }>
+  searchParams: Promise<{ [key: string]: string | undefined }>
 }
 
-const TablePage = async ({ params }: CalcPageProps) => {
+const TablePage = async ({ params, searchParams }: CalcPageProps) => {
   const supabase = await createClient()
 
   const { user, error } = await getUser(supabase)
 
   if (error && user) return redirect("/home")
 
+  const { ticker } = await searchParams
+
   const { type } = await params
+
+  const creator = user?.id || ""
 
   switch (type) {
     case "lossprofit":
-      const creator = user?.id || ""
-
       const serverUserStocks = creator
         ? await getInitialData(creator)
-        : [getEmptyRow("")]
+        : [getEmptyRow(creator, ticker)]
 
       return (
         <TableLossProfit
-          columns={columns}
           creator={creator}
           serverUserStocks={serverUserStocks}
         />

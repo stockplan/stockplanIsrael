@@ -14,9 +14,5 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
   tooltipMsg,
 }: DataTableColumnHeaderProps<TData, TValue>) {
-  return (
-    <TooltipContainer msg={tooltipMsg!}>
-      <div className={cn(className)}>{title}</div>
-    </TooltipContainer>
-  )
+  return <TooltipContainer msg={tooltipMsg!}>{title}</TooltipContainer>
 }

@@ -8,9 +8,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function getEmptyRow(creator: string = "") {
+export function getEmptyRow(creator: string = "", ticker: string = "") {
   return {
-    ticker: "",
+    ticker,
     positionType: "buy",
     quantity: 0,
     actualPrice: 0,

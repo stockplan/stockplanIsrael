@@ -1,65 +1,13 @@
-"use client"
-
-import React, { useTransition } from "react"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import { Button } from "../ui/button"
-import { cn } from "@/lib/utils"
-import {
-  Dialog as BaseDialog,
-  DialogContent as BaseDialogContent,
-  DialogDescription as BaseDialogDescription,
-  DialogHeader as BaseDialogHeader,
-  DialogTitle as BaseDialogTitle,
-} from "../ui/dialog"
-import {
-  Drawer as BaseDrawer,
-  DrawerContent as BaseDrawerContent,
-  DrawerDescription as BaseDrawerDescription,
-  DrawerHeader as BaseDrawerHeader,
-  DrawerTitle as BaseDrawerTitle,
-} from "../ui/drawer"
-import { sendEmailToAdmin } from "@/actions/admin"
 import { useForm } from "react-hook-form"
-import { ContactMessageSchema } from "@/schemas"
+import { Button } from "../ui/button"
+import { Label } from "../ui/label"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { ContactMessageSchema } from "@/schemas"
+import { useTransition } from "react"
+import { sendEmailToAdmin } from "@/actions/admin"
 import { z } from "zod"
-import { useMediaQuery } from "usehooks-ts"
-
-interface ContactFormModalProp {
-  isOpen: boolean
-  onClose: () => void
-}
-
-const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  const isDesktop = useMediaQuery("(min-width: 768px)")
-
-  const ModalComponent = isDesktop ? BaseDialog : BaseDrawer
-  const ContentComponent = isDesktop ? BaseDialogContent : BaseDrawerContent
-  const HeaderComponent = isDesktop ? BaseDialogHeader : BaseDrawerHeader
-  const TitleComponent = isDesktop ? BaseDialogTitle : BaseDrawerTitle
-  const DescriptionComponent = isDesktop
-    ? BaseDialogDescription
-    : BaseDrawerDescription
-
-  return (
-    <ModalComponent open={isOpen} onOpenChange={onClose}>
-      <ContentComponent className="sm:max-w-[425px] text-gray-700">
-        <HeaderComponent>
-          <TitleComponent className="text-center text-lg sm:text-xl text-gray-700">
-            Contact us
-          </TitleComponent>
-          <DescriptionComponent className="text-center text-sm sm:text-base mt-2 text-gray-700">
-            For any matter, please feel free to contact us.
-          </DescriptionComponent>
-        </HeaderComponent>
-        <ContactForm onSubmitSuccess={onClose} />
-      </ContentComponent>
-    </ModalComponent>
-  )
-}
-
-export default ContactFormModal
+import { cn } from "@/lib/utils"
+import { Input } from "../ui/input"
 
 const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   const form = useForm<z.infer<typeof ContactMessageSchema>>({
@@ -180,3 +128,5 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
     </form>
   )
 }
+
+export default ContactForm

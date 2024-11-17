@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import {
   ColumnDef,
   flexRender,
@@ -29,14 +29,11 @@ import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
 import { useToast } from "@/components/ui/use-toast"
 import { ToastAction } from "@/components/ui/toast"
 import { hasDataChanged } from "@/utils"
-import { AlertDialog, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
 import ConfirmationModal from "@/components/modals/ConfirmationModal"
-import { BsTrashFill } from "react-icons/bs"
+import Logo from "@/components/logo"
+import { columns } from "./columns"
 
-interface DataTableProps {
-  columns: ColumnDef<Position>[]
+interface Props {
   creator: string
   serverUserStocks: Position[] | []
 }
@@ -45,13 +42,9 @@ interface ColumnUpdate {
   [columnId: string]: number | string
 }
 
-const AUTO_SAVE_DELAY = 10000 * 5
+const AUTO_SAVE_DELAY = 1000
 
-export function TableLossProfit({
-  columns,
-  creator,
-  serverUserStocks,
-}: DataTableProps) {
+export function TableLossProfit({ creator, serverUserStocks }: Props) {
   const [tableData, setTableData] = useState<Position[]>(serverUserStocks)
   const originalDataRef = useRef<Position[]>(serverUserStocks)
   const [isLoading, setIsLoading] = useState(false)
@@ -59,18 +52,9 @@ export function TableLossProfit({
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
   const { toast } = useToast()
 
-  const searchParams = useSearchParams()
-  const ticker = searchParams.get("ticker")
-
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
   useWarnIfUnsavedChanges(unsavedChanges, !!creator)
-
-  useEffect(() => {
-    const dataHasChanged = !hasDataChanged(tableData, originalDataRef.current)
-
-    setUnsavedChanges(dataHasChanged)
-  }, [tableData])
 
   useEffect(() => {
     const autoSaveTimer = setTimeout(() => {
@@ -81,16 +65,6 @@ export function TableLossProfit({
 
     return () => clearTimeout(autoSaveTimer)
   }, [tableData, unsavedChanges])
-
-  useEffect(() => {
-    if (!creator) {
-      const emptyRow = getEmptyRow()
-      if (ticker) {
-        emptyRow.ticker = ticker
-      }
-      setTableData([emptyRow])
-    }
-  }, [creator, ticker])
 
   const saveChanges = async (changes: Position[]) => {
     if (hasDataChanged(changes, originalDataRef.current)) {
@@ -129,13 +103,13 @@ export function TableLossProfit({
         setTableData([getEmptyRow()])
         return
       }
-      const currentPageIndex = table.getState().pagination.pageIndex
-      const pageSize = table.getState().pagination.pageSize
-      const rowCountOnCurrentPage = tableData.length % pageSize
+      // const currentPageIndex = table.getState().pagination.pageIndex
+      // const pageSize = table.getState().pagination.pageSize
+      // const rowCountOnCurrentPage = tableData.length % pageSize
 
-      if (rowCountOnCurrentPage === 1 && currentPageIndex > 0) {
-        table.setPageIndex(currentPageIndex - 1)
-      }
+      // if (rowCountOnCurrentPage === 1 && currentPageIndex > 0) {
+      //   table.setPageIndex(currentPageIndex - 1)
+      // }
 
       const updatedRows = tableData.filter((_, index) => index !== rowIndex)
       // const rowToDelete = tableData[rowIndex]
@@ -230,18 +204,18 @@ export function TableLossProfit({
     const lastRow = tableData[tableData.length - 1]
     if (!validateNewRow(lastRow)) return table.lastPage()
 
-    const { pageSize, pageIndex } = table.getState().pagination
+    // const { pageSize, pageIndex } = table.getState().pagination
 
-    if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
-      table.nextPage()
-    }
+    // if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
+    //   table.nextPage()
+    // }
 
     const updatedRows = [...tableData, getEmptyRow(creator)]
     setTableData(updatedRows)
-    // setUnsavedChanges(true)
+    setUnsavedChanges(true)
   }
 
-  const handleDeleteAll = () => {
+  const handleDeleteAll = async () => {
     const emptyTable = [getEmptyRow(creator)]
     setTableData(emptyTable)
     table.setPageIndex(0)
@@ -262,97 +236,66 @@ export function TableLossProfit({
   })
 
   return (
-    <div className="pt-8 absolute z-10 w-full">
+    <div className="py-8 px-2 relative z-10 w-full bg-background-main rounded-sm">
       <div className="space-y-2 text-white bg-[#2D3131] p-3">
-        <div className="flex items-center justify-between ">
-          <h3
-            className="flex-1 text-left text-sm"
-            onClick={() => console.log(tableData)}
-          >
+        <div className="flex items-center justify-between">
+          <h3 className="flex-1 text-sm" onClick={() => console.log(tableData)}>
             Quick Profit / Loss Calculator
           </h3>
 
           <div
             className={cn(
               "flex-1 flex justify-center",
-              !creator && " justify-start lg:mr-[173px] ml-auto"
+              !creator && "justify-start lg:mr-[173px] ml-auto"
             )}
           >
-            <Image
-              alt="logo"
-              src="\img\Logo.svg"
-              width={200}
-              height={42}
-              className="h-auto w-auto"
-              priority
-            />
+            <Logo isNavigate={false} />
           </div>
 
           <div className={cn("flex-1 flex justify-end", !creator && "hidden")}>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button className="text-white text-sm bg-background-main">
-                  <BsTrashFill className="mr-2 h-4 w-4" />
-                  Delete All
-                </Button>
-              </AlertDialogTrigger>
-              <ConfirmationModal handleDeleteAll={handleDeleteAll} />
-            </AlertDialog>
+            <ConfirmationModal handleDeleteAll={handleDeleteAll} />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="rounded-md border min-w-full">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="hover:bg-inherit">
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead
-                          key={header.id}
-                          colSpan={header.colSpan}
-                          className="text-white text-sm h-12 text-center font-bold "
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </TableHead>
-                      )
-                    })}
-                  </TableRow>
+        <Table className="border">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    colSpan={header.colSpan}
+                    className="text-white text-sm text-center font-bold"
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                  </TableHead>
                 ))}
-              </TableHeader>
-              <TableBody id="TABLE_BODY">
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      className="hover:bg-inherit"
-                      id={"row_" + row.id}
-                      key={row.id}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          id={cell.id}
-                          className="h-14 text-sm text-center px-2"
-                          key={cell.id}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <EmptyRow />
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
+              </TableRow>
+            ))}
+          </TableHeader>
+
+          <TableBody id="TABLE_BODY">
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow id={"row_" + row.id} key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell id={cell.id} key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <EmptyRow />
+            )}
+          </TableBody>
+        </Table>
 
         <DataTablePagination
           creator={creator}
@@ -361,7 +304,6 @@ export function TableLossProfit({
           isLoading={isLoading}
           unsavedChanges={unsavedChanges}
           handleAddNewTicker={addNewRow}
-          table={table}
         />
 
         <Separator />

@@ -2,6 +2,7 @@ import connectMongo from "@/lib/db"
 import { createClient } from "@/lib/supabase/server"
 import PositionModel, { IPosition } from "@/models/Position"
 import UserModel from "@/models/User"
+import { Position } from "@/types"
 import { getUser } from "@/utils/supabase-helpers/queries"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -22,8 +23,9 @@ export async function POST(req: NextRequest) {
     await connectMongo()
     // Fetch existing positions to identify which ones need updates or deletions
     const existingPositions = await PositionModel.find({ creator: user.id })
+
     const existingIds = new Set(
-      existingPositions.map((pos: any) => pos._id.toString())
+      existingPositions.map((pos: Position) => pos._id!.toString())
     )
 
     // Track IDs for bulk operations using 'any' type for simplicity
@@ -33,14 +35,14 @@ export async function POST(req: NextRequest) {
 
     // Prepare operations for each change
     changes.forEach((change) => {
-      if (change._id && existingIds.has(change._id)) {
+      if (change._id && existingIds.has(change._id.toString())) {
         updateOps.push({
           updateOne: {
             filter: { _id: change._id, creator: user.id },
             update: { $set: change },
           },
         })
-        existingIds.delete(change._id)
+        existingIds.delete(change._id.toString())
       } else if (!change._id) {
         change.creator = user.id
         insertOps.push({

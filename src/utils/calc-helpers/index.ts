@@ -104,13 +104,13 @@ export function calculateExitPriceFromProfitPercent(
 
   if (expectedProfit === 0 || quantity === 0) return askPrice
   // let exitPrice = expectedProfit / quantity + askPrice
-  let exitPrice = 0
-  if (positionType === "buy") {
-    exitPrice = expectedProfit / quantity + askPrice
-  } else if (positionType === "sell") {
-    const profitPerUnit = expectedProfit / quantity
-    exitPrice = askPrice * (1 - profitPerUnit / askPrice)
-  }
+  let exitPrice = expectedProfit / quantity + askPrice
+  // if (positionType === "buy") {
+  //   exitPrice = expectedProfit / quantity + askPrice
+  // } else if (positionType === "sell") {
+  //   const profitPerUnit = expectedProfit / quantity
+  //   exitPrice = askPrice * (1 - profitPerUnit / askPrice)
+  // }
 
   return safeNumber(exitPrice)
 }
@@ -156,4 +156,21 @@ export function compareNumbers(num1: number, num2: number): boolean {
 
   // Comparing the formatted values
   return formattedNum1 === formattedNum2
+}
+
+export function extractNegationAndNumber(value: val) {
+  const NEGATION_FORMAT_REGEX = /^\((.*)\)$/
+  let hasNegation = false
+  if (typeof value === "number") {
+    hasNegation = value < 0
+    value = hasNegation ? value * -1 : value
+  } else if (value?.[0] === "-") {
+    hasNegation = true
+    value = value.substring(1)
+  } else if (value?.match(NEGATION_FORMAT_REGEX)) {
+    hasNegation = true
+    value = value.replace(NEGATION_FORMAT_REGEX, "$1")
+  }
+
+  return { hasNegation, value } as { hasNegation: boolean; value: number }
 }
