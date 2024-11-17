@@ -7,9 +7,9 @@ import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
-const title = "Plan Your Trade - Stock Market Tools for Traders"
+const title = "StocksPlan.com - QA"
 const description =
-  "Plan Your Trade offers a suite of calculators and tools designed for traders in the US stock market to pre-plan their trading strategies. This website enables users to estimate potential profits and losses by utilizing various financial calculators, providing a comprehensive approach to stock market trading."
+  "Stocksplan.com offers a suite of calculators and tools designed for traders in the US stock market to pre-plan their trading strategies. This website enables users to estimate potential profits and losses by utilizing various financial calculators, providing a comprehensive approach to stock market trading. Unlock Your Trading Potential with Smart Planning, Strategic Insights, and Comprehensive Market Strategies for Success."
 
 export const metadata: Metadata = {
   metadataBase: new URL(getURL()),
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   description,
   openGraph: {
     title: title,
-    description: description,
+    description,
   },
 }
 

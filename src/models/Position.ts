@@ -34,10 +34,6 @@ const PositionSchema = new Schema<IPosition>(
   },
   {
     timestamps: true,
-    toJSON: {
-      versionKey: false,
-      virtuals: true,
-    },
   }
 )
 

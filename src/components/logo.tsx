@@ -31,6 +31,7 @@ const Logo: React.FC<LogoProps> = ({ className, isNavigate }) => {
         alt="logo"
         height={32}
         width={32}
+        quality={100}
         style={{ width: "32px", height: "auto" }}
         priority
       />

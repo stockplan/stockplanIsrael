@@ -17,6 +17,7 @@ import {
   calculateExpectedProfit,
   calculateExpectedProfitPercent,
   calculateStopLossFromLossPercent,
+  extractNegationAndNumber,
   formatFractionDigits,
 } from "@/utils/calc-helpers";
 import { ColumnNames, Position } from "@/types";
@@ -67,7 +68,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <Input
-          className="w-24"
+          className="w-24 text-xs!"
           type="text"
           value={localTicker}
           onChange={handleChange}
@@ -120,9 +121,9 @@ export const columns: ColumnDef<Position>[] = [
       }
 
       return (
-        <div className="flex gap-2 w-28 items-center justify-center">
+        <div className="flex gap-2 w-24 items-center justify-center">
           <button
-            className={`px-2 py-1 rounded text-white ${
+            className={`px-2 py-1 rounded text-white text-xs ${
               positionType === "buy" ? "bg-green-500" : "bg-gray-400"
             }`}
             onClick={() => handlePositionTypeChange("buy")}
@@ -130,7 +131,7 @@ export const columns: ColumnDef<Position>[] = [
             Buy
           </button>
           <button
-            className={`px-2 py-1 rounded text-white ${
+            className={`px-2 py-1 rounded text-white text-xs ${
               positionType === "sell" ? "bg-red-500" : "bg-gray-400"
             }`}
             onClick={() => handlePositionTypeChange("sell")}
@@ -184,7 +185,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <CurrencyInput
-          className="flex w-24 h-9  border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
+          className=" w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           name="quantity"
           id={`quantity-${row.index}`}
           value={quantity}
@@ -242,7 +243,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <CurrencyInput
-          className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
+          className=" w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           id={`askPrice-${row.index}`}
           name="askPrice"
           value={askPrice}
@@ -269,7 +270,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegative={false}
           decimalScale={2}
           displayType="text"
-          className="text-center w-24 block"
+          className="text-center w-24 block text-xs"
           thousandSeparator
         />
       );
@@ -314,7 +315,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <CurrencyInput
-          className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
+          className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           id={`exitPrice-${row.index}`}
           value={exitPrice}
           onValueChange={(value?: string) => setExitPrice(value || "0")}
@@ -339,10 +340,11 @@ export const columns: ColumnDef<Position>[] = [
       const [expectedProfit, setExpectedProfit] = useState(initialValue);
 
       useEffect(() => {
-        if (initialValue < 0) {
+        let num = extractNegationAndNumber(initialValue);
+        if (num.hasNegation) {
           setExpectedProfit(0);
         } else {
-          setExpectedProfit(+initialValue.toFixed(2));
+          setExpectedProfit(initialValue);
         }
       }, [initialValue]);
 
@@ -353,7 +355,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegative={false}
           decimalScale={2}
           displayType="text"
-          className="text-center w-24 text-green-500 block"
+          className="text-center w-24 text-green-500 block text-xs "
           thousandSeparator
         />
       );
@@ -368,39 +370,55 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as string;
+      const initialValue = row.getValue(column.id) as string | number;
       const quantity = row.getValue(ColumnNames.Quantity) as number;
       const askPrice = row.getValue(ColumnNames.AskPrice) as number;
       const cost = row.getValue(ColumnNames.Cost) as number;
       const positionType = row.getValue(ColumnNames.PositionType) as string;
 
       const updateData = table.options.meta?.updateData;
-      const [profitPercent, setProfitPercent] = useState<string>(initialValue);
+      const [profitPercent, setProfitPercent] = useState(initialValue);
 
       useEffect(() => {
-        if (+initialValue < 0) {
-          setProfitPercent("0");
+        let num = extractNegationAndNumber(initialValue);
+        if (num.hasNegation) {
+          setProfitPercent(0);
         } else {
           setProfitPercent(initialValue);
         }
       }, [initialValue]);
 
       //prettier-ignore
-      const handleBlur = () => {
-        if (+initialValue < 0 && +profitPercent === 0) {
-          setProfitPercent("0")
-          return
-        }
-        if (initialValue=== profitPercent || formatFractionDigits(+initialValue) === profitPercent) return
+      const handleBlur = (currValue:string) => {
+        currValue = currValue.replace("%", '')
+        if (+currValue === +profitPercent) return
+
+
         
-        const newExpectedProfit = (+profitPercent * cost) / 100
-        const newExitPrice = calculateExitPriceFromProfitPercent(positionType, askPrice, newExpectedProfit, quantity)
+        let profitPercentValue = Number(profitPercent)
+        let expectedProfit = profitPercentValue * cost / 100
+        let exitPrice = calculateExitPriceFromProfitPercent(positionType,askPrice,expectedProfit,quantity)
 
         updateData?.(row.index, {
           [column.id]: +profitPercent,
-          expectedProfit: +newExpectedProfit,
-          exitPrice: +newExitPrice,
+          expectedProfit,
+          exitPrice,
         })
+
+        // if (+initialValue < 0 && +profitPercent === 0) {
+        //   setProfitPercent("0")
+        //   return
+        // }
+        // if (initialValue=== profitPercent || formatFractionDigits(+initialValue) === profitPercent) return
+        
+        // const newExpectedProfit = (+profitPercent * cost) / 100
+        // const newExitPrice = calculateExitPriceFromProfitPercent(positionType, askPrice, newExpectedProfit, quantity)
+
+        // updateData?.(row.index, {
+        //   [column.id]: +profitPercent,
+        //   expectedProfit: +newExpectedProfit,
+        //   exitPrice: +newExitPrice,
+        // })
       }
 
       return (
@@ -408,12 +426,12 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           decimalsLimit={2}
           suffix="%"
-          className="flex h-9 w-24 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm  text-green-500"
+          className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-green-500"
           value={profitPercent}
           onValueChange={(value, name, values) => {
             setProfitPercent(value || "0");
           }}
-          onBlur={handleBlur}
+          onBlur={(e) => handleBlur(e.target.value)}
         />
       );
     },
@@ -469,7 +487,7 @@ export const columns: ColumnDef<Position>[] = [
 
       return (
         <CurrencyInput
-          className="flex w-24 h-9 border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm"
+          className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           id={`stopLoss-${row.index}`}
           name="stopLoss"
           value={stopLoss}
@@ -497,10 +515,11 @@ export const columns: ColumnDef<Position>[] = [
       const [expectedLoss, setExpectedLoss] = useState(initialValue);
 
       useEffect(() => {
-        if (initialValue > 0) {
+        let num = extractNegationAndNumber(initialValue);
+        if (num.hasNegation) {
           setExpectedLoss(0);
         } else {
-          setExpectedLoss(+initialValue.toFixed(2));
+          setExpectedLoss(initialValue);
         }
       }, [initialValue]);
 
@@ -511,7 +530,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegative
           decimalScale={2}
           displayType="text"
-          className="text-center w-24 text-red-500 block"
+          className="text-center w-24 text-red-500 block text-xs"
           thousandSeparator
         />
       );
@@ -535,51 +554,68 @@ export const columns: ColumnDef<Position>[] = [
       const [lossPercent, setLossPercent] = useState(initialValue);
 
       useEffect(() => {
-        if (+initialValue > 0) {
+        let num = extractNegationAndNumber(initialValue);
+        if (num.hasNegation) {
           setLossPercent(0);
         } else {
           setLossPercent(initialValue);
         }
       }, [initialValue]);
 
-      const handleBlur = () => {
-        const negativeValue =
-          +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
-        const formattedVal = formatFractionDigits(+initialValue);
-
-        if (+formattedVal > 0 && negativeValue === 0) return; // is this ever going to be true?
-
-        if (+formattedVal === +negativeValue) return;
-
-        const absValue = Math.abs(+lossPercent);
-        // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
-        const newExpectedLoss = ((absValue * cost) / 100) * -1 + 0;
-
-        // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
-        let newStopLoss = calculateStopLossFromLossPercent(
-          newExpectedLoss,
-          quantity,
-          askPrice
-        );
+      //prettier-ignore
+      const handleBlur = (currValue:string) => {
+        currValue = currValue.replace("%", '')
+        if (+currValue === +lossPercent) return
+        const lossPercentValue = Number(lossPercent)
+        
+        // console.log({ initialValue, lossPercent: Number(lossPercent) })
+        let expectedLoss = (lossPercentValue * cost) / 100
+        let stopLoss = calculateStopLossFromLossPercent(expectedLoss, quantity, askPrice)
 
         updateData?.(row.index, {
-          [column.id]: +lossPercent,
-          expectedLoss: +newExpectedLoss,
-          stopLoss: newStopLoss,
-        });
-      };
+          [column.id]: lossPercentValue,
+          expectedLoss,
+          stopLoss,
+        })
+        
+
+        // const negativeValue =
+        //   +lossPercent > 0 ? +lossPercent * -1 : +lossPercent
+        // const formattedVal = formatFractionDigits(+initialValue)
+
+        // if (+formattedVal > 0 && negativeValue === 0) return
+
+        // if (+formattedVal === +negativeValue) return
+
+        // const absValue = Math.abs(+lossPercent)
+        // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
+        // const newExpectedLoss = ((absValue * cost) / 100) * -1 + 0
+
+        // // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
+        // let newStopLoss = calculateStopLossFromLossPercent(
+        //   newExpectedLoss,
+        //   quantity,
+        //   askPrice
+        // )
+
+        // updateData?.(row.index, {
+        //   [column.id]: +lossPercent,
+        //   expectedLoss: +newExpectedLoss,
+        //   stopLoss: newStopLoss,
+        // })
+      }
 
       return (
         <CurrencyInput
           decimalsLimit={2}
           allowNegativeValue={true}
           suffix="%"
-          className="flex w-24 h-9 text-center border rounded-md bg-transparent px-3 py-1 text-sm shadow-sm text-red-500"
+          className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-red-500"
           value={lossPercent}
           onValueChange={(value, name, values) => {
             setLossPercent(value || "0");
           }}
-          onBlur={handleBlur}
+          onBlur={(e) => handleBlur(e.target.value)}
         />
       );
     },

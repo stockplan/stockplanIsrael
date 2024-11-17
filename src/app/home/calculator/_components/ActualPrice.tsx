@@ -24,6 +24,7 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
       fallbackData: actualPrice,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
+      refreshInterval: 2 * 60 * 1000,
     }
   )
 
@@ -52,8 +53,10 @@ const ActualPriceCell: React.FC<CellType> = ({ row, column, table }) => {
     : 0
 
   return (
-    <div className={`px-6 w-24 text-center ${error ? "text-red-500" : ""}`}>
-      {isValidating ? (
+    <div
+      className={`px-3 text-xs w-24 text-center ${error ? "text-red-500" : ""}`}
+    >
+      {isLoading ? (
         <ClipLoader color="#ffffff" size={25} />
       ) : (
         `$${formattedPrice}`

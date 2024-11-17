@@ -1,66 +1,13 @@
-"use client";
-
-import React, { useState, useTransition } from "react";
-import { Label } from "../ui/label";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { cn } from "@/lib/utils";
-import {
-  Dialog as BaseDialog,
-  DialogContent as BaseDialogContent,
-  DialogDescription as BaseDialogDescription,
-  DialogHeader as BaseDialogHeader,
-  DialogTitle as BaseDialogTitle,
-} from "../ui/dialog";
-import {
-  Drawer as BaseDrawer,
-  DrawerContent as BaseDrawerContent,
-  DrawerDescription as BaseDrawerDescription,
-  DrawerHeader as BaseDrawerHeader,
-  DrawerTitle as BaseDrawerTitle,
-} from "../ui/drawer";
-import { sendEmailToAdmin } from "@/actions/admin";
 import { useForm } from "react-hook-form";
-import { ContactMessageSchema } from "@/schemas";
+import { Button } from "../ui/button";
+import { Label } from "../ui/label";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ContactMessageSchema } from "@/schemas";
+import { useTransition } from "react";
+import { sendEmailToAdmin } from "@/actions/admin";
 import { z } from "zod";
-import { useMediaQuery } from "usehooks-ts";
-import useIsMobile from "@/hooks/useIsMobile";
-
-interface ContactFormModalProp {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-const ContactFormModal = ({ isOpen, onClose }: ContactFormModalProp) => {
-  const isMobile = useIsMobile();
-  //in landscape mobile content need to make it widther and shorter
-  const ModalComponent = isMobile ? BaseDrawer : BaseDialog;
-  const ContentComponent = isMobile ? BaseDrawerContent : BaseDialogContent;
-  const HeaderComponent = isMobile ? BaseDrawerHeader : BaseDialogHeader;
-  const TitleComponent = isMobile ? BaseDrawerTitle : BaseDialogTitle;
-  const DescriptionComponent = isMobile
-    ? BaseDrawerDescription
-    : BaseDialogDescription;
-
-  return (
-    <ModalComponent open={isOpen} onOpenChange={onClose}>
-      <ContentComponent className="sm:max-w-[425px] text-gray-700">
-        <HeaderComponent>
-          <TitleComponent className="text-center text-lg sm:text-xl text-gray-700">
-            Contact us
-          </TitleComponent>
-          <DescriptionComponent className="text-center text-sm sm:text-base mt-2 text-gray-700">
-            For any matter, please feel free to contact us.
-          </DescriptionComponent>
-        </HeaderComponent>
-        <ContactForm onSubmitSuccess={onClose} />
-      </ContentComponent>
-    </ModalComponent>
-  );
-};
-
-export default ContactFormModal;
+import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
 
 const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   const form = useForm<z.infer<typeof ContactMessageSchema>>({
@@ -74,26 +21,6 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
   });
 
   const [isPending, startTransition] = useTransition();
-  const [emailError, setEmailError] = useState<string | null>(null);
-
-  // Filter function to check if there are non-English characters
-  const hasNonEnglishCharacters = (value: string) => {
-    const pattern = /^[A-Za-z0-9@._%+-]*$/; // Allowed characters
-    return !pattern.test(value);
-  };
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    const fieldName = name as keyof z.infer<typeof ContactMessageSchema>;
-
-    if (fieldName === "email" && hasNonEnglishCharacters(value)) {
-      setEmailError("Email must contain only English characters.");
-    } else {
-      setEmailError(null);
-    }
-
-    form.setValue(fieldName, value); // Update the value in react-hook-form
-  };
 
   const onSubmit = async (values: z.infer<typeof ContactMessageSchema>) => {
     startTransition(() => {
@@ -168,11 +95,10 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
           maxLength={30}
           required
           className="p-2 text-sm bg-white"
-          onChange={handleChange}
         />
-        {(form.formState.errors.email || emailError) && (
+        {form.formState.errors.email && (
           <p className="text-red-600 text-sm">
-            {form.formState.errors.email?.message || emailError}
+            {form.formState.errors.email.message}
           </p>
         )}
       </div>
@@ -202,3 +128,5 @@ const ContactForm = ({ onSubmitSuccess }: { onSubmitSuccess: () => void }) => {
     </form>
   );
 };
+
+export default ContactForm;
