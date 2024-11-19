@@ -389,9 +389,8 @@ export const columns: ColumnDef<Position>[] = [
       }, [initialValue])
 
       //prettier-ignore
-      const handleBlur = (currValue:string) => {
-        currValue = currValue.replace("%", '')
-        if (+currValue === +profitPercent) return
+      const handleBlur = () => {
+        if (+initialValue === +profitPercent) return
 
 
         
@@ -431,7 +430,7 @@ export const columns: ColumnDef<Position>[] = [
           onValueChange={(value, name, values) => {
             setProfitPercent(value || "0")
           }}
-          onBlur={(e) => handleBlur(e.target.value)}
+          onBlur={handleBlur}
         />
       )
     },
@@ -562,9 +561,8 @@ export const columns: ColumnDef<Position>[] = [
       }, [initialValue])
 
       //prettier-ignore
-      const handleBlur = (currValue:string) => {
-        currValue = currValue.replace("%", '')
-        if (+currValue === +lossPercent) return
+      const handleBlur = () => {
+        if (+initialValue === +lossPercent) return
         const lossPercentValue = Number(lossPercent)
         
         // console.log({ initialValue, lossPercent: Number(lossPercent) })
@@ -614,7 +612,7 @@ export const columns: ColumnDef<Position>[] = [
           onValueChange={(value, name, values) => {
             setLossPercent(value || "0")
           }}
-          onBlur={(e) => handleBlur(e.target.value)}
+          onBlur={handleBlur}
         />
       )
     },

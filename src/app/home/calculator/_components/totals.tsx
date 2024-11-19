@@ -34,12 +34,18 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
       }
     )
 
-    const totalProfitPercent = totalInvestment
+    let totalProfitPercent = totalInvestment
       ? (totalProfit / totalInvestment) * 100
       : 0
-    const totalLossPercent = totalInvestment
+    let totalLossPercent = totalInvestment
       ? (totalLoss / totalInvestment) * 100
       : 0
+
+    totalProfit = Math.max(0, totalProfit)
+    totalProfitPercent = Math.max(0, totalProfitPercent)
+
+    totalLoss = Math.min(0, totalLoss)
+    totalLossPercent = Math.min(0, totalLossPercent)
 
     const formatNumber = (value: number) => {
       const parts = value.toString().split(".")
