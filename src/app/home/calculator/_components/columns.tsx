@@ -514,7 +514,7 @@ export const columns: ColumnDef<Position>[] = [
 
       useEffect(() => {
         let num = extractNegationAndNumber(initialValue)
-        if (num.hasNegation) {
+        if (!num.hasNegation) {
           setExpectedLoss(0)
         } else {
           setExpectedLoss(initialValue)
@@ -553,7 +553,7 @@ export const columns: ColumnDef<Position>[] = [
 
       useEffect(() => {
         let num = extractNegationAndNumber(initialValue)
-        if (num.hasNegation) {
+        if (!num.hasNegation) {
           setLossPercent(0)
         } else {
           setLossPercent(initialValue)
