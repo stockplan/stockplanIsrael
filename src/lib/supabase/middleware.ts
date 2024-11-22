@@ -37,14 +37,23 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isTablePath = request.nextUrl.pathname.startsWith("/calculator")
+  const isTablePath = request.nextUrl.pathname === "/home/calculator/lossprofit"
+
   const isHomePath = request.nextUrl.pathname.startsWith("/home")
   const isAuthPath = request.nextUrl.pathname.startsWith("/auth")
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin")
   const isApiAuthRoute = request.nextUrl.pathname.startsWith("/api")
 
+  const isDesktop = request.nextUrl.search.includes("desktop")
+
   if (isApiAuthRoute) {
     return NextResponse.next()
+  }
+
+  if (!isDesktop && isTablePath) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/home/calculator/lossprofit-mobile"
+    return NextResponse.redirect(url)
   }
 
   // if (user && isHomePath) {

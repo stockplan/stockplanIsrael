@@ -1,12 +1,12 @@
-import { Position } from "@/types";
-import React from "react";
-import { Button } from "../ui/button";
+import { Position } from "@/types"
+import React from "react"
+import { Button } from "../ui/button"
 
 interface MobileAllTickers {
-  tableData: Position[];
-  selectedTicker: Position | null;
-  onTickerSelect: (ticker: Position) => void;
-  setshowAllTickers: React.Dispatch<React.SetStateAction<boolean>>;
+  tableData: Position[]
+  selectedTicker: Position | null
+  onTickerSelect: (ticker: Position) => void
+  setshowAllTickers: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const MobileAllTickers: React.FC<MobileAllTickers> = ({
@@ -46,9 +46,9 @@ const MobileAllTickers: React.FC<MobileAllTickers> = ({
       </div>
 
       <div className="flex-1 overflow-y-auto grid grid-cols-3 gap-2">
-        {tableData?.map((item) => (
+        {tableData?.map((item, index) => (
           <div
-            key={item._id}
+            key={`${item._id}-${index}`}
             className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
             style={{
               borderTopColor: item.positionType === "buy" ? "green" : "red",
@@ -71,14 +71,14 @@ const MobileAllTickers: React.FC<MobileAllTickers> = ({
       <div className="mt-4">
         <Button
           onClick={() => {
-            setshowAllTickers(false);
+            setshowAllTickers(false)
           }}
         >
           Mobile Editor Page
         </Button>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MobileAllTickers;
+export default MobileAllTickers

@@ -1,21 +1,21 @@
-"use client";
-import useIsMobile from "@/hooks/useIsMobile";
-import MobileLossprofitLayout from "@/components/mobile/MobileLossprofitLayout";
-import { ColumnDef } from "@tanstack/react-table";
-import { Position } from "@/types";
-import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit";
+import useIsMobile from "@/hooks/useIsMobile"
+import MobileLossprofitLayout from "@/components/mobile/MobileLossprofitLayout"
+import { ColumnDef } from "@tanstack/react-table"
+import { Position } from "@/types"
+import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit"
+import { useMediaQuery } from "usehooks-ts"
 // import TableLossProfitWrapper from "@/app/home/calculator/_components/table-wrapper";
 
 interface MobileOrDesktopLayoutProps {
-  creator: string;
-  serverUserStocks: Position[];
+  creator: string
+  serverUserStocks: Position[]
 }
 
 const MobileOrDesktopLayout: React.FC<MobileOrDesktopLayoutProps> = ({
   creator,
   serverUserStocks,
 }) => {
-  const isMobile = useIsMobile(); // Use the hook inside this client-side component
+  const isMobile = useMediaQuery("554px") // Use the hook inside this client-side component
 
   return isMobile ? (
     <MobileLossprofitLayout
@@ -24,7 +24,7 @@ const MobileOrDesktopLayout: React.FC<MobileOrDesktopLayoutProps> = ({
     />
   ) : (
     <TableLossProfit creator={creator} serverUserStocks={serverUserStocks} />
-  );
-};
+  )
+}
 
-export default MobileOrDesktopLayout;
+export default MobileOrDesktopLayout
