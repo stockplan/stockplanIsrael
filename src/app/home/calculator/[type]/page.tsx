@@ -6,6 +6,7 @@ import { getInitialData } from "@/utils";
 import { getUser } from "@/utils/supabase-helpers/queries";
 import { redirect } from "next/navigation";
 import React from "react";
+import MobileOrDesktopLayout from "@/components/shared/MobileOrDesktopLayout";
 
 interface CalcPageProps {
   params: Promise<{ type: string }>;
@@ -32,7 +33,7 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
         : [getEmptyRow(creator, ticker)];
 
       return (
-        <TableLossProfit
+        <MobileOrDesktopLayout
           creator={creator}
           serverUserStocks={serverUserStocks}
         />

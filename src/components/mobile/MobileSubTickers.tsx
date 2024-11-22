@@ -10,16 +10,9 @@ const MobileSubTickers: React.FC<MobileSubTickersProps> = ({
   tableData,
   onTickerSelect,
 }) => {
-  const sortedTableData = [...tableData].sort(
-    //doesnt work becuse when data is updated on any ticker it updates all tickes and dates as if all where updated.
-    (a, b) =>
-      new Date(b.entryDate || Date.now()).getTime() -
-      new Date(a.entryDate || Date.now()).getTime()
-  );
-
   return (
     <div className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap gap-4">
-      {sortedTableData.map((item) => (
+      {tableData.map((item) => (
         <div
           key={item._id}
           className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"

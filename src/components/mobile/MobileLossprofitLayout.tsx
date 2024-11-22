@@ -2,10 +2,9 @@
 
 import React, { useRef, useState } from "react";
 import { Button } from "../ui/button";
-import MobileMainTicker from "./MobileMainTicker";
-import Totals from "@/app/home/calculator/_components/totals";
 import { Position } from "@/types";
-import MobileSubTickers from "./MobileSubTickers";
+import MobileAllTickers from "./MobileAllTickers";
+import MobileEditorPage from "./MobileEditorPage";
 
 interface MobileLayoutProps {
   creator: string;
@@ -18,6 +17,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 }) => {
   const [tableData, setTableData] = useState<Position[]>(serverUserStocks);
   const [selectedTicker, setSelectedTicker] = useState<Position | null>(null);
+  const [showAllTickers, setshowAllTickers] = useState<boolean>(true);
 
   // current ticker displayed with all data in main ticker
   const handleTickerSelect = (ticker: Position) => {
@@ -41,37 +41,30 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       return 0; // Fallback price or error handling
     }
   };
-
+  // work from big to small, all ticker presented then goes to the main ticker presented and the small onces above. do the oppesite with the see all tickers
   return (
-    <div className="p-4 bg-gray-800 text-white">
-      <div className="flex justify-between mb-4 gap-3">
-        <Button className="bg-gray-700">See all Tickers</Button>
-        <div className="overflow-x-auto w-full max-w-full">
-          <MobileSubTickers
+    <div>
+      {showAllTickers ? (
+        <>
+          <MobileAllTickers
+            selectedTicker={selectedTicker}
             tableData={tableData}
             onTickerSelect={handleTickerSelect}
+            setshowAllTickers={setshowAllTickers}
           />
-        </div>
-      </div>
-
-      <div className="bg-gray-900 p-4 rounded-md">
-        {/* <img src="/logo.png" alt="StocksPlan.com" className="mx-auto" /> */}
-        <h2
-          className="text-xl font-semibold mt-2"
-          onClick={() => console.log(tableData)} //FOR REFRENCE
-        >
-          Quick Profit & Loss Calculator
-        </h2>
-        <MobileMainTicker
+        </>
+      ) : (
+        <MobileEditorPage
           creator={creator}
           tableData={tableData}
           setTableData={setTableData}
           selectedTicker={selectedTicker}
           fetchActualPrice={fetchActualPrice}
+          onTickerSelect={handleTickerSelect}
+          setshowAllTickers={setshowAllTickers}
+          setSelectedTicker={setSelectedTicker}
         />
-      </div>
-
-      <Totals tableData={tableData} />
+      )}
     </div>
   );
 };

@@ -17,17 +17,20 @@ import { ToastAction } from "../ui/toast";
 import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
 import axios from "axios";
 import { hasDataChanged } from "@/utils";
+import useSWR from "swr";
 
 interface MobileMainTickerProps {
   tableData: Position[];
   creator: string;
   selectedTicker: Position | null;
   setTableData: React.Dispatch<React.SetStateAction<Position[]>>;
+  setSelectedTicker: React.Dispatch<React.SetStateAction<Position | null>>;
   // updateTableData: (tickerData: Position) => void;
   fetchActualPrice: (ticker: string) => Promise<number>;
   // onNewTickerDataChange: (data: Position) => void;
 }
 
+// there is a emptyposition build for that
 const emptyPosition: Position = {
   ticker: "",
   actualPrice: 0,
@@ -43,14 +46,18 @@ const emptyPosition: Position = {
   expectedLossPercent: 0,
 };
 
+const fetcher = async (url: string, currTicker: string) =>
+  await axios.get(`${url}?ticker=${currTicker}`).then((res) => {
+    return res.data;
+  });
+
 const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   creator,
   tableData,
   selectedTicker,
   setTableData,
-  // updateTableData,
+  setSelectedTicker,
   fetchActualPrice,
-  // onNewTickerDataChange,
 }) => {
   const [item, setItem] = useState<Position>(emptyPosition);
   const [originalValues, setOriginalValues] = useState<Position>(emptyPosition);
@@ -95,6 +102,15 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     return originalValue !== currentValue;
   };
 
+  const { data, error, isLoading, isValidating } = useSWR(
+    item.ticker ? ["/api/tickerPrice", item.ticker] : null,
+    ([url, currTicker]) => fetcher(url, currTicker),
+    {
+      fallbackData: item.actualPrice,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+    }
+  );
   // Ticker & actual price
   const handleTickerBlur = async () => {
     if (selectedTicker?.ticker) {
@@ -224,7 +240,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     if (!hasValueChanged(originalValues.expectedProfitPercent, item.expectedProfitPercent)) {
       return; 
     }
-    console.log(item.expectedProfitPercent)
+    // console.log(item.expectedProfitPercent)
 
     const newExpectedProfit = (item.expectedProfitPercent * item.cost) / 100;
     const newExitPrice = calculateExitPriceFromProfitPercent(item.positionType, item.askPrice, newExpectedProfit, item.quantity)
@@ -302,27 +318,36 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
       action: <ToastAction altText="Try again">Try again</ToastAction>,
     };
 
-    // Validate ticker
-    if (!lastTicker.ticker) {
-      validationToast.title = "Missing Ticker Symbol";
-      validationToast.description = "Please enter a ticker symbol.";
-    }
+    if (lastTicker) {
+      console.log(
+        "Comparing lastTicker._id:",
+        lastTicker._id,
+        "with selectedTicker._id:",
+        selectedTicker?._id
+      );
+      // Validate ticker
+      if (!lastTicker.ticker) {
+        validationToast.title = "Missing Ticker Symbol";
+        validationToast.description = "Please enter a ticker symbol.";
+      }
 
-    // Validate askPrice
-    else if (lastTicker.askPrice === 0) {
-      validationToast.title = "Ask Price Required";
-      validationToast.description = "Please enter an ask price greater than 0.";
-    }
+      // Validate askPrice
+      else if (lastTicker.askPrice === 0) {
+        validationToast.title = "Ask Price Required";
+        validationToast.description =
+          "Please enter an ask price greater than 0.";
+      }
 
-    // Validate quantity
-    else if (lastTicker.quantity === 0) {
-      validationToast.title = "Quantity Needed";
-      validationToast.description = "Please enter a quantity greater than 0.";
-    }
-    // prevents duplicate ticker before a change
-    else if (lastTicker._id === selectedTicker?._id) {
-      validationToast.title = "Ticker already exist";
-      validationToast.description = "Please change an input or clear all";
+      // Validate quantity
+      else if (lastTicker.quantity === 0) {
+        validationToast.title = "Quantity Needed";
+        validationToast.description = "Please enter a quantity greater than 0.";
+      }
+      // prevents duplicate ticker before a change
+      else if (selectedTicker && lastTicker._id === selectedTicker._id) {
+        validationToast.title = "Ticker already exist";
+        validationToast.description = "Please change an input or clear all";
+      }
     }
 
     if (validationToast.description) {
@@ -386,14 +411,15 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   };
 
   const deleteTicker = (tickerToDelete: Position | null) => {
-    if (tickerToDelete && tickerToDelete._id) {
+    if (tickerToDelete && tickerToDelete.ticker) {
       setTableData((prevData) =>
         prevData.filter((item) => item._id !== tickerToDelete._id)
       );
     }
     setUnsavedChanges(true);
   };
-
+  // combine all the bluers to one function that decide what to change base on input name (add name to each input) with e.target.event. after layout changes tery to move all action like save delet and add to layout.
+  // this component sholdnt hold the hole data only the selected ticker.
   return (
     <div>
       <div className="mb-4 p-4 border border-gray-700 rounded-lg">
@@ -402,7 +428,9 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
             <Input
               value={item.ticker}
-              onChange={(e) => handleInputChange("ticker", e.target.value)}
+              onChange={(e) =>
+                handleInputChange("ticker", e.target.value.toUpperCase())
+              }
               onBlur={handleTickerBlur}
               className="w-1/2 border-none bg-transparent focus:outline-none text-white"
             />
@@ -474,6 +502,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Cost</label>
             <CurrencyInput
+              readOnly
               value={item.cost}
               onValueChange={(value) =>
                 handleInputChange("cost", parseFloat(value || "0"))
@@ -571,16 +600,32 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           </div>
         </div>
       </div>
-      <div className="mt-4 flex justify-center">
-        <Button
-          className="bg-blue-600 w-full"
-          onClick={() => saveChanges(tableData)}
-        >
-          Save Changes
-        </Button>
-      </div>
 
-      <button onClick={() => deleteTicker(selectedTicker)}>Delete</button>
+      {selectedTicker ? (
+        <div className="mt-4 flex justify-center">
+          <Button
+            className="bg-blue-600 w-full"
+            onClick={() => saveChanges(tableData)}
+          >
+            Save Changes
+          </Button>
+        </div>
+      ) : null}
+
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => deleteTicker(selectedTicker)}
+          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+        >
+          Delete
+        </button>
+        <button
+          onClick={() => setSelectedTicker(null)}
+          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+        >
+          Clear Ticker
+        </button>
+      </div>
 
       <div className="mt-6 flex justify-center">
         <Button className="bg-gray-700 w-full" onClick={addNewTicker}>
