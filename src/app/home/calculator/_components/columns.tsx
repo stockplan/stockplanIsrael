@@ -390,9 +390,7 @@ export const columns: ColumnDef<Position>[] = [
 
       //prettier-ignore
       const handleBlur = () => {
-        if (+initialValue === +profitPercent) return
-
-
+        if (+initialValue === +profitPercent || +profitPercent === 0) return
         
         let profitPercentValue = Number(profitPercent)
         let expectedProfit = profitPercentValue * cost / 100
