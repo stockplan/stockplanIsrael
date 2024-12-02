@@ -43,7 +43,7 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
         <MobileLayout creator={creator} serverUserStocks={serverUserStocks} />
       )
     default:
-      return <div className="CalcPage">Table now found {type}</div>
+      return <div className="CalcPage">Table not found {type}</div>
   }
 }
 
