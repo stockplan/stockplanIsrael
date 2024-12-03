@@ -560,8 +560,8 @@ export const columns: ColumnDef<Position>[] = [
 
       //prettier-ignore
       const handleBlur = () => {
-        if (+initialValue === +lossPercent) return
         const lossPercentValue = Number(lossPercent)
+        if (+initialValue === lossPercentValue || lossPercentValue === 0) return
         
         // console.log({ initialValue, lossPercent: Number(lossPercent) })
         let expectedLoss = (lossPercentValue * cost) / 100
