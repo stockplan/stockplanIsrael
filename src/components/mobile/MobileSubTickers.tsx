@@ -12,9 +12,9 @@ const MobileSubTickers: React.FC<MobileSubTickersProps> = ({
 }) => {
   return (
     <div className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap gap-4">
-      {tableData.map((item) => (
+      {tableData?.map((item, index) => (
         <div
-          key={item._id}
+          key={`${item._id}-${index}`}
           className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
           style={{
             borderTopColor: item.positionType === "buy" ? "green" : "red",

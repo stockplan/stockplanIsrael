@@ -22,29 +22,14 @@ import useSWR from "swr";
 interface MobileMainTickerProps {
   tableData: Position[];
   creator: string;
+  editedticker: Position;
+  emptyPosition: Position;
+  setEditedTicker: React.Dispatch<React.SetStateAction<Position>>;
   selectedTicker: Position | null;
   setTableData: React.Dispatch<React.SetStateAction<Position[]>>;
   setSelectedTicker: React.Dispatch<React.SetStateAction<Position | null>>;
-  // updateTableData: (tickerData: Position) => void;
   fetchActualPrice: (ticker: string) => Promise<number>;
-  // onNewTickerDataChange: (data: Position) => void;
 }
-
-// there is a emptyposition build for that
-const emptyPosition: Position = {
-  ticker: "",
-  actualPrice: 0,
-  cost: 0,
-  askPrice: 0,
-  quantity: 0,
-  exitPrice: 0,
-  stopLoss: 0,
-  positionType: "buy",
-  expectedProfit: 0,
-  expectedProfitPercent: 0,
-  expectedLoss: 0,
-  expectedLossPercent: 0,
-};
 
 const fetcher = async (url: string, currTicker: string) =>
   await axios.get(`${url}?ticker=${currTicker}`).then((res) => {
@@ -54,41 +39,38 @@ const fetcher = async (url: string, currTicker: string) =>
 const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   creator,
   tableData,
+  editedticker,
+  emptyPosition,
+  setEditedTicker,
   selectedTicker,
   setTableData,
   setSelectedTicker,
   fetchActualPrice,
 }) => {
-  const [item, setItem] = useState<Position>(emptyPosition);
   const [originalValues, setOriginalValues] = useState<Position>(emptyPosition);
-  const originalDataRef = useRef<Position[]>(tableData);
 
-  const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext();
   const { toast } = useToast();
 
+  // starting position empty or fill input with selectedTicker
   useEffect(() => {
-    setItem(selectedTicker || emptyPosition);
+    setEditedTicker(selectedTicker || emptyPosition);
     setOriginalValues(selectedTicker || emptyPosition);
   }, [selectedTicker]);
 
-  useEffect(() => {
-    setUnsavedChanges(true);
-  }, [tableData]);
-
   const handleInputChange = (field: keyof Position, value: any) => {
-    setItem((prevItem) => ({ ...prevItem, [field]: value }));
+    setEditedTicker((prevticker) => ({ ...prevticker, [field]: value }));
 
-    //maybe a beter way to do it. find the index of the item and change it in tabledata
-    if (item) {
+    //maybe a beter way to do it. find the index of the editedticker and change it in tabledata
+    if (editedticker) {
       setTableData((prevData) => {
         const existingTickerIndex = prevData.findIndex(
-          (ticker) => ticker._id === item._id
+          (ticker) => ticker._id === ticker._id
         );
         // console.log(tableData);
         if (existingTickerIndex >= 0) {
           // Update existing ticker data
           const updatedData = [...prevData];
-          updatedData[existingTickerIndex] = item;
+          updatedData[existingTickerIndex] = editedticker;
           return updatedData;
         } else {
           return prevData;
@@ -96,330 +78,168 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
       });
     }
   };
-
   //prettier-ignore
   const hasValueChanged = (originalValue: number, currentValue: number): boolean => {
     return originalValue !== currentValue;
   };
 
-  const { data, error, isLoading, isValidating } = useSWR(
-    item.ticker ? ["/api/tickerPrice", item.ticker] : null,
-    ([url, currTicker]) => fetcher(url, currTicker),
-    {
-      fallbackData: item.actualPrice,
-      revalidateOnFocus: false,
-      shouldRetryOnError: false,
-    }
-  );
-  // Ticker & actual price
-  const handleTickerBlur = async () => {
-    if (selectedTicker?.ticker) {
-      const validationToast = {
-        title: "Overriding existing ticker",
-        description: "Please clear to add new ticker",
-        action: <ToastAction altText="Try again">Try again</ToastAction>,
-      };
-      toast(validationToast);
-      return;
-    }
-    if (item.ticker) {
-      const price = await fetchActualPrice(item.ticker);
-      setItem((prevItem) => ({
-        ...prevItem,
-        actualPrice: price || 0,
-      }));
-    }
-  };
-
   //Positiontype
   //prettier-ignore
   const handlePositionTypeChange = (type: "buy" | "sell") => {
-    const expProfit = calculateExpectedProfit(type, item.askPrice, item.exitPrice, item.quantity);
-    const expectedProfitPercent = calculateExpectedProfitPercent(expProfit, item.cost);
-    const expLoss = calculateExpectedLoss(type, item.askPrice, item.stopLoss, item.quantity);
-    const expLossPercent = calculateExpectedLossPercent(expLoss, item.cost);
-
-    setItem((prevItem) => ({
-      ...prevItem,
+    const expProfit = calculateExpectedProfit(type, editedticker.askPrice, editedticker.exitPrice, editedticker.quantity);
+    const expectedProfitPercent = calculateExpectedProfitPercent(expProfit, editedticker.cost);
+    const expLoss = calculateExpectedLoss(type, editedticker.askPrice, editedticker.stopLoss, editedticker.quantity);
+    const expLossPercent = calculateExpectedLossPercent(expLoss, editedticker.cost);
+    
+    setEditedTicker((prevticker) => ({
+      ...prevticker,
       positionType: type,
       expectedProfit: +expProfit,
       expectedProfitPercent,
       expectedLoss: expLoss,
       expLossPercent,
     }));
-    // updateTableData(item)
+    // updateTableData(editedticker)
   };
 
-  // Quantity
-  //prettier-ignore
-  const handleBlurQuantity = () => {
-    if (!hasValueChanged(originalValues.quantity, item.quantity)) {
-      return; 
+  //  use this function below for the handleTickerBlur, suppose to be better for the get calls
+  const { data, error, isLoading, isValidating } = useSWR(
+    editedticker.ticker ? ["/api/tickerPrice", editedticker.ticker] : null,
+    ([url, currTicker]) => fetcher(url, currTicker),
+    {
+      fallbackData: editedticker.actualPrice,
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
     }
-    const updatedCost = calculateCost(item.askPrice, item.quantity)
-    const expectedProfit = calculateExpectedProfit( item.positionType, item.askPrice, item.exitPrice, item.quantity)
-    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost)
-    const expectedLoss = calculateExpectedLoss(item.positionType, item.askPrice, item.stopLoss, item.quantity)
-    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost)
-    
-    setItem((prevItem) => ({
-      ...prevItem,
-      cost: updatedCost,
-      expectedProfit,
-      expectedProfitPercent,
-      expectedLoss,
-      expectedLossPercent,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.quantity
-    }));
-    // updateTableData(item)
-  }
+  );
 
-  // AskPrice
-  //prettier-ignore
-  const handleBlurAskPrice = () => {
-    if (!hasValueChanged(originalValues.askPrice, item.askPrice)) {
-      return; 
+  // Ticker & actual price
+  const handleTickerBlur = async () => {
+    if (editedticker.ticker) {
+      const price = await fetchActualPrice(editedticker.ticker);
+      setEditedTicker((prevticker) => ({
+        ...prevticker,
+        actualPrice: price || 0,
+        // actualPrice: +data.fetchedPrice || 0,
+      }));
     }
-    // if (+askPrice === +defaultValue) return
-    const updatedCost = calculateCost(item.askPrice, item.quantity)
-    const expectedProfit = calculateExpectedProfit( item.positionType, item.askPrice, item.exitPrice, item.quantity)
-    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost)
-    const expectedLoss = calculateExpectedLoss(item.positionType, item.askPrice, item.stopLoss, item.quantity)
-    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost)
-
-    setItem((prevItem) => ({
-      ...prevItem,
-      cost: updatedCost,
-      expectedProfit,
-      expectedProfitPercent,
-      expectedLoss,
-      expectedLossPercent,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.askPrice
-    }));
-    // updateTableData(item)
-  }
-
-  // ExitPrice
-  //prettier-ignore
-  const handleBlurExitPrice = () => {
-    if (item.exitPrice === 0 || isNaN(item.exitPrice)) return;
-    if (!hasValueChanged(originalValues.exitPrice, item.exitPrice)) {
-      return; 
-    }
-
-    // const cost = calculateCost(item.askPrice, item.quantity)
-    const expectedProfit = calculateExpectedProfit(item.positionType, item.askPrice, item.exitPrice, item.quantity)
-    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, item.cost)
-    
-    setItem((prevItem) => ({
-      ...prevItem,
-      expectedProfit,
-      expectedProfitPercent,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.exitPrice
-    }));
-    // updateTableData(item)
-  }
-
-  // EXP.Profit%
-  //prettier-ignore
-  const handleBlurProfitPercent = () => {
-    // console.log(item.expectedProfitPercent)
-    if (item.expectedProfitPercent <= 0) {
-      setItem((prevItem) => ({ ...prevItem, expectedProfitPercent: 0 }));
-      return;
-    }
-    if (!hasValueChanged(originalValues.expectedProfitPercent, item.expectedProfitPercent)) {
-      return; 
-    }
-    // console.log(item.expectedProfitPercent)
-
-    const newExpectedProfit = (item.expectedProfitPercent * item.cost) / 100;
-    const newExitPrice = calculateExitPriceFromProfitPercent(item.positionType, item.askPrice, newExpectedProfit, item.quantity)
-    setItem((prevItem) => ({
-      ...prevItem,
-      expectedProfit: newExpectedProfit,
-      exitPrice: newExitPrice,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.expectedProfitPercent
-    }));
-    // updateTableData(item)
-  }
-
-  // Stop loss
-  //prettier-ignore
-  const handleBlurStopLoss = () => {
-    if (!hasValueChanged(originalValues.stopLoss, item.stopLoss)) {
-      return; 
-    }
-
-    let expectedLoss = calculateExpectedLoss(item.positionType, item.askPrice, item.stopLoss, item.quantity);
-    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, item.cost);
-
-    setItem((prevItem) => ({
-      ...prevItem,
-      expectedLoss: +expectedLoss,
-      expectedLossPercent: +expectedLossPercent,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.stopLoss
-    }));
-    // updateTableData(item)
   };
 
-  // EXP.Loss%
   //prettier-ignore
-  const handleBlurlossPercent = () => {
+  const handleBlur = async (name: string, value: any) => {
+    // Precompute common calculations
+    const updatedCost = calculateCost(editedticker.askPrice, editedticker.quantity);
+    const expectedProfit = calculateExpectedProfit(editedticker.positionType, editedticker.askPrice, editedticker.exitPrice, editedticker.quantity)
+    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost);
+    const expectedLoss = calculateExpectedLoss(editedticker.positionType, editedticker.askPrice, editedticker.stopLoss, editedticker.quantity);
+    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost);
+    const newExitPrice = calculateExitPriceFromProfitPercent(editedticker.positionType, editedticker.askPrice, expectedProfit, editedticker.quantity);
+  
+    const absLossPercent = Math.abs(editedticker.expectedLossPercent);
+    // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
+    const newExpectedLoss = ((absLossPercent * updatedCost) / 100) * -1 + 0;
+    // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
+    const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, editedticker.quantity, editedticker.askPrice);
+
+    // ONLY in EXP.Loss% need to understand those functions, maybe it have to be negative num
     // const negativeValue =
     //   +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
     // const formattedVal = formatFractionDigits(+initialValue);
 
     // if (+formattedVal > 0 && negativeValue === 0) return;
     //? all above to ask daniel
-
-    if (!hasValueChanged(originalValues.expectedLossPercent, item.expectedLossPercent)) {
-      return; 
-    }
-
-    const absValue = Math.abs(+item.expectedLossPercent);
-    // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
-    const newExpectedLoss = ((absValue * item.cost) / 100) * -1 + 0;
-
-    // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
-    let newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, item.quantity, item.askPrice);
-
-    setItem((prevItem) => ({
-      ...prevItem,
-      expectedLoss: +newExpectedLoss,
-      stopLoss: newStopLoss,
-    }));
-    setOriginalValues((prev) => ({
-      ...prev,
-      expectedProfitPercent: item.expectedLossPercent
-    }));
-    // updateTableData(item)
-  };
-
-  const validateNewTicker = (lastTicker: Position) => {
-    const validationToast = {
-      title: "",
-      description: "",
-      action: <ToastAction altText="Try again">Try again</ToastAction>,
-    };
-
-    if (lastTicker) {
-      console.log(
-        "Comparing lastTicker._id:",
-        lastTicker._id,
-        "with selectedTicker._id:",
-        selectedTicker?._id
-      );
-      // Validate ticker
-      if (!lastTicker.ticker) {
-        validationToast.title = "Missing Ticker Symbol";
-        validationToast.description = "Please enter a ticker symbol.";
-      }
-
-      // Validate askPrice
-      else if (lastTicker.askPrice === 0) {
-        validationToast.title = "Ask Price Required";
-        validationToast.description =
-          "Please enter an ask price greater than 0.";
-      }
-
-      // Validate quantity
-      else if (lastTicker.quantity === 0) {
-        validationToast.title = "Quantity Needed";
-        validationToast.description = "Please enter a quantity greater than 0.";
-      }
-      // prevents duplicate ticker before a change
-      else if (selectedTicker && lastTicker._id === selectedTicker._id) {
-        validationToast.title = "Ticker already exist";
-        validationToast.description = "Please change an input or clear all";
-      }
-    }
-
-    if (validationToast.description) {
-      toast(validationToast);
-      return false;
-    }
-    return true;
-  };
-
-  const addNewTicker = () => {
-    const maxTickers = 10;
-    if (!creator || tableData.length >= maxTickers) {
-      if (tableData.length >= maxTickers) {
-        toast({
-          description: `Maximum of ${maxTickers} rows allowed.`,
-          variant: "destructive",
-        });
-      }
-      return;
-    }
-
-    const lastTicker = tableData[tableData.length - 1];
-    if (!validateNewTicker(lastTicker)) return; //something las page, ask daniel // table.lastPage();
-
-    if (!item || !validateNewTicker(item)) return;
-
-    setTableData([...tableData, item]);
-    setUnsavedChanges(true);
-  };
-
-  const saveChanges = async (changes: Position[]) => {
-    if (hasDataChanged(changes, originalDataRef.current)) {
-      setUnsavedChanges(false);
-      return;
-    }
-
-    if (creator && unsavedChanges) {
-      // console.log("hi");
-      // setIsLoading(true);
-      try {
-        await axios.post("/api/save", { changes });
-        originalDataRef.current = changes;
-        setUnsavedChanges(false);
-        localStorage.removeItem("unsavedChanges");
-      } catch (error) {
-        console.error("Failed to save data", error);
-
-        // Save changes locally in case of API failure
-        try {
-          localStorage.setItem("unsavedChanges", JSON.stringify(changes));
-          setTimeout(() => {
-            window.location.reload();
-          }, 2000);
-        } catch (localError) {
-          console.error("Failed to save changes locally", localError);
+  
+    switch (name) {
+      case "ticker":
+        if (selectedTicker?.ticker) {
+          toast({
+            title: "Overriding existing ticker",
+            description: "Please clear to add new ticker",
+            action: <ToastAction altText="Try again">Try again</ToastAction>,
+          });
+          return;
         }
-      } finally {
-        // setIsLoading(false);
-      }
+        if (value && data) {
+          // const price = await fetchActualPrice(value);
+          setEditedTicker((prev) => ({
+            ...prev,
+            ctualPrice: +data.fetchedPrice || 0,
+            // actualPrice: price || 0,
+          }));
+        }
+        break;
+  
+      case "quantity":
+        if (!hasValueChanged(originalValues.quantity, editedticker.quantity)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          cost: updatedCost,
+          expectedProfit,
+          expectedProfitPercent,
+          expectedLoss,
+          expectedLossPercent,
+        }));
+        break;
+  
+      case "askPrice":
+        if (!hasValueChanged(originalValues.askPrice, editedticker.askPrice)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          cost: updatedCost,
+          expectedProfit,
+          expectedProfitPercent,
+          expectedLoss,
+          expectedLossPercent,
+        }));
+        break;
+  
+      case "exitPrice":
+        if (value === 0 || isNaN(value)) return;
+        if (!hasValueChanged(originalValues.exitPrice, value)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          expectedProfit,
+          expectedProfitPercent,
+        }));
+        break;
+  
+      case "profitPercent":
+        if (value <= 0) {
+          setEditedTicker((prev) => ({ ...prev, expectedProfitPercent: 0 }));
+          return;
+        }
+        if (!hasValueChanged(originalValues.expectedProfitPercent, value)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          expectedProfit,
+          exitPrice: newExitPrice,
+        }));
+        break;
+  
+      case "stopLoss":
+        if (!hasValueChanged(originalValues.stopLoss, value)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          expectedLoss,
+          expectedLossPercent,
+        }));
+        break;
+  
+      case "lossPercent":
+        if (!hasValueChanged(originalValues.expectedLossPercent, value)) return;
+        setEditedTicker((prev) => ({
+          ...prev,
+          expectedLoss: newExpectedLoss,
+          stopLoss: newStopLoss,
+        }));
+        break;
+  
+      default:
+        console.warn("Unhandled field in handleBlur");
     }
   };
 
-  const deleteTicker = (tickerToDelete: Position | null) => {
-    if (tickerToDelete && tickerToDelete.ticker) {
-      setTableData((prevData) =>
-        prevData.filter((item) => item._id !== tickerToDelete._id)
-      );
-    }
-    setUnsavedChanges(true);
-  };
-  // combine all the bluers to one function that decide what to change base on input name (add name to each input) with e.target.event. after layout changes tery to move all action like save delet and add to layout.
-  // this component sholdnt hold the hole data only the selected ticker.
+  // this component sholdnt hold the hole data only the selected ticker. not sure about it
   return (
     <div>
       <div className="mb-4 p-4 border border-gray-700 rounded-lg">
@@ -427,15 +247,18 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         <div className="mb-2">
           <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
             <Input
-              value={item.ticker}
+              value={editedticker.ticker}
               onChange={(e) =>
                 handleInputChange("ticker", e.target.value.toUpperCase())
               }
+              name="ticker"
+              // onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               onBlur={handleTickerBlur}
               className="w-1/2 border-none bg-transparent focus:outline-none text-white"
             />
             <CurrencyInput
-              value={item.actualPrice}
+              value={editedticker.actualPrice}
+              name="actualPrice"
               readOnly
               className="w-1/2 text-right border-none bg-transparent focus:outline-none text-white"
               suffix="$"
@@ -448,7 +271,9 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         <div className="flex justify-between mb-4">
           <button
             className={`px-2 py-1 w-1/2 rounded text-white ${
-              item.positionType === "buy" ? "bg-green-500" : "bg-gray-400"
+              editedticker.positionType === "buy"
+                ? "bg-green-500"
+                : "bg-gray-400"
             }`}
             onClick={() => handlePositionTypeChange("buy")}
           >
@@ -456,7 +281,9 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           </button>
           <button
             className={`px-2 py-1 w-1/2 rounded text-white ${
-              item.positionType === "sell" ? "bg-red-500" : "bg-gray-400"
+              editedticker.positionType === "sell"
+                ? "bg-red-500"
+                : "bg-gray-400"
             }`}
             onClick={() => handlePositionTypeChange("sell")}
           >
@@ -469,11 +296,12 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Quantity</label>
             <CurrencyInput
-              value={item.quantity}
+              value={editedticker.quantity}
               onValueChange={(value) =>
                 handleInputChange("quantity", parseInt(value || "0"))
               }
-              onBlur={handleBlurQuantity}
+              name="quantity"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               decimalsLimit={0}
             />
@@ -485,11 +313,12 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Ask Price</label>
             <CurrencyInput
-              value={item.askPrice}
+              value={editedticker.askPrice}
               onValueChange={(value) =>
                 handleInputChange("askPrice", parseFloat(value || "0"))
               }
-              onBlur={handleBlurAskPrice}
+              name="askPrice"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               suffix="$"
               decimalsLimit={2}
@@ -503,7 +332,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
             <label className="text-sm mr-2">Cost</label>
             <CurrencyInput
               readOnly
-              value={item.cost}
+              value={editedticker.cost}
               onValueChange={(value) =>
                 handleInputChange("cost", parseFloat(value || "0"))
               }
@@ -519,11 +348,12 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Exit Price</label>
             <CurrencyInput
-              value={item.exitPrice}
+              value={editedticker.exitPrice}
               onValueChange={(value) =>
                 handleInputChange("exitPrice", parseFloat(value || "0"))
               }
-              onBlur={handleBlurExitPrice}
+              name="exitPrice"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               suffix="$"
               decimalsLimit={2}
@@ -536,14 +366,15 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Expected Profit %</label>
             <CurrencyInput
-              value={item.expectedProfitPercent}
+              value={editedticker.expectedProfitPercent}
               onValueChange={(value) =>
                 handleInputChange(
                   "expectedProfitPercent",
                   parseFloat(value || "0")
                 )
               }
-              onBlur={handleBlurProfitPercent}
+              name="profitPercent"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               suffix="%"
               decimalsLimit={2}
@@ -556,11 +387,12 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Stop Loss</label>
             <CurrencyInput
-              value={item.stopLoss}
+              value={editedticker.stopLoss}
               onValueChange={(value) =>
                 handleInputChange("stopLoss", parseFloat(value || "0"))
               }
-              onBlur={handleBlurStopLoss}
+              name="stopLoss"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               suffix="$"
               decimalsLimit={2}
@@ -573,14 +405,15 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Expected Loss %</label>
             <CurrencyInput
-              value={item.expectedLossPercent}
+              value={editedticker.expectedLossPercent}
               onValueChange={(value) =>
                 handleInputChange(
                   "expectedLossPercent",
                   parseFloat(value || "0")
                 )
               }
-              onBlur={handleBlurlossPercent}
+              name="lossPercent"
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-right"
               suffix="%"
               decimalsLimit={2}
@@ -591,46 +424,14 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         {/* Expected Profit and Loss Summary */}
         <div className="flex justify-between mt-4 text-lg">
           <div className="text-green-500">
-            {/* Exp. profit: {item.expectedProfit >= 0 ? item.expectedProfit : 0}$ */}
-            Exp. profit: {item.expectedProfit}$
+            {/* Exp. profit: {editedticker.expectedProfit >= 0 ? editedticker.expectedProfit : 0}$ */}
+            Exp. profit: {editedticker.expectedProfit}$
           </div>
           <div className="text-red-500">
-            {/* Exp. Loss: {item.expectedLoss <= 0 ? item.expectedLoss : 0}$ */}
-            Exp. Loss: {item.expectedLoss}$
+            {/* Exp. Loss: {editedticker.expectedLoss <= 0 ? editedticker.expectedLoss : 0}$ */}
+            Exp. Loss: {editedticker.expectedLoss}$
           </div>
         </div>
-      </div>
-
-      {selectedTicker ? (
-        <div className="mt-4 flex justify-center">
-          <Button
-            className="bg-blue-600 w-full"
-            onClick={() => saveChanges(tableData)}
-          >
-            Save Changes
-          </Button>
-        </div>
-      ) : null}
-
-      <div className="flex justify-between items-center mt-4">
-        <button
-          onClick={() => deleteTicker(selectedTicker)}
-          className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-        >
-          Delete
-        </button>
-        <button
-          onClick={() => setSelectedTicker(null)}
-          className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-        >
-          Clear Ticker
-        </button>
-      </div>
-
-      <div className="mt-6 flex justify-center">
-        <Button className="bg-gray-700 w-full" onClick={addNewTicker}>
-          + Add Ticker
-        </Button>
       </div>
     </div>
   );
