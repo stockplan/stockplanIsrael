@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import { Button } from "../ui/button";
 import MobileMainTicker from "./MobileMainTicker";
 import Totals from "@/app/home/calculator/_components/totals";
 import { Position } from "@/types";
 import MobileSubTickers from "./MobileSubTickers";
-import MobileAllTickers from "./MobileAllTickers";
 
 interface MobileEditorPageProps {
   creator: string;
-  tableData: Position[];
+  tickersData: Position[];
   editedticker: Position;
   saveChanges: (changes: Position[]) => void;
   deleteTicker: (tickerToDelete: Position | null) => void;
@@ -18,7 +17,7 @@ interface MobileEditorPageProps {
   setEditedTicker: React.Dispatch<React.SetStateAction<Position>>;
   emptyPosition: Position;
   onTickerSelect: (ticker: Position) => void;
-  setTableData: React.Dispatch<React.SetStateAction<Position[]>>;
+  setTickersData: React.Dispatch<React.SetStateAction<Position[]>>;
   setshowAllTickers: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedTicker: React.Dispatch<React.SetStateAction<Position | null>>;
   selectedTicker: Position | null;
@@ -27,7 +26,7 @@ interface MobileEditorPageProps {
 
 const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
   creator,
-  tableData,
+  tickersData,
   editedticker,
   emptyPosition,
   setEditedTicker,
@@ -35,7 +34,7 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
   deleteTicker,
   addNewTicker,
   selectedTicker,
-  setTableData,
+  setTickersData,
   fetchActualPrice,
   onTickerSelect,
   setshowAllTickers,
@@ -55,7 +54,7 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
               </Button>
               <div className="overflow-x-auto w-full max-w-full">
                 <MobileSubTickers
-                  tableData={tableData}
+                  tickersData={tickersData}
                   onTickerSelect={onTickerSelect}
                 />
               </div>
@@ -64,20 +63,25 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
         </div>
 
         <div className="bg-gray-900 p-4 rounded-md">
+          {/* incert img logo below */}
           {/* <img src="/logo.png" alt="StocksPlan.com" className="mx-auto" /> */}
           <h2
             className="text-xl font-semibold mt-2"
-            onClick={() => console.log(tableData, selectedTicker, creator)} //FOR REFRENCE
+            onClick={() => {
+              console.log("editedticker: ", editedticker);
+              console.log("selectedTicker: ", selectedTicker);
+              console.log("tickersData: ", tickersData);
+            }} //FOR REFRENCE
           >
             Quick Profit & Loss Calculator
           </h2>
           <MobileMainTicker
             creator={creator}
-            tableData={tableData}
+            tickersData={tickersData}
             editedticker={editedticker}
             emptyPosition={emptyPosition}
             setEditedTicker={setEditedTicker}
-            setTableData={setTableData}
+            setTickersData={setTickersData}
             selectedTicker={selectedTicker}
             fetchActualPrice={fetchActualPrice}
             setSelectedTicker={setSelectedTicker}
@@ -88,7 +92,7 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
           <div className="mt-4 flex justify-center">
             <Button
               className="bg-blue-600 w-full"
-              onClick={() => saveChanges(tableData)}
+              onClick={() => saveChanges(tickersData)}
             >
               Save Changes
             </Button>
@@ -116,7 +120,7 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
           </Button>
         </div>
 
-        <Totals tableData={tableData} />
+        <Totals tableData={tickersData} />
       </div>
     </>
   );

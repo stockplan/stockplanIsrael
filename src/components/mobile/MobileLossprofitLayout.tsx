@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Button } from "../ui/button";
 import { Position } from "@/types";
 import MobileAllTickers from "./MobileAllTickers";
 import MobileEditorPage from "./MobileEditorPage";
@@ -10,7 +9,6 @@ import { useToast } from "../ui/use-toast";
 import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
 import { hasDataChanged } from "@/utils";
 import axios from "axios";
-import { getEmptyRow } from "@/lib/utils";
 
 interface MobileLayoutProps {
   creator: string;
@@ -38,19 +36,19 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
   serverUserStocks,
 }) => {
   const [editedticker, setEditedTicker] = useState<Position>(emptyPosition);
-  const [tableData, setTableData] = useState<Position[]>(serverUserStocks);
+  const [tickersData, setTickersData] = useState<Position[]>(serverUserStocks);
   const [selectedTicker, setSelectedTicker] = useState<Position | null>(null);
   const [showAllTickers, setshowAllTickers] = useState<boolean>(true);
-  const originalDataRef = useRef<Position[]>(tableData);
+  const originalDataRef = useRef<Position[]>(tickersData);
 
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext();
 
   const { toast } = useToast();
 
-  // give the option to save when data changed (might move to mobile layout)
+  // give the option to save when data changed
   useEffect(() => {
     setUnsavedChanges(true);
-  }, [tableData]);
+  }, [tickersData]);
 
   // current ticker displayed with all data in main ticker
   const handleTickerSelect = (ticker: Position) => {
@@ -121,10 +119,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     return true;
   };
 
+  // can be improve
   const addNewTicker = () => {
     const maxTickers = 10;
-    if (!creator || tableData.length >= maxTickers) {
-      if (tableData.length >= maxTickers) {
+    if (!creator || tickersData.length >= maxTickers) {
+      if (tickersData.length >= maxTickers) {
         toast({
           description: `Maximum of ${maxTickers} rows allowed.`,
           variant: "destructive",
@@ -133,12 +132,12 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
       return;
     }
 
-    const lastTicker = tableData[tableData.length - 1];
-    if (!validateNewTicker(lastTicker)) return; //something las page, ask daniel // table.lastPage();
+    const lastTicker = tickersData[tickersData.length - 1];
+    if (!validateNewTicker(lastTicker)) return; //something last page, ask daniel // table.lastPage();
 
     if (!editedticker || !validateNewTicker(editedticker)) return;
 
-    setTableData([...tableData, editedticker]);
+    setTickersData([...tickersData, editedticker]);
     setUnsavedChanges(true);
     setEditedTicker(emptyPosition);
   };
@@ -178,7 +177,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
   const deleteTicker = (tickerToDelete: Position | null) => {
     if (tickerToDelete && tickerToDelete.ticker) {
-      setTableData((prevData) =>
+      setTickersData((prevData) =>
         prevData.filter((ticker) => ticker._id !== tickerToDelete._id)
       );
     }
@@ -191,7 +190,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         <>
           <MobileAllTickers
             selectedTicker={selectedTicker}
-            tableData={tableData}
+            tickersData={tickersData}
             onTickerSelect={handleTickerSelect}
             setshowAllTickers={setshowAllTickers}
           />
@@ -201,8 +200,8 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           editedticker={editedticker}
           setEditedTicker={setEditedTicker}
           creator={creator}
-          tableData={tableData}
-          setTableData={setTableData}
+          tickersData={tickersData}
+          setTickersData={setTickersData}
           saveChanges={saveChanges}
           addNewTicker={addNewTicker}
           deleteTicker={deleteTicker}

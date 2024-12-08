@@ -2,17 +2,17 @@ import React from "react";
 import { Position } from "@/types";
 
 interface MobileSubTickersProps {
-  tableData: Position[];
+  tickersData: Position[];
   onTickerSelect: (ticker: Position) => void;
 }
 
 const MobileSubTickers: React.FC<MobileSubTickersProps> = ({
-  tableData,
+  tickersData,
   onTickerSelect,
 }) => {
   return (
     <div className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap gap-4">
-      {tableData?.map((item, index) => (
+      {tickersData?.map((item, index) => (
         <div
           key={`${item._id}-${index}`}
           className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"

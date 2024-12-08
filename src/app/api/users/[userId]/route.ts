@@ -45,11 +45,6 @@ export async function GET(_: NextRequest, segmentData: { params: Params }) {
         const { _id, id, createdAt, updatedAt, ...rest } = stock.toObject({
           versionKey: false,
         });
-        // console.log("rest:", rest);
-        // console.log("ids:", id, _id);
-        // console.log("createdAt:", createdAt);
-        // console.log("updatedAt:", updatedAt);
-        console.log("stock:", stock);
         return stock.toObject({
           versionKey: false,
         });
