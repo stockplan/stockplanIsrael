@@ -6,6 +6,7 @@ import MobileMainTicker from "./MobileMainTicker";
 import Totals from "@/app/home/calculator/_components/totals";
 import { Position } from "@/types";
 import MobileSubTickers from "./MobileSubTickers";
+import Logo from "../logo";
 
 interface MobileEditorPageProps {
   creator: string;
@@ -21,7 +22,6 @@ interface MobileEditorPageProps {
   setshowAllTickers: React.Dispatch<React.SetStateAction<boolean>>;
   setSelectedTicker: React.Dispatch<React.SetStateAction<Position | null>>;
   selectedTicker: Position | null;
-  fetchActualPrice: (ticker: string) => Promise<number>;
 }
 
 const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
@@ -35,7 +35,6 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
   addNewTicker,
   selectedTicker,
   setTickersData,
-  fetchActualPrice,
   onTickerSelect,
   setshowAllTickers,
   setSelectedTicker,
@@ -63,8 +62,7 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
         </div>
 
         <div className="bg-gray-900 p-4 rounded-md">
-          {/* incert img logo below */}
-          {/* <img src="/logo.png" alt="StocksPlan.com" className="mx-auto" /> */}
+          <Logo isNavigate={false} />
           <h2
             className="text-xl font-semibold mt-2"
             onClick={() => {
@@ -76,15 +74,11 @@ const MobileEditorPage: React.FC<MobileEditorPageProps> = ({
             Quick Profit & Loss Calculator
           </h2>
           <MobileMainTicker
-            creator={creator}
-            tickersData={tickersData}
             editedticker={editedticker}
             emptyPosition={emptyPosition}
             setEditedTicker={setEditedTicker}
             setTickersData={setTickersData}
             selectedTicker={selectedTicker}
-            fetchActualPrice={fetchActualPrice}
-            setSelectedTicker={setSelectedTicker}
           />
         </div>
 

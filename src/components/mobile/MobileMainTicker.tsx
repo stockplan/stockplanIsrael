@@ -17,15 +17,11 @@ import axios from "axios";
 import useSWR from "swr";
 
 interface MobileMainTickerProps {
-  tickersData: Position[];
-  creator: string;
   editedticker: Position;
   emptyPosition: Position;
   setEditedTicker: React.Dispatch<React.SetStateAction<Position>>;
   selectedTicker: Position | null;
   setTickersData: React.Dispatch<React.SetStateAction<Position[]>>;
-  setSelectedTicker: React.Dispatch<React.SetStateAction<Position | null>>;
-  fetchActualPrice: (ticker: string) => Promise<number>;
 }
 
 const fetcher = async (url: string, currTicker: string) =>
@@ -34,15 +30,11 @@ const fetcher = async (url: string, currTicker: string) =>
   });
 
 const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
-  // creator,
-  // tickersData,
   editedticker,
   emptyPosition,
   setEditedTicker,
   selectedTicker,
   setTickersData,
-  // setSelectedTicker,
-  fetchActualPrice,
 }) => {
   const [originalValues, setOriginalValues] = useState<Position>(emptyPosition);
 
@@ -56,12 +48,11 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
 
   //maybe a beter way to do it. find the index of the editedticker and change it in tickersData
   const handleInputChange = (field: keyof Position, value: any) => {
-    const originalValue = originalValues[field] as string | number;
+    setEditedTicker((prevticker) => ({ ...prevticker, [field]: value }));
 
+    const originalValue = originalValues[field] as string | number;
     // Update only if the value has changed
     if (hasValueChanged(originalValue, value)) {
-      setEditedTicker((prevticker) => ({ ...prevticker, [field]: value }));
-
       setTickersData((prevData) => {
         // find the index of the changed ticker in the array
         const existingTickerIndex = prevData.findIndex(
@@ -103,10 +94,9 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
       expectedLoss: expLoss,
       expLossPercent,
     }));
-    // updatetickersData(editedticker)
   };
 
-  //  use this function below for the handleTickerBlur, suppose to be better for the get calls
+  //  used for the fatched price to reduce calling GET
   const { data, error, isLoading, isValidating } = useSWR(
     editedticker.ticker ? ["/api/tickerPrice", editedticker.ticker] : null,
     ([url, currTicker]) => fetcher(url, currTicker),
@@ -114,23 +104,13 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
       fallbackData: editedticker.actualPrice,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
+      refreshInterval: 2 * 60 * 1000,
     }
   );
 
-  // Ticker & actual price
-  const handleTickerBlur = async () => {
-    if (editedticker.ticker) {
-      const price = await fetchActualPrice(editedticker.ticker);
-      setEditedTicker((prevticker) => ({
-        ...prevticker,
-        actualPrice: price || 0,
-        // actualPrice: +data.fetchedPrice || 0,
-      }));
-    }
-  };
-
   //prettier-ignore
   const handleBlur = async (name: string, value: any) => {
+    // turn value to number instead of string
     const numericValue = parseFloat(value.toString().replace(/[^\d.-]/g, ""));
     // Precompute common calculations
     const updatedCost = calculateCost(editedticker.askPrice, editedticker.quantity);
@@ -146,24 +126,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
     const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, editedticker.quantity, editedticker.askPrice);
 
-    // ONLY in EXP.Loss% need to understand those functions, maybe it have to be negative num
-    // const negativeValue =
-    //   +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
-    // const formattedVal = formatFractionDigits(+initialValue);
 
-    // if (+formattedVal > 0 && negativeValue === 0) return;
-    //? all above to ask daniel
-  
-    console.log("updatedCost",updatedCost);
-    console.log("expectedProfit",expectedProfit);
-    console.log("expectedProfitPercent",expectedProfitPercent);
-    console.log("expectedLoss",expectedLoss);
-    console.log("expectedLossPercent",expectedLossPercent);
-    console.log("newexitPrice",newExitPrice);
-    console.log("originalValues-expectedProfitPercent",originalValues.expectedProfitPercent);
-    console.log("editedticker-expectedProfitPercent",editedticker.expectedProfitPercent);
-    console.log(!hasValueChanged(originalValues.expectedProfit, numericValue));
-    console.log("------------------------------");
     switch (name) {
       case "ticker":
         if (selectedTicker?.ticker) {
@@ -175,11 +138,9 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           return;
         }
         if (value && data) {
-          // const price = await fetchActualPrice(value);
           setEditedTicker((prev) => ({
             ...prev,
-            ctualPrice: +data.fetchedPrice || 0,
-            // actualPrice: price || 0,
+            actualPrice: +data.fetchedPrice || 0,
           }));
         }
         break;
@@ -254,7 +215,6 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     }
   };
 
-  // this component sholdnt hold the hole data only the selected ticker. not sure about it
   return (
     <div>
       <div className="mb-4 p-4 border border-gray-700 rounded-lg">
@@ -267,8 +227,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
                 handleInputChange("ticker", e.target.value.toUpperCase())
               }
               name="ticker"
-              // onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              onBlur={handleTickerBlur}
+              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
               className="w-1/2 border-none bg-transparent focus:outline-none text-white"
             />
             <CurrencyInput

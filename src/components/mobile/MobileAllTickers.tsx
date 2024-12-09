@@ -16,10 +16,7 @@ const MobileAllTickers: React.FC<MobileAllTickers> = ({
   setshowAllTickers,
 }) => {
   return (
-    <div
-      className="flex flex-col h-full bg-gray-900 text-white p-4"
-      // className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap gap-4">
-    >
+    <div className="flex flex-col h-full bg-gray-900 text-white p-4">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-4">
         <h1
@@ -28,12 +25,6 @@ const MobileAllTickers: React.FC<MobileAllTickers> = ({
         >
           All My Tickers
         </h1>
-        {/* <button
-          className="text-gray-400 hover:text-white text-lg"
-          onClick={() => setshowAllTickers(false)}
-        >
-          ✖
-        </button> */}
       </div>
 
       {/* Search Section */}

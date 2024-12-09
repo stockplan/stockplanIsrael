@@ -9,32 +9,18 @@ import { useToast } from "../ui/use-toast";
 import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext";
 import { hasDataChanged } from "@/utils";
 import axios from "axios";
+import { getEmptyRow } from "@/lib/utils";
 
 interface MobileLayoutProps {
   creator: string;
   serverUserStocks: Position[];
 }
 
-// there is a emptyposition build for that
-const emptyPosition: Position = {
-  ticker: "",
-  actualPrice: 0,
-  cost: 0,
-  askPrice: 0,
-  quantity: 0,
-  exitPrice: 0,
-  stopLoss: 0,
-  positionType: "buy",
-  expectedProfit: 0,
-  expectedProfitPercent: 0,
-  expectedLoss: 0,
-  expectedLossPercent: 0,
-};
-
 const MobileLayout: React.FC<MobileLayoutProps> = ({
   creator,
   serverUserStocks,
 }) => {
+  const emptyPosition = getEmptyRow(creator);
   const [editedticker, setEditedTicker] = useState<Position>(emptyPosition);
   const [tickersData, setTickersData] = useState<Position[]>(serverUserStocks);
   const [selectedTicker, setSelectedTicker] = useState<Position | null>(null);
@@ -45,9 +31,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
   const { toast } = useToast();
 
-  // give the option to save when data changed
+  // give the option to save when data changed/ might not be needed
   useEffect(() => {
-    setUnsavedChanges(true);
+    if (hasDataChanged(tickersData, originalDataRef.current)) {
+      setUnsavedChanges(false);
+    }
   }, [tickersData]);
 
   // current ticker displayed with all data in main ticker
@@ -105,11 +93,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         validationToast.title = "Quantity Needed";
         validationToast.description = "Please enter a quantity greater than 0.";
       }
-      // prevents duplicate ticker before a change
-      // else if (selectedTicker && lastTicker._id === selectedTicker._id) {
-      //   validationToast.title = "Ticker already exist";
-      //   validationToast.description = "Please change an input or clear all";
-      // }
     }
 
     if (validationToast.description) {
@@ -119,7 +102,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     return true;
   };
 
-  // can be improve
+  // change the function to only edd emptyticker
   const addNewTicker = () => {
     const maxTickers = 10;
     if (!creator || tickersData.length >= maxTickers) {
@@ -137,9 +120,9 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
 
     if (!editedticker || !validateNewTicker(editedticker)) return;
 
+    setEditedTicker(emptyPosition);
     setTickersData([...tickersData, editedticker]);
     setUnsavedChanges(true);
-    setEditedTicker(emptyPosition);
   };
 
   const saveChanges = async (changes: Position[]) => {
@@ -149,8 +132,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     }
 
     if (creator && unsavedChanges) {
-      // console.log("hi");
-      // setIsLoading(true);
       try {
         await axios.post("/api/save", { changes });
         originalDataRef.current = changes;
@@ -170,7 +151,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
         }
       } finally {
         setEditedTicker(emptyPosition);
-        // setIsLoading(false);
       }
     }
   };
@@ -183,7 +163,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     }
     setUnsavedChanges(true);
   };
-  // work from big to small, all ticker presented then goes to the main ticker presented and the small onces above. do the oppesite with the see all tickers
+
   return (
     <div>
       {showAllTickers ? (
@@ -207,7 +187,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           deleteTicker={deleteTicker}
           selectedTicker={selectedTicker}
           emptyPosition={emptyPosition}
-          fetchActualPrice={fetchActualPrice}
           onTickerSelect={handleTickerSelect}
           setshowAllTickers={setshowAllTickers}
           setSelectedTicker={setSelectedTicker}
