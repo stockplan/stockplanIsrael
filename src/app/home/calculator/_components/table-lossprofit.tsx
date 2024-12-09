@@ -22,7 +22,6 @@ import { Separator } from "@/components/ui/separator"
 import EmptyRow from "@/app/home/calculator/_components/empty-row"
 import Totals from "@/app/home/calculator/_components/totals"
 import { cn, getEmptyRow } from "@/lib/utils"
-import { useSearchParams } from "next/navigation"
 import axios from "axios"
 import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges"
 import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
@@ -52,9 +51,9 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
   const { toast } = useToast()
 
-  const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
-
   useWarnIfUnsavedChanges(unsavedChanges, !!creator)
+
+  const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 
   useEffect(() => {
     const autoSaveTimer = setTimeout(() => {
@@ -78,19 +77,8 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
         await axios.post("/api/save", { changes })
         originalDataRef.current = changes
         setUnsavedChanges(false)
-        localStorage.removeItem("unsavedChanges")
       } catch (error) {
         console.error("Failed to save data", error)
-
-        // Save changes locally in case of API failure
-        try {
-          localStorage.setItem("unsavedChanges", JSON.stringify(changes))
-          setTimeout(() => {
-            window.location.reload()
-          }, 2000)
-        } catch (localError) {
-          console.error("Failed to save changes locally", localError)
-        }
       } finally {
         setIsLoading(false)
       }
@@ -103,16 +91,7 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
         setTableData([getEmptyRow()])
         return
       }
-      // const currentPageIndex = table.getState().pagination.pageIndex
-      // const pageSize = table.getState().pagination.pageSize
-      // const rowCountOnCurrentPage = tableData.length % pageSize
-
-      // if (rowCountOnCurrentPage === 1 && currentPageIndex > 0) {
-      //   table.setPageIndex(currentPageIndex - 1)
-      // }
-
       const updatedRows = tableData.filter((_, index) => index !== rowIndex)
-      // const rowToDelete = tableData[rowIndex]
 
       if (updatedRows.length === 0) {
         setTableData([getEmptyRow(creator)])
@@ -203,12 +182,6 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
 
     const lastRow = tableData[tableData.length - 1]
     if (!validateNewRow(lastRow)) return table.lastPage()
-
-    // const { pageSize, pageIndex } = table.getState().pagination
-
-    // if (tableData.length + 1 > pageSize * (pageIndex + 1)) {
-    //   table.nextPage()
-    // }
 
     const updatedRows = [...tableData, getEmptyRow(creator)]
     setTableData(updatedRows)

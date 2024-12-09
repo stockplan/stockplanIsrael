@@ -35,8 +35,8 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ getValue, row, column, table }) => {
-      const initialValue = getValue() as string
-      const [localTicker, setLocalTicker] = useState<string>(initialValue)
+      const initialValue = getValue()
+      const [localTicker, setLocalTicker] = useState(initialValue)
       const updateData = table.options.meta!.updateData!
 
       const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +70,7 @@ export const columns: ColumnDef<Position>[] = [
         <Input
           className="w-24 text-xs!"
           type="text"
-          value={localTicker}
+          value={localTicker as string}
           onChange={handleChange}
           onBlur={handleBlur}
         />
@@ -401,21 +401,6 @@ export const columns: ColumnDef<Position>[] = [
           expectedProfit,
           exitPrice,
         })
-
-        // if (+initialValue < 0 && +profitPercent === 0) {
-        //   setProfitPercent("0")
-        //   return
-        // }
-        // if (initialValue=== profitPercent || formatFractionDigits(+initialValue) === profitPercent) return
-        
-        // const newExpectedProfit = (+profitPercent * cost) / 100
-        // const newExitPrice = calculateExitPriceFromProfitPercent(positionType, askPrice, newExpectedProfit, quantity)
-
-        // updateData?.(row.index, {
-        //   [column.id]: +profitPercent,
-        //   expectedProfit: +newExpectedProfit,
-        //   exitPrice: +newExitPrice,
-        // })
       }
 
       return (
