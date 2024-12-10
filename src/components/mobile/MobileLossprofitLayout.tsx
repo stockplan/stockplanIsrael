@@ -69,12 +69,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     };
 
     if (lastTicker) {
-      console.log(
-        "Comparing lastTicker._id:",
-        lastTicker._id,
-        "with selectedTicker._id:",
-        selectedTicker?._id
-      );
       // Validate ticker
       if (!lastTicker.ticker) {
         validationToast.title = "Missing Ticker Symbol";
@@ -102,7 +96,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     return true;
   };
 
-  // change the function to only edd emptyticker
+  // add empty new ticker
   const addNewTicker = () => {
     const maxTickers = 10;
     if (!creator || tickersData.length >= maxTickers) {
@@ -118,10 +112,11 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
     const lastTicker = tickersData[tickersData.length - 1];
     if (!validateNewTicker(lastTicker)) return; //something last page, ask daniel // table.lastPage();
 
-    if (!editedticker || !validateNewTicker(editedticker)) return;
-
-    setEditedTicker(emptyPosition);
-    setTickersData([...tickersData, editedticker]);
+    // Add a new empty ticker
+    const newTicker = getEmptyRow(creator, "");
+    setSelectedTicker(null);
+    setEditedTicker(newTicker);
+    setTickersData([...tickersData, newTicker]);
     setUnsavedChanges(true);
   };
 
@@ -189,7 +184,6 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({
           emptyPosition={emptyPosition}
           onTickerSelect={handleTickerSelect}
           setshowAllTickers={setshowAllTickers}
-          setSelectedTicker={setSelectedTicker}
         />
       )}
     </div>

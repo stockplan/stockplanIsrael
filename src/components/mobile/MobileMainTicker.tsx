@@ -118,7 +118,8 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost);
     const expectedLoss = calculateExpectedLoss(editedticker.positionType, editedticker.askPrice, editedticker.stopLoss, editedticker.quantity);
     const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost);
-    const newExitPrice = calculateExitPriceFromProfitPercent(editedticker.positionType, editedticker.askPrice, expectedProfit, editedticker.quantity);
+    let tmpExpectedProfitForExitPriceFromEXPPresent = numericValue * updatedCost / 100
+    const newExitPrice = calculateExitPriceFromProfitPercent(editedticker.positionType, editedticker.askPrice, tmpExpectedProfitForExitPriceFromEXPPresent, editedticker.quantity);
   
     const absLossPercent = Math.abs(editedticker.expectedLossPercent);
     // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
@@ -126,6 +127,17 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
     const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, editedticker.quantity, editedticker.askPrice);
 
+    // ONLY in EXP.Loss% need to understand those functions, maybe it have to be negative num
+    // const negativeValue =
+    //   +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
+    // const formattedVal = formatFractionDigits(+initialValue);
+
+    // if (+formattedVal > 0 && negativeValue === 0) return;
+    //? all above to ask daniel
+  
+    // issues with EXP.prifit%  because calculateExitPriceFromProfitPercent  
+    // exitprice, EXP.Loss% & stoploss  doesnt work when goes back to 0   
+    // 
 
     switch (name) {
       case "ticker":

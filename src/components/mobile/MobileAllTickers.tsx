@@ -44,7 +44,10 @@ const MobileAllTickers: React.FC<MobileAllTickers> = ({
             style={{
               borderTopColor: item.positionType === "buy" ? "green" : "red",
             }}
-            onClick={() => onTickerSelect(item)}
+            onClick={() => {
+              onTickerSelect(item);
+              setshowAllTickers(false);
+            }}
           >
             <div className="flex justify-between items-start w-full text-sm gap-3">
               <span>{item.ticker}</span>

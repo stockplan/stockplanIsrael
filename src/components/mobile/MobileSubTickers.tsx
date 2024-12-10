@@ -10,9 +10,16 @@ const MobileSubTickers: React.FC<MobileSubTickersProps> = ({
   tickersData,
   onTickerSelect,
 }) => {
+  // Sort the tickersData array by updatedAt in descending order. (all dates are the same so it deosnt work)
+  const sortedTickers = [...tickersData].sort(
+    (a, b) =>
+      new Date(b.updatedAt ?? 0).getTime() -
+      new Date(a.updatedAt ?? 0).getTime()
+  );
+
   return (
     <div className="flex overflow-x-auto overflow-y-hidden whitespace-nowrap gap-4">
-      {tickersData?.map((item, index) => (
+      {sortedTickers?.map((item, index) => (
         <div
           key={`${item._id}-${index}`}
           className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
