@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Input } from "../ui/input";
-import { Position } from "@/types";
+import React, { useEffect, useState } from "react"
+import { Input } from "../ui/input"
+import { Position } from "@/types"
 import {
   calculateCost,
   calculateExitPriceFromProfitPercent,
@@ -9,85 +9,79 @@ import {
   calculateExpectedProfit,
   calculateExpectedProfitPercent,
   calculateStopLossFromLossPercent,
-} from "@/utils/calc-helpers";
-import CurrencyInput from "react-currency-input-field";
-import { useToast } from "../ui/use-toast";
-import { ToastAction } from "../ui/toast";
-import axios from "axios";
-import useSWR from "swr";
+} from "@/utils/calc-helpers"
+import CurrencyInput from "react-currency-input-field"
+import { useToast } from "../ui/use-toast"
+import { ToastAction } from "../ui/toast"
+import axios from "axios"
+import useSWR from "swr"
+import { useLossProfitState } from "./useLossprofitState"
+import { getEmptyRow } from "@/lib/utils"
 
-interface MobileMainTickerProps {
-  editedticker: Position;
-  emptyPosition: Position;
-  setEditedTicker: React.Dispatch<React.SetStateAction<Position>>;
-  selectedTicker: Position | null;
-  setTickersData: React.Dispatch<React.SetStateAction<Position[]>>;
-}
+interface MobileMainTickerProps {}
 
 const fetcher = async (url: string, currTicker: string) =>
   await axios.get(`${url}?ticker=${currTicker}`).then((res) => {
-    return res.data;
-  });
+    return res.data
+  })
 
-const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
-  editedticker,
-  emptyPosition,
-  setEditedTicker,
-  selectedTicker,
-  setTickersData,
-}) => {
-  const [originalValues, setOriginalValues] = useState<Position>(emptyPosition);
+const MobileMainTicker: React.FC<MobileMainTickerProps> = ({}) => {
+  const { selectedTicker } = useLossProfitState()
 
-  const { toast } = useToast();
+  const [originalValues, setOriginalValues] = useState<Position>(
+    selectedTicker || getEmptyRow()
+  )
+
+  const { toast } = useToast()
 
   // starting position empty or fill input with selectedTicker
   useEffect(() => {
-    setEditedTicker(selectedTicker || emptyPosition);
-    setOriginalValues(selectedTicker || emptyPosition);
-  }, [selectedTicker]);
-
-  //maybe a beter way to do it. find the index of the editedticker and change it in tickersData
-  const handleInputChange = (field: keyof Position, value: any) => {
-    setEditedTicker((prevticker) => ({ ...prevticker, [field]: value }));
-
-    const originalValue = originalValues[field] as string | number;
-    // Update only if the value has changed
-    if (hasValueChanged(originalValue, value)) {
-      setTickersData((prevData) => {
-        // find the index of the changed ticker in the array
-        const existingTickerIndex = prevData.findIndex(
-          (ticker) => ticker._id === editedticker._id
-        );
-        if (existingTickerIndex >= 0) {
-          // Update existing ticker data live before save
-          const updatedData = [...prevData];
-          updatedData[existingTickerIndex] = {
-            ...updatedData[existingTickerIndex],
-            [field]: value,
-          };
-          return updatedData;
-        } else {
-          return prevData;
-        }
-      });
+    if (selectedTicker) {
+      setOriginalValues(selectedTicker!)
     }
-  };
+  }, [])
+
+  const handleInputChange = (field: keyof Position, value: any) => {
+    setOriginalValues((prevTicker) => ({ ...prevTicker, [field]: value }))
+
+    // const originalValue = originalValues[field] as string | number
+    // Update only if the value has changed
+    // if (hasValueChanged(originalValue, value)) {
+    //   setTickersData((prevData) => {
+    //     // find the index of the changed ticker in the array
+    //     const existingTickerIndex = prevData.findIndex(
+    //       (ticker) => ticker._id === originalValues._id
+    //     )
+    //     if (existingTickerIndex >= 0) {
+    //       // Update existing ticker data live before save
+    //       const updatedData = [...prevData]
+    //       updatedData[existingTickerIndex] = {
+    //         ...updatedData[existingTickerIndex],
+    //         [field]: value,
+    //       }
+    //       return updatedData
+    //     } else {
+    //       return prevData
+    //     }
+    //   })
+    // }
+  }
 
   //prettier-ignore
   const hasValueChanged = (originalValue: string | number, currentValue: string | number): boolean => {
     return originalValue !== currentValue;
   };
 
-  //Positiontype
+  //PositionType
   //prettier-ignore
   const handlePositionTypeChange = (type: "buy" | "sell") => {
-    const expProfit = calculateExpectedProfit(type, editedticker.askPrice, editedticker.exitPrice, editedticker.quantity);
-    const expectedProfitPercent = calculateExpectedProfitPercent(expProfit, editedticker.cost);
-    const expLoss = calculateExpectedLoss(type, editedticker.askPrice, editedticker.stopLoss, editedticker.quantity);
-    const expLossPercent = calculateExpectedLossPercent(expLoss, editedticker.cost);
+    const expProfit = calculateExpectedProfit(type, originalValues.askPrice, originalValues.exitPrice, originalValues.quantity);
+    const expectedProfitPercent = calculateExpectedProfitPercent(expProfit, originalValues.cost);
+    const expLoss = calculateExpectedLoss(type, originalValues.askPrice, originalValues.stopLoss, originalValues.quantity);
+    const expLossPercent = calculateExpectedLossPercent(expLoss, originalValues.cost);
     
-    setEditedTicker((prevticker) => ({
-      ...prevticker,
+    setOriginalValues((prevTicker) => ({
+      ...prevTicker,
       positionType: type,
       expectedProfit: +expProfit,
       expectedProfitPercent,
@@ -96,36 +90,36 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     }));
   };
 
-  //  used for the fatched price to reduce calling GET
+  //  used for the fetched price to reduce calling GET
   const { data, error, isLoading, isValidating } = useSWR(
-    editedticker.ticker ? ["/api/tickerPrice", editedticker.ticker] : null,
+    originalValues.ticker ? ["/api/tickerPrice", originalValues.ticker] : null,
     ([url, currTicker]) => fetcher(url, currTicker),
     {
-      fallbackData: editedticker.actualPrice,
+      fallbackData: originalValues.actualPrice,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
       refreshInterval: 2 * 60 * 1000,
     }
-  );
+  )
 
   //prettier-ignore
   const handleBlur = async (name: string, value: any) => {
     // turn value to number instead of string
     const numericValue = parseFloat(value.toString().replace(/[^\d.-]/g, ""));
     // Precompute common calculations
-    const updatedCost = calculateCost(editedticker.askPrice, editedticker.quantity);
-    const expectedProfit = calculateExpectedProfit(editedticker.positionType, editedticker.askPrice, editedticker.exitPrice, editedticker.quantity)
+    const updatedCost = calculateCost(originalValues.askPrice, originalValues.quantity);
+    const expectedProfit = calculateExpectedProfit(originalValues.positionType, originalValues.askPrice, originalValues.exitPrice, originalValues.quantity)
     const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost);
-    const expectedLoss = calculateExpectedLoss(editedticker.positionType, editedticker.askPrice, editedticker.stopLoss, editedticker.quantity);
+    const expectedLoss = calculateExpectedLoss(originalValues.positionType, originalValues.askPrice, originalValues.stopLoss, originalValues.quantity);
     const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost);
     let tmpExpectedProfitForExitPriceFromEXPPresent = numericValue * updatedCost / 100
-    const newExitPrice = calculateExitPriceFromProfitPercent(editedticker.positionType, editedticker.askPrice, tmpExpectedProfitForExitPriceFromEXPPresent, editedticker.quantity);
+    const newExitPrice = calculateExitPriceFromProfitPercent(originalValues.positionType, originalValues.askPrice, tmpExpectedProfitForExitPriceFromEXPPresent, originalValues.quantity);
   
-    const absLossPercent = Math.abs(editedticker.expectedLossPercent);
+    const absLossPercent = Math.abs(originalValues.expectedLossPercent);
     // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
     const newExpectedLoss = ((absLossPercent * updatedCost) / 100) * -1 + 0;
     // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
-    const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, editedticker.quantity, editedticker.askPrice);
+    const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, originalValues.quantity, originalValues.askPrice);
 
     // ONLY in EXP.Loss% need to understand those functions, maybe it have to be negative num
     // const negativeValue =
@@ -135,22 +129,23 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
     // if (+formattedVal > 0 && negativeValue === 0) return;
     //? all above to ask daniel
   
-    // issues with EXP.prifit%  because calculateExitPriceFromProfitPercent  
-    // exitprice, EXP.Loss% & stoploss  doesnt work when goes back to 0   
+    // issues with EXP.profit%  because calculateExitPriceFromProfitPercent  
+    // exitPrice, EXP.Loss% & stopLoss  doesn't work when goes back to 0   
     // 
 
     switch (name) {
       case "ticker":
         if (selectedTicker?.ticker) {
-          toast({
-            title: "Overriding existing ticker",
-            description: "Please clear to add new ticker",
-            action: <ToastAction altText="Try again">Try again</ToastAction>,
-          });
-          return;
+          //todo: ask tomer
+          // toast({
+          //   title: "Overriding existing ticker",
+          //   description: "Please clear to add new ticker",
+          //   action: <ToastAction altText="Try again">Try again</ToastAction>,
+          // });
+          // return;
         }
         if (value && data) {
-          setEditedTicker((prev) => ({
+          setOriginalValues((prev) => ({
             ...prev,
             actualPrice: +data.fetchedPrice || 0,
           }));
@@ -158,8 +153,8 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         break;
   
       case "quantity":
-        if (!hasValueChanged(originalValues.quantity, editedticker.quantity)) return;
-        setEditedTicker((prev) => ({
+        if (!hasValueChanged(originalValues.quantity, originalValues.quantity)) return;
+        setOriginalValues((prev) => ({
           ...prev,
           cost: updatedCost,
           expectedProfit,
@@ -170,8 +165,8 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         break;
   
       case "askPrice":
-        if (!hasValueChanged(originalValues.askPrice, editedticker.askPrice)) return;
-        setEditedTicker((prev) => ({
+        if (!hasValueChanged(originalValues.askPrice, originalValues.askPrice)) return;
+        setOriginalValues((prev) => ({
           ...prev,
           cost: updatedCost,
           expectedProfit,
@@ -184,7 +179,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
       case "exitPrice":
         if (numericValue === 0 || isNaN(numericValue)) return;
         if (!hasValueChanged(originalValues.exitPrice, numericValue)) return;
-        setEditedTicker((prev) => ({
+        setOriginalValues((prev) => ({
           ...prev,
           expectedProfit,
           expectedProfitPercent,
@@ -193,11 +188,11 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   
       case "profitPercent":
         if (numericValue <= 0) {
-          setEditedTicker((prev) => ({ ...prev, expectedProfitPercent: 0 }));
+          setOriginalValues((prev) => ({ ...prev, expectedProfitPercent: 0 }));
           return;
         }
         if (!hasValueChanged(originalValues.expectedProfitPercent, numericValue)) return;
-        setEditedTicker((prev) => ({
+        setOriginalValues((prev) => ({
           ...prev,
           expectedProfit,
           exitPrice: newExitPrice,
@@ -206,7 +201,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   
       case "stopLoss":
         if (!hasValueChanged(originalValues.stopLoss, numericValue)) return;
-        setEditedTicker((prev) => ({
+        setOriginalValues((prev) => ({
           ...prev,
           expectedLoss,
           expectedLossPercent,
@@ -215,7 +210,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
   
       case "lossPercent":
         if (!hasValueChanged(originalValues.expectedLossPercent, numericValue)) return;
-        setEditedTicker((prev) => ({
+        setOriginalValues((prev) => ({
           ...prev,
           expectedLoss: newExpectedLoss,
           stopLoss: newStopLoss,
@@ -234,7 +229,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         <div className="mb-2">
           <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
             <Input
-              value={editedticker.ticker}
+              value={originalValues.ticker}
               onChange={(e) =>
                 handleInputChange("ticker", e.target.value.toUpperCase())
               }
@@ -243,7 +238,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
               className="w-1/2 border-none bg-transparent focus:outline-none text-white"
             />
             <CurrencyInput
-              value={editedticker.actualPrice}
+              value={originalValues.actualPrice}
               name="actualPrice"
               readOnly
               className="w-1/2 text-right border-none bg-transparent focus:outline-none text-white"
@@ -257,7 +252,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         <div className="flex justify-between mb-4">
           <button
             className={`px-2 py-1 w-1/2 rounded text-white ${
-              editedticker.positionType === "buy"
+              originalValues.positionType === "buy"
                 ? "bg-green-500"
                 : "bg-gray-400"
             }`}
@@ -267,7 +262,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           </button>
           <button
             className={`px-2 py-1 w-1/2 rounded text-white ${
-              editedticker.positionType === "sell"
+              originalValues.positionType === "sell"
                 ? "bg-red-500"
                 : "bg-gray-400"
             }`}
@@ -282,7 +277,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Quantity</label>
             <CurrencyInput
-              value={editedticker.quantity}
+              value={originalValues.quantity}
               onValueChange={(value) =>
                 handleInputChange("quantity", parseInt(value || "0"))
               }
@@ -299,7 +294,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Ask Price</label>
             <CurrencyInput
-              value={editedticker.askPrice}
+              value={originalValues.askPrice}
               onValueChange={(value) =>
                 handleInputChange("askPrice", parseFloat(value || "0"))
               }
@@ -318,7 +313,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
             <label className="text-sm mr-2">Cost</label>
             <CurrencyInput
               readOnly
-              value={editedticker.cost}
+              value={originalValues.cost}
               onValueChange={(value) =>
                 handleInputChange("cost", parseFloat(value || "0"))
               }
@@ -334,7 +329,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Exit Price</label>
             <CurrencyInput
-              value={editedticker.exitPrice}
+              value={originalValues.exitPrice}
               onValueChange={(value) =>
                 handleInputChange("exitPrice", parseFloat(value || "0"))
               }
@@ -352,7 +347,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Expected Profit %</label>
             <CurrencyInput
-              value={editedticker.expectedProfitPercent}
+              value={originalValues.expectedProfitPercent}
               onValueChange={(value) =>
                 handleInputChange(
                   "expectedProfitPercent",
@@ -373,7 +368,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Stop Loss</label>
             <CurrencyInput
-              value={editedticker.stopLoss}
+              value={originalValues.stopLoss}
               onValueChange={(value) =>
                 handleInputChange("stopLoss", parseFloat(value || "0"))
               }
@@ -391,7 +386,7 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
           <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
             <label className="text-sm mr-2">Expected Loss %</label>
             <CurrencyInput
-              value={editedticker.expectedLossPercent}
+              value={originalValues.expectedLossPercent}
               onValueChange={(value) =>
                 handleInputChange(
                   "expectedLossPercent",
@@ -410,17 +405,17 @@ const MobileMainTicker: React.FC<MobileMainTickerProps> = ({
         {/* Expected Profit and Loss Summary */}
         <div className="flex justify-between mt-4 text-lg">
           <div className="text-green-500">
-            {/* Exp. profit: {editedticker.expectedProfit >= 0 ? editedticker.expectedProfit : 0}$ */}
-            Exp. profit: {editedticker.expectedProfit}$
+            {/* Exp. profit: {originalValues.expectedProfit >= 0 ? originalValues.expectedProfit : 0}$ */}
+            Exp. profit: {originalValues.expectedProfit}$
           </div>
           <div className="text-red-500">
-            {/* Exp. Loss: {editedticker.expectedLoss <= 0 ? editedticker.expectedLoss : 0}$ */}
-            Exp. Loss: {editedticker.expectedLoss}$
+            {/* Exp. Loss: {originalValues.expectedLoss <= 0 ? originalValues.expectedLoss : 0}$ */}
+            Exp. Loss: {originalValues.expectedLoss}$
           </div>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MobileMainTicker;
+export default MobileMainTicker
