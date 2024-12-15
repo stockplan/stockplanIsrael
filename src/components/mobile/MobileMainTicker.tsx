@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react"
+"use client"
+
+import React, { useEffect } from "react"
+import { useForm, Controller, SubmitHandler } from "react-hook-form"
 import { Input } from "../ui/input"
 import { Position } from "@/types"
 import {
@@ -11,410 +14,379 @@ import {
   calculateStopLossFromLossPercent,
 } from "@/utils/calc-helpers"
 import CurrencyInput from "react-currency-input-field"
-import { useToast } from "../ui/use-toast"
-import { ToastAction } from "../ui/toast"
-import axios from "axios"
-import useSWR from "swr"
+import useSWR, { mutate } from "swr"
 import { useLossProfitState } from "./useLossprofitState"
+import AddTickerBtn from "./AddTickerBtn"
+import { Button } from "../ui/button"
+import axios from "axios"
+import Logo from "../logo"
 import { getEmptyRow } from "@/lib/utils"
 
 interface MobileMainTickerProps {}
 
-const fetcher = async (url: string, currTicker: string) =>
-  await axios.get(`${url}?ticker=${currTicker}`).then((res) => {
-    return res.data
-  })
+const fetcher = async (url: string, currTicker: string) => {
+  const res = await axios.get(`${url}?ticker=${currTicker}`)
+  return res.data
+}
 
-const MobileMainTicker: React.FC<MobileMainTickerProps> = ({}) => {
-  const { selectedTicker } = useLossProfitState()
+export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
+  const { selectedTicker, saveChanges, deleteTicker, creator, tickersData } = useLossProfitState()
+  const defaultValues: Position = selectedTicker ?? getEmptyRow()
+  const { control, handleSubmit, setValue, getValues, reset, watch } = useForm<Position>({ defaultValues })
 
-  const [originalValues, setOriginalValues] = useState<Position>(
-    selectedTicker || getEmptyRow()
-  )
+  const ticker = watch("ticker") // watch ticker changes
+  const positionType = watch("positionType") // watch positionType changes for immediate UI updates
 
-  const { toast } = useToast()
-
-  // starting position empty or fill input with selectedTicker
-  useEffect(() => {
-    if (selectedTicker) {
-      setOriginalValues(selectedTicker!)
-    }
-  }, [])
-
-  const handleInputChange = (field: keyof Position, value: any) => {
-    setOriginalValues((prevTicker) => ({ ...prevTicker, [field]: value }))
-
-    // const originalValue = originalValues[field] as string | number
-    // Update only if the value has changed
-    // if (hasValueChanged(originalValue, value)) {
-    //   setTickersData((prevData) => {
-    //     // find the index of the changed ticker in the array
-    //     const existingTickerIndex = prevData.findIndex(
-    //       (ticker) => ticker._id === originalValues._id
-    //     )
-    //     if (existingTickerIndex >= 0) {
-    //       // Update existing ticker data live before save
-    //       const updatedData = [...prevData]
-    //       updatedData[existingTickerIndex] = {
-    //         ...updatedData[existingTickerIndex],
-    //         [field]: value,
-    //       }
-    //       return updatedData
-    //     } else {
-    //       return prevData
-    //     }
-    //   })
-    // }
-  }
-
-  //prettier-ignore
-  const hasValueChanged = (originalValue: string | number, currentValue: string | number): boolean => {
-    return originalValue !== currentValue;
-  };
-
-  //PositionType
-  //prettier-ignore
-  const handlePositionTypeChange = (type: "buy" | "sell") => {
-    const expProfit = calculateExpectedProfit(type, originalValues.askPrice, originalValues.exitPrice, originalValues.quantity);
-    const expectedProfitPercent = calculateExpectedProfitPercent(expProfit, originalValues.cost);
-    const expLoss = calculateExpectedLoss(type, originalValues.askPrice, originalValues.stopLoss, originalValues.quantity);
-    const expLossPercent = calculateExpectedLossPercent(expLoss, originalValues.cost);
-    
-    setOriginalValues((prevTicker) => ({
-      ...prevTicker,
-      positionType: type,
-      expectedProfit: +expProfit,
-      expectedProfitPercent,
-      expectedLoss: expLoss,
-      expLossPercent,
-    }));
-  };
-
-  //  used for the fetched price to reduce calling GET
-  const { data, error, isLoading, isValidating } = useSWR(
-    originalValues.ticker ? ["/api/tickerPrice", originalValues.ticker] : null,
+  const { data: fetchedPrice, error } = useSWR(
+    ticker ? [`/api/tickerPrice`, ticker] : null,
     ([url, currTicker]) => fetcher(url, currTicker),
     {
-      fallbackData: originalValues.actualPrice,
+      fallbackData: selectedTicker?.actualPrice,
       revalidateOnFocus: false,
       shouldRetryOnError: false,
       refreshInterval: 2 * 60 * 1000,
     }
   )
 
-  //prettier-ignore
-  const handleBlur = async (name: string, value: any) => {
-    // turn value to number instead of string
-    const numericValue = parseFloat(value.toString().replace(/[^\d.-]/g, ""));
-    // Precompute common calculations
-    const updatedCost = calculateCost(originalValues.askPrice, originalValues.quantity);
-    const expectedProfit = calculateExpectedProfit(originalValues.positionType, originalValues.askPrice, originalValues.exitPrice, originalValues.quantity)
-    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost);
-    const expectedLoss = calculateExpectedLoss(originalValues.positionType, originalValues.askPrice, originalValues.stopLoss, originalValues.quantity);
-    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost);
-    let tmpExpectedProfitForExitPriceFromEXPPresent = numericValue * updatedCost / 100
-    const newExitPrice = calculateExitPriceFromProfitPercent(originalValues.positionType, originalValues.askPrice, tmpExpectedProfitForExitPriceFromEXPPresent, originalValues.quantity);
-  
-    const absLossPercent = Math.abs(originalValues.expectedLossPercent);
-    // Expected Loss = (-1) * (Expected Loss % * total cost / 100)
-    const newExpectedLoss = ((absLossPercent * updatedCost) / 100) * -1 + 0;
-    // Stop Loss = newExpectedLoss(Expected Loss / Quantity) + Ask Price
-    const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, originalValues.quantity, originalValues.askPrice);
-
-    // ONLY in EXP.Loss% need to understand those functions, maybe it have to be negative num
-    // const negativeValue =
-    //   +lossPercent > 0 ? +lossPercent * -1 : +lossPercent;
-    // const formattedVal = formatFractionDigits(+initialValue);
-
-    // if (+formattedVal > 0 && negativeValue === 0) return;
-    //? all above to ask daniel
-  
-    // issues with EXP.profit%  because calculateExitPriceFromProfitPercent  
-    // exitPrice, EXP.Loss% & stopLoss  doesn't work when goes back to 0   
-    // 
-
-    switch (name) {
-      case "ticker":
-        if (selectedTicker?.ticker) {
-          //todo: ask tomer
-          // toast({
-          //   title: "Overriding existing ticker",
-          //   description: "Please clear to add new ticker",
-          //   action: <ToastAction altText="Try again">Try again</ToastAction>,
-          // });
-          // return;
-        }
-        if (value && data) {
-          setOriginalValues((prev) => ({
-            ...prev,
-            actualPrice: +data.fetchedPrice || 0,
-          }));
-        }
-        break;
-  
-      case "quantity":
-        if (!hasValueChanged(originalValues.quantity, originalValues.quantity)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          cost: updatedCost,
-          expectedProfit,
-          expectedProfitPercent,
-          expectedLoss,
-          expectedLossPercent,
-        }));
-        break;
-  
-      case "askPrice":
-        if (!hasValueChanged(originalValues.askPrice, originalValues.askPrice)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          cost: updatedCost,
-          expectedProfit,
-          expectedProfitPercent,
-          expectedLoss,
-          expectedLossPercent,
-        }));
-        break;
-  
-      case "exitPrice":
-        if (numericValue === 0 || isNaN(numericValue)) return;
-        if (!hasValueChanged(originalValues.exitPrice, numericValue)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          expectedProfit,
-          expectedProfitPercent,
-        }));
-        break;
-  
-      case "profitPercent":
-        if (numericValue <= 0) {
-          setOriginalValues((prev) => ({ ...prev, expectedProfitPercent: 0 }));
-          return;
-        }
-        if (!hasValueChanged(originalValues.expectedProfitPercent, numericValue)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          expectedProfit,
-          exitPrice: newExitPrice,
-        }));
-        break;
-  
-      case "stopLoss":
-        if (!hasValueChanged(originalValues.stopLoss, numericValue)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          expectedLoss,
-          expectedLossPercent,
-        }));
-        break;
-  
-      case "lossPercent":
-        if (!hasValueChanged(originalValues.expectedLossPercent, numericValue)) return;
-        setOriginalValues((prev) => ({
-          ...prev,
-          expectedLoss: newExpectedLoss,
-          stopLoss: newStopLoss,
-        }));
-        break;
-  
-      default:
-        console.warn("Unhandled field in handleBlur");
+  useEffect(() => {
+    if (error || !ticker) {
+      setValue("actualPrice", 0)
+    } else if (fetchedPrice && fetchedPrice.fetchedPrice && ticker) {
+      setValue("actualPrice", parseFloat(fetchedPrice.fetchedPrice))
     }
-  };
+  }, [fetchedPrice, error, ticker])
+
+  const handleFieldBlur = (field: keyof Position) => {
+    const values = getValues()
+    const updatedCost = calculateCost(values.askPrice, values.quantity)
+
+    const expectedProfit = calculateExpectedProfit(
+      values.positionType,
+      values.askPrice,
+      values.exitPrice,
+      values.quantity
+    )
+    const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost)
+
+    const expectedLoss = calculateExpectedLoss(values.positionType, values.askPrice, values.stopLoss, values.quantity)
+    const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost)
+
+    switch (field) {
+      case "quantity":
+      case "askPrice":
+        setValue("cost", updatedCost)
+        setValue("expectedProfit", expectedProfit)
+        setValue("expectedProfitPercent", expectedProfitPercent)
+        setValue("expectedLoss", expectedLoss)
+        setValue("expectedLossPercent", expectedLossPercent)
+        break
+
+      case "exitPrice":
+        setValue("expectedProfit", expectedProfit)
+        setValue("expectedProfitPercent", expectedProfitPercent)
+        break
+
+      case "expectedProfitPercent":
+        const targetProfit = (values.expectedProfitPercent * updatedCost) / 100
+        const newExitPrice = calculateExitPriceFromProfitPercent(
+          values.positionType,
+          values.askPrice,
+          targetProfit,
+          values.quantity
+        )
+        setValue("exitPrice", newExitPrice)
+        setValue("expectedProfit", targetProfit)
+        break
+
+      case "stopLoss":
+        setValue("expectedLoss", expectedLoss)
+        setValue("expectedLossPercent", expectedLossPercent)
+        break
+
+      case "expectedLossPercent":
+        // Calculate new values based on loss %
+        const lossPercentValue = values.expectedLossPercent
+        const newExpectedLoss = ((Math.abs(lossPercentValue) * updatedCost) / 100) * -1
+        const newStopLoss = calculateStopLossFromLossPercent(newExpectedLoss, values.quantity, values.askPrice)
+        setValue("expectedLoss", newExpectedLoss)
+        setValue("stopLoss", newStopLoss)
+        break
+    }
+  }
+
+  const handlePositionTypeChange = (type: "buy" | "sell") => {
+    setValue("positionType", type)
+    // handleFieldBlur("quantity")
+  }
+
+  const onSubmit: SubmitHandler<Position> = async (data) => {
+    //  saveChanges(data)
+    const updatedTickers = tickersData.map((item) => {
+      if (item._id === data._id) return data
+      return item
+    })
+    await saveChanges(updatedTickers)
+  }
 
   return (
-    <div>
-      <div className="mb-4 p-4 border border-gray-700 rounded-lg">
-        {/* Ticker and Cost Display */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
-            <Input
-              value={originalValues.ticker}
-              onChange={(e) =>
-                handleInputChange("ticker", e.target.value.toUpperCase())
-              }
-              name="ticker"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-white"
-            />
-            <CurrencyInput
-              value={originalValues.actualPrice}
-              name="actualPrice"
-              readOnly
-              className="w-1/2 text-right border-none bg-transparent focus:outline-none text-white"
-              suffix="$"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Buy and Sell Buttons */}
-        <div className="flex justify-between mb-4">
-          <button
-            className={`px-2 py-1 w-1/2 rounded text-white ${
-              originalValues.positionType === "buy"
-                ? "bg-green-500"
-                : "bg-gray-400"
-            }`}
-            onClick={() => handlePositionTypeChange("buy")}
-          >
-            Buy
-          </button>
-          <button
-            className={`px-2 py-1 w-1/2 rounded text-white ${
-              originalValues.positionType === "sell"
-                ? "bg-red-500"
-                : "bg-gray-400"
-            }`}
-            onClick={() => handlePositionTypeChange("sell")}
-          >
-            Sell
-          </button>
-        </div>
-
-        {/* Quantity Input */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Quantity</label>
-            <CurrencyInput
-              value={originalValues.quantity}
-              onValueChange={(value) =>
-                handleInputChange("quantity", parseInt(value || "0"))
-              }
-              name="quantity"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              decimalsLimit={0}
-            />
-          </div>
-        </div>
-
-        {/* Ask Price Input */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Ask Price</label>
-            <CurrencyInput
-              value={originalValues.askPrice}
-              onValueChange={(value) =>
-                handleInputChange("askPrice", parseFloat(value || "0"))
-              }
-              name="askPrice"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              suffix="$"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Cost Field */}
-        <div className="mb-2">
-          <div className="p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Cost</label>
-            <CurrencyInput
-              readOnly
-              value={originalValues.cost}
-              onValueChange={(value) =>
-                handleInputChange("cost", parseFloat(value || "0"))
-              }
-              className="w-1/2 border-none bg-transparent focus:outline-none text-white text-right"
-              suffix="$"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Exit Price Input */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Exit Price</label>
-            <CurrencyInput
-              value={originalValues.exitPrice}
-              onValueChange={(value) =>
-                handleInputChange("exitPrice", parseFloat(value || "0"))
-              }
-              name="exitPrice"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              suffix="$"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Expected Profit Percentage */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Expected Profit %</label>
-            <CurrencyInput
-              value={originalValues.expectedProfitPercent}
-              onValueChange={(value) =>
-                handleInputChange(
-                  "expectedProfitPercent",
-                  parseFloat(value || "0")
-                )
-              }
-              name="profitPercent"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              suffix="%"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Stop Loss Input */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Stop Loss</label>
-            <CurrencyInput
-              value={originalValues.stopLoss}
-              onValueChange={(value) =>
-                handleInputChange("stopLoss", parseFloat(value || "0"))
-              }
-              name="stopLoss"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              suffix="$"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Expected Loss Percentage */}
-        <div className="mb-2">
-          <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
-            <label className="text-sm mr-2">Expected Loss %</label>
-            <CurrencyInput
-              value={originalValues.expectedLossPercent}
-              onValueChange={(value) =>
-                handleInputChange(
-                  "expectedLossPercent",
-                  parseFloat(value || "0")
-                )
-              }
-              name="lossPercent"
-              onBlur={(e) => handleBlur(e.target.name, e.target.value)}
-              className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-              suffix="%"
-              decimalsLimit={2}
-            />
-          </div>
-        </div>
-
-        {/* Expected Profit and Loss Summary */}
-        <div className="flex justify-between mt-4 text-lg">
-          <div className="text-green-500">
-            {/* Exp. profit: {originalValues.expectedProfit >= 0 ? originalValues.expectedProfit : 0}$ */}
-            Exp. profit: {originalValues.expectedProfit}$
-          </div>
-          <div className="text-red-500">
-            {/* Exp. Loss: {originalValues.expectedLoss <= 0 ? originalValues.expectedLoss : 0}$ */}
-            Exp. Loss: {originalValues.expectedLoss}$
-          </div>
-        </div>
+    <>
+      <div>
+        <Logo isNavigate={false} />
+        <h2 className="text-xl font-semibold mt-2" onClick={() => console.log(getValues())}>
+          Quick Profit & Loss Calculator
+        </h2>
       </div>
-    </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <div className="mb-4 p-4 border border-gray-700 rounded-lg">
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
+              <Controller
+                control={control}
+                name="ticker"
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    placeholder="Ticker"
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-white"
+                    onBlur={() => {
+                      handleFieldBlur("ticker")
+                      mutate(["/api/tickerPrice", getValues("ticker")])
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value.toUpperCase()
+                      field.onChange(val)
+                    }}
+                  />
+                )}
+              />
+              <Controller
+                control={control}
+                name="actualPrice"
+                render={({ field }) => (
+                  <CurrencyInput
+                    {...field}
+                    readOnly
+                    // allowEmptyValue={true}
+                    placeholder="--"
+                    className="w-1/2 text-right border-none bg-transparent focus:outline-none text-white"
+                    suffix="$"
+                    decimalsLimit={2}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-between mb-4">
+            <button
+              type="button"
+              onClick={() => handlePositionTypeChange("buy")}
+              className={`flex-1 py-1 px-2 ${
+                positionType === "buy" ? "bg-green-500" : "bg-gray-400"
+              } text-white text-sm`}
+            >
+              Buy
+            </button>
+            <button
+              type="button"
+              onClick={() => handlePositionTypeChange("sell")}
+              className={`flex-1 ${positionType === "sell" ? "bg-red-500" : "bg-gray-400"} text-white text-sm`}
+            >
+              Sell
+            </button>
+          </div>
+
+          {/* Quantity */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Quantity</label>
+              <Controller
+                control={control}
+                name="quantity"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0"
+                    decimalsLimit={0}
+                    onBlur={() => handleFieldBlur("quantity")}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Ask Price */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Ask Price</label>
+              <Controller
+                control={control}
+                name="askPrice"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0.00"
+                    suffix="$"
+                    onBlur={() => handleFieldBlur("askPrice")}
+                    decimalsLimit={2}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Cost */}
+          <div className="mb-2">
+            <div className="p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Cost</label>
+              <Controller
+                control={control}
+                name="cost"
+                render={({ field }) => (
+                  <CurrencyInput
+                    {...field}
+                    readOnly
+                    // allowEmptyValue={true}
+                    placeholder="--"
+                    suffix="$"
+                    decimalsLimit={2}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-white text-right"
+                    value={field.value || ""}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Exit Price */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Exit Price</label>
+              <Controller
+                control={control}
+                name="exitPrice"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0.00"
+                    suffix="$"
+                    decimalsLimit={2}
+                    onBlur={() => handleFieldBlur("exitPrice")}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Expected Profit Percent */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Expected Profit %</label>
+              <Controller
+                control={control}
+                name="expectedProfitPercent"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0.00"
+                    suffix="%"
+                    onBlur={() => handleFieldBlur("expectedProfitPercent")}
+                    decimalsLimit={2}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Stop Loss */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Stop Loss</label>
+              <Controller
+                control={control}
+                name="stopLoss"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0.00"
+                    suffix="$"
+                    onBlur={() => handleFieldBlur("stopLoss")}
+                    decimalsLimit={2}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Expected Loss Percent */}
+          <div className="mb-2">
+            <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
+              <label className="text-sm mr-2">Expected Loss %</label>
+              <Controller
+                control={control}
+                name="expectedLossPercent"
+                render={({ field }) => (
+                  <CurrencyInput
+                    // allowEmptyValue={true}
+                    placeholder="0.00"
+                    suffix="%"
+                    decimalsLimit={2}
+                    onBlur={() => handleFieldBlur("expectedLossPercent")}
+                    className="w-1/2 border-none bg-transparent focus:outline-none text-right"
+                    onValueChange={(value) => field.onChange(value ? parseFloat(value) : 0)}
+                    value={field.value === 0 ? "" : field.value}
+                  />
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Display Expected Profit & Loss */}
+          <div className="flex justify-between mt-4 text-lg">
+            <div className="text-green-500">Exp. profit: {watch("expectedProfit")}$</div>
+            <div className="text-red-500">Exp. Loss: {watch("expectedLoss")}$</div>
+          </div>
+        </div>
+
+        {creator && (
+          <div className="mt-4 flex justify-center">
+            <Button type="submit" className="bg-blue-600 w-full">
+              Save Changes
+            </Button>
+          </div>
+        )}
+
+        <div className="mt-6 flex justify-center">
+          <AddTickerBtn />
+        </div>
+
+        <div className="flex justify-between items-center mt-4">
+          {creator && (
+            <Button type="button" onClick={() => deleteTicker()} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </Button>
+          )}
+          <Button type="button" onClick={() => reset(defaultValues)} className="bg-gray-600 hover:bg-gray-700">
+            Reset
+          </Button>
+        </div>
+      </form>
+    </>
   )
 }
 

@@ -1,18 +1,14 @@
 "use client"
 
 import { Position } from "@/types"
-import {
-  createContext,
-  PropsWithChildren,
-  useContext,
-  useEffect,
-  useState,
-} from "react"
+import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
 import { useToast } from "../ui/use-toast"
 import { ToastAction } from "../ui/toast"
 import { getEmptyRow } from "@/lib/utils"
 import { hasDataChanged } from "@/utils"
 import axios from "axios"
+import { useUnsavedChangesContext } from "@/hooks/useUnsavedChangesContext"
+import { useWarnIfUnsavedChanges } from "@/hooks/useWarnIfUnsavedChanges"
 
 type Props = {
   tickersData: Position[]
@@ -21,6 +17,7 @@ type Props = {
   deleteTicker: () => void
   handleTickerSelect: (ticker: Position | null) => void
   creator: string | null
+  saveChanges: (changes: Position[]) => Promise<void>
 }
 
 const LossProfitStateContext = createContext<Props | null>(null)
@@ -35,6 +32,22 @@ const LossProfitStateProvider = ({
 }) => {
   const [tickersData, setTickersData] = useState<Position[]>(initialValue)
   const [selectedTicker, setSelectedTicker] = useState<Position | null>(null)
+
+  const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
+
+  useWarnIfUnsavedChanges(unsavedChanges, !!creator)
+
+  const AUTO_SAVE_DELAY = 1000
+
+  // useEffect(() => {
+  //   const autoSaveTimer = setTimeout(() => {
+  //     if (unsavedChanges) {
+  //       saveChanges(tickersData)
+  //     }
+  //   }, AUTO_SAVE_DELAY)
+
+  //   return () => clearTimeout(autoSaveTimer)
+  // }, [tickersData, unsavedChanges])
 
   useEffect(() => {
     if (initialValue) {
@@ -61,9 +74,9 @@ const LossProfitStateProvider = ({
     // Add a new empty ticker
     const newTicker = getEmptyRow(creator)
     setSelectedTicker(newTicker)
+
     const updatedData = [...tickersData, newTicker]
     setTickersData(updatedData)
-    saveChanges(updatedData)
   }
 
   const validateNewTicker = (lastTicker: Position) => {
@@ -83,8 +96,7 @@ const LossProfitStateProvider = ({
       // Validate askPrice
       else if (lastTicker.askPrice === 0) {
         validationToast.title = "Ask Price Required"
-        validationToast.description =
-          "Please enter an ask price greater than 0."
+        validationToast.description = "Please enter an ask price greater than 0."
       }
 
       // Validate quantity
@@ -107,20 +119,24 @@ const LossProfitStateProvider = ({
 
   const deleteTicker = () => {
     if (!selectedTicker) return
-    const updatedTickers = tickersData.filter(
-      (ticker) => ticker._id !== selectedTicker._id
-    )
+    const updatedTickers = tickersData.filter((ticker) => ticker._id !== selectedTicker._id)
     setTickersData(updatedTickers)
     setSelectedTicker(null)
+    setUnsavedChanges(true)
     saveChanges(updatedTickers)
   }
 
   const saveChanges = async (changes: Position[]) => {
-    if (hasDataChanged(changes, tickersData)) return
+    if (hasDataChanged(changes, tickersData)) {
+      setUnsavedChanges(false)
+      return
+    }
+    console.log({ changes })
 
-    if (creator) {
+    if (creator && unsavedChanges) {
       try {
         await axios.post("/api/save", { changes })
+        setUnsavedChanges(false)
       } catch (error) {
         console.error("Failed to save data", error)
       }
@@ -134,10 +150,9 @@ const LossProfitStateProvider = ({
     deleteTicker,
     handleTickerSelect,
     creator,
+    saveChanges,
   }
-  return (
-    <LossProfitStateContext value={value}>{children}</LossProfitStateContext>
-  )
+  return <LossProfitStateContext value={value}>{children}</LossProfitStateContext>
 }
 
 export default LossProfitStateProvider
