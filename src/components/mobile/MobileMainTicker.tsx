@@ -67,7 +67,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
       values.quantity
     )
     const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost)
-
     const expectedLoss = calculateExpectedLoss(values.positionType, values.askPrice, values.stopLoss, values.quantity)
     const expectedLossPercent = calculateExpectedLossPercent(expectedLoss, updatedCost)
 
@@ -132,7 +131,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
     <>
       <div>
         <Logo isNavigate={false} />
-        <h2 className="text-xl font-semibold mt-2" onClick={() => console.log(getValues())}>
+        <h2 className="text-xl font-semibold mt-2" onClick={() => console.log(tickersData)}>
           Quick Profit & Loss Calculator
         </h2>
       </div>
@@ -166,7 +165,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                   <CurrencyInput
                     {...field}
                     readOnly
-                    // allowEmptyValue={true}
                     placeholder="--"
                     className="w-1/2 text-right border-none bg-transparent focus:outline-none text-white"
                     suffix="$"
@@ -205,7 +203,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                 name="quantity"
                 render={({ field }) => (
                   <CurrencyInput
-                    // allowEmptyValue={true}
                     placeholder="0"
                     decimalsLimit={0}
                     onBlur={() => handleFieldBlur("quantity")}
@@ -252,7 +249,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                   <CurrencyInput
                     {...field}
                     readOnly
-                    // allowEmptyValue={true}
                     placeholder="--"
                     suffix="$"
                     decimalsLimit={2}
@@ -370,10 +366,10 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </Button>
           </div>
         )}
-
+        {/* 
         <div className="mt-6 flex justify-center">
           <AddTickerBtn />
-        </div>
+        </div> */}
 
         <div className="flex justify-between items-center mt-4">
           {creator && (

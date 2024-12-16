@@ -7,7 +7,7 @@ interface AddTickerBtnProps {}
 const AddTickerBtn: React.FC<AddTickerBtnProps> = ({}) => {
   const { addNewTicker } = useLossProfitState()
   return (
-    <Button className="bg-gray-700 w-full" onClick={() => addNewTicker()}>
+    <Button className="bg-gray-700 w-full text-xs" onClick={() => addNewTicker()}>
       + Add empty Ticker
     </Button>
   )
