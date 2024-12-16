@@ -9,7 +9,7 @@ interface TickerPreviewProps {
 const TickerPreview: React.FC<TickerPreviewProps> = ({ stock, onClick }) => {
   return (
     <button
-      className=" w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
+      className="w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
       style={{
         borderTopColor: stock.positionType === "buy" ? "green" : "red",
       }}
