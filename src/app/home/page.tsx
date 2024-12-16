@@ -1,6 +1,6 @@
 import ContentHome from "@/components/home/ContentHome"
 import Image from "next/image"
-import figurePic from "../../../public/images/homeFigure.webp"
+import figurePic from "../../../public/img/homeFigure.webp"
 
 const HomePage = async ({}) => {
   return (

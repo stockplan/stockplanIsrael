@@ -55,3 +55,20 @@ export function hasDataChanged(arr1: Position[], arr2: Position[]): boolean {
 
   return true;
 }
+
+export function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number
+) {
+  let timeout: ReturnType<typeof setTimeout> | null = null
+
+  return function executedFunction(this: unknown, ...args: Parameters<T>) {
+    // Clear the previous timer if the function is called again before the wait time ends.
+    if (timeout) clearTimeout(timeout)
+
+    // Set a new timer. Only after 'wait' milliseconds without new calls will 'func' be executed.
+    timeout = setTimeout(() => {
+      func.apply(this, args)
+    }, wait)
+  }
+}

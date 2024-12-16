@@ -45,7 +45,7 @@ const LandscapePopUp = () => {
         </DialogTitle>
         <DialogDescription>
           <Image
-            src="/img/Rotate-phone-symbol.svg"
+            src="/svg/Rotate-phone-symbol.svg"
             height={88}
             width={89}
             alt="rotate phone to landscape mode"
