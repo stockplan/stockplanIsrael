@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils"
 import { Position } from "@/types"
 import React from "react"
 
@@ -9,10 +10,9 @@ interface TickerPreviewProps {
 const TickerPreview: React.FC<TickerPreviewProps> = ({ stock, onClick }) => {
   return (
     <button
-      className="w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between"
-      style={{
-        borderTopColor: stock.positionType === "buy" ? "green" : "red",
-      }}
+      className={`w-32 h-12 bg-gray-800 text-white rounded-md p-1 border-t-2 flex flex-col justify-between ${cn(
+        stock.positionType === "buy" ? " border-t-green-500" : "border-t-red-500"
+      )}`}
       onClick={() => onClick()}
     >
       <div className="flex justify-between items-start w-full text-sm gap-3">
