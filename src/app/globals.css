@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer utilities {
+  @screen portrait {
+    .portrait-drawer {
+      width: 100%;
+    }
+  }
+
+  @screen landscape {
+    .landscape-drawer {
+      width: 75%;
+      /* min-height: 100vh; */
+      /* max-height: 100vh; */
+      /* overflow-y: auto; */
+      /* height: 75%; */
+    }
+  }
+}
+
 body {
   height: 100dvh;
   overflow-x: hidden;

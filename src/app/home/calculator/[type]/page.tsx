@@ -1,4 +1,3 @@
-import LandscapePopUp from "@/components/LandscapePopUp"
 import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit"
 import { createClient } from "@/lib/supabase/server"
 import { getEmptyRow } from "@/lib/utils"
@@ -6,6 +5,8 @@ import { getInitialData } from "@/utils"
 import { getUser } from "@/utils/supabase-helpers/queries"
 import { redirect } from "next/navigation"
 import React from "react"
+import MobileLayout from "@/components/mobile/MobileLossprofitLayout"
+import LossProfitStateProvider from "@/components/mobile/useLossprofitState"
 
 interface CalcPageProps {
   params: Promise<{ type: string }>
@@ -25,17 +26,26 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
 
   const creator = user?.id || ""
 
+  const serverUserStocks = creator
+    ? await getInitialData(creator)
+    : [getEmptyRow(creator, ticker)]
+
   switch (type) {
     case "lossprofit":
-      const serverUserStocks = creator
-        ? await getInitialData(creator)
-        : [getEmptyRow(creator, ticker)]
-
       return (
         <TableLossProfit
           creator={creator}
           serverUserStocks={serverUserStocks}
         />
+      )
+    case "lossprofit-mobile":
+      return (
+        <LossProfitStateProvider
+          initialValue={serverUserStocks}
+          creator={creator}
+        >
+          <MobileLayout />
+        </LossProfitStateProvider>
       )
     default:
       return <div className="CalcPage">Table now found {type}</div>
