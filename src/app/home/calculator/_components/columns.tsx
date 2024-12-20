@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { CellContext, ColumnDef } from "@tanstack/react-table"
-import { DataTableColumnHeader } from "./data-table-column-header"
-import { DataTableRowActions } from "./data-table-row-actions"
-import ActualPriceCell from "./ActualPrice"
-import { Input } from "@/components/ui/input"
-import { mutate } from "swr"
-import CurrencyInput from "react-currency-input-field"
+import { useEffect, useState } from "react";
+import { CellContext, ColumnDef } from "@tanstack/react-table";
+import { DataTableColumnHeader } from "./data-table-column-header";
+import { DataTableRowActions } from "./data-table-row-actions";
+import ActualPriceCell from "./ActualPrice";
+import { Input } from "@/components/ui/input";
+import { mutate } from "swr";
+import CurrencyInput from "react-currency-input-field";
 import {
   allowNegativeValue,
   calculateCost,
@@ -19,11 +19,11 @@ import {
   calculateStopLossFromLossPercent,
   extractNegationAndNumber,
   formatFractionDigits,
-} from "@/utils/calc-helpers"
-import { ColumnNames, Position } from "@/types"
-import { NumericFormat } from "react-number-format"
+} from "@/utils/calc-helpers";
+import { ColumnNames, Position } from "@/types";
+import { NumericFormat } from "react-number-format";
 
-export type CellType = CellContext<Position, unknown>
+export type CellType = CellContext<Position, unknown>;
 
 export const columns: ColumnDef<Position>[] = [
   {
@@ -35,16 +35,16 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ getValue, row, column, table }) => {
-      const initialValue = getValue()
-      const [localTicker, setLocalTicker] = useState(initialValue)
-      const updateData = table.options.meta!.updateData!
+      const initialValue = getValue();
+      const [localTicker, setLocalTicker] = useState(initialValue);
+      const updateData = table.options.meta!.updateData!;
 
       const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value.toUpperCase()
+        const value = e.target.value.toUpperCase();
         if (/^[A-Z]*$/.test(value)) {
-          setLocalTicker(value)
+          setLocalTicker(value);
         }
-      }
+      };
 
       const handleBlur = () => {
         if (initialValue !== localTicker) {
@@ -52,19 +52,19 @@ export const columns: ColumnDef<Position>[] = [
             updateData(row.index, {
               [column.id]: "",
               actualPrice: 0,
-            })
+            });
           } else {
             updateData(row.index, {
               [column.id]: localTicker,
-            })
-            mutate(["/api/tickerPrice", localTicker])
+            });
+            mutate(["/api/tickerPrice", localTicker]);
           }
         }
-      }
+      };
 
       useEffect(() => {
-        setLocalTicker(initialValue)
-      }, [initialValue])
+        setLocalTicker(initialValue);
+      }, [initialValue]);
 
       return (
         <Input
@@ -74,7 +74,7 @@ export const columns: ColumnDef<Position>[] = [
           onChange={handleChange}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
@@ -96,13 +96,13 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const positionType = row.getValue(column.id) as string
-      const updateData = table.options.meta?.updateData
-      const quantity = row.getValue(ColumnNames.Quantity) as number
-      const askPrice = row.getValue(ColumnNames.AskPrice) as number
-      const exitPrice = row.getValue(ColumnNames.ExitPrice) as number
-      const cost = row.getValue(ColumnNames.Cost) as number
-      const stopLoss = row.getValue(ColumnNames.StopLoss) as number
+      const positionType = row.getValue(column.id) as string;
+      const updateData = table.options.meta?.updateData;
+      const quantity = row.getValue(ColumnNames.Quantity) as number;
+      const askPrice = row.getValue(ColumnNames.AskPrice) as number;
+      const exitPrice = row.getValue(ColumnNames.ExitPrice) as number;
+      const cost = row.getValue(ColumnNames.Cost) as number;
+      const stopLoss = row.getValue(ColumnNames.StopLoss) as number;
 
       //prettier-ignore
       const handlePositionTypeChange = (type: "buy" | "sell") => {
@@ -139,7 +139,7 @@ export const columns: ColumnDef<Position>[] = [
             Sell
           </button>
         </div>
-      )
+      );
     },
   },
   {
@@ -151,13 +151,13 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = row.getValue(column.id) as number
-      const [quantity, setQuantity] = useState<number>(defaultValue)
-      const updateData = table.options.meta?.updateData
+      const defaultValue = row.getValue(column.id) as number;
+      const [quantity, setQuantity] = useState<number>(defaultValue);
+      const updateData = table.options.meta?.updateData;
 
       useEffect(() => {
-        setQuantity(defaultValue)
-      }, [defaultValue])
+        setQuantity(defaultValue);
+      }, [defaultValue]);
 
       //prettier-ignore
       const handleBlurQuantity = () => {
@@ -190,14 +190,14 @@ export const columns: ColumnDef<Position>[] = [
           id={`quantity-${row.index}`}
           value={quantity}
           onValueChange={(value, name, values) => {
-            const val = (values && values.float ? values.float : 0) as number
-            setQuantity(val)
+            const val = (values && values.float ? values.float : 0) as number;
+            setQuantity(val);
           }}
           onBlur={handleBlurQuantity}
           allowNegativeValue={false}
           allowDecimals={false}
         />
-      )
+      );
     },
   },
   {
@@ -209,13 +209,13 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as string) || "0"
-      const [askPrice, setAskPrice] = useState<string>(defaultValue)
-      const updateData = table.options.meta?.updateData!
+      const defaultValue = (row.getValue(column.id) as string) || "0";
+      const [askPrice, setAskPrice] = useState<string>(defaultValue);
+      const updateData = table.options.meta?.updateData!;
 
       useEffect(() => {
-        setAskPrice(defaultValue)
-      }, [defaultValue])
+        setAskPrice(defaultValue);
+      }, [defaultValue]);
 
       //prettier-ignore
       const handleBlur = () => {
@@ -253,7 +253,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -262,7 +262,7 @@ export const columns: ColumnDef<Position>[] = [
       <DataTableColumnHeader tooltipMsg="Ask Price * Quantity." title="Cost" />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as number) || 0
+      const defaultValue = (row.getValue(column.id) as number) || 0;
       return (
         <NumericFormat
           value={defaultValue}
@@ -273,7 +273,7 @@ export const columns: ColumnDef<Position>[] = [
           className="text-center w-24 block text-xs"
           thousandSeparator
         />
-      )
+      );
     },
   },
   {
@@ -285,18 +285,18 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const defaultValue = (row.getValue(column.id) as string) || "0"
-      const [exitPrice, setExitPrice] = useState<string>(defaultValue)
+      const defaultValue = (row.getValue(column.id) as string) || "0";
+      const [exitPrice, setExitPrice] = useState<string>(defaultValue);
 
-      const positionType = row.getValue(ColumnNames.PositionType) as string
-      const quantity = row.getValue(ColumnNames.Quantity) as number
-      const askPrice = row.getValue(ColumnNames.AskPrice) as number
+      const positionType = row.getValue(ColumnNames.PositionType) as string;
+      const quantity = row.getValue(ColumnNames.Quantity) as number;
+      const askPrice = row.getValue(ColumnNames.AskPrice) as number;
 
       useEffect(() => {
-        setExitPrice(defaultValue)
-      }, [defaultValue])
+        setExitPrice(defaultValue);
+      }, [defaultValue]);
 
-      const updateData = table.options.meta?.updateData
+      const updateData = table.options.meta?.updateData;
 
       //prettier-ignore
       const handleBlurExitPrice = () => {
@@ -324,7 +324,7 @@ export const columns: ColumnDef<Position>[] = [
           allowNegativeValue={false}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -336,17 +336,17 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as number
-      const [expectedProfit, setExpectedProfit] = useState(initialValue)
+      const initialValue = row.getValue(column.id) as number;
+      const [expectedProfit, setExpectedProfit] = useState(initialValue);
 
       useEffect(() => {
-        let num = extractNegationAndNumber(initialValue)
+        let num = extractNegationAndNumber(initialValue);
         if (num.hasNegation) {
-          setExpectedProfit(0)
+          setExpectedProfit(0);
         } else {
-          setExpectedProfit(initialValue)
+          setExpectedProfit(initialValue);
         }
-      }, [initialValue])
+      }, [initialValue]);
 
       return (
         <NumericFormat
@@ -358,7 +358,7 @@ export const columns: ColumnDef<Position>[] = [
           className="text-center w-24 text-green-500 block text-xs "
           thousandSeparator
         />
-      )
+      );
     },
   },
   {
@@ -370,23 +370,23 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as string | number
-      const quantity = row.getValue(ColumnNames.Quantity) as number
-      const askPrice = row.getValue(ColumnNames.AskPrice) as number
-      const cost = row.getValue(ColumnNames.Cost) as number
-      const positionType = row.getValue(ColumnNames.PositionType) as string
+      const initialValue = row.getValue(column.id) as string | number;
+      const quantity = row.getValue(ColumnNames.Quantity) as number;
+      const askPrice = row.getValue(ColumnNames.AskPrice) as number;
+      const cost = row.getValue(ColumnNames.Cost) as number;
+      const positionType = row.getValue(ColumnNames.PositionType) as string;
 
-      const updateData = table.options.meta?.updateData
-      const [profitPercent, setProfitPercent] = useState(initialValue)
+      const updateData = table.options.meta?.updateData;
+      const [profitPercent, setProfitPercent] = useState(initialValue);
 
       useEffect(() => {
-        let num = extractNegationAndNumber(initialValue)
+        let num = extractNegationAndNumber(initialValue);
         if (num.hasNegation) {
-          setProfitPercent(0)
+          setProfitPercent(0);
         } else {
-          setProfitPercent(initialValue)
+          setProfitPercent(initialValue);
         }
-      }, [initialValue])
+      }, [initialValue]);
 
       //prettier-ignore
       const handleBlur = () => {
@@ -411,11 +411,11 @@ export const columns: ColumnDef<Position>[] = [
           className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-green-500"
           value={profitPercent}
           onValueChange={(value, name, values) => {
-            setProfitPercent(value || "0")
+            setProfitPercent(value || "0");
           }}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
@@ -427,44 +427,45 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = (row.getValue(column.id) as string) || "0"
-      const [stopLoss, setStopLoss] = useState<string>(initialValue)
-      const updateData = table.options.meta?.updateData!
+      const initialValue = (row.getValue(column.id) as string) || "0";
+      const [stopLoss, setStopLoss] = useState<string>(initialValue);
+      const updateData = table.options.meta?.updateData!;
 
       useEffect(() => {
         if (+initialValue < 0) {
-          setStopLoss(initialValue)
+          setStopLoss(initialValue);
         } else {
-          setStopLoss(initialValue)
+          setStopLoss(initialValue);
         }
-      }, [initialValue])
+      }, [initialValue]);
 
       const handleBlur = () => {
-        if (+formatFractionDigits(+initialValue) === +stopLoss) return
+        if (+formatFractionDigits(+initialValue) === +stopLoss) return;
 
-        const positionType = row.getValue(ColumnNames.PositionType) as string
-        const askPrice = row.getValue(ColumnNames.AskPrice) as number
-        const quantity = row.getValue(ColumnNames.Quantity) as number
-        const cost = row.getValue(ColumnNames.Cost) as number
+        const positionType = row.getValue(ColumnNames.PositionType) as string;
+        const askPrice = row.getValue(ColumnNames.AskPrice) as number;
+        const quantity = row.getValue(ColumnNames.Quantity) as number;
+        const cost = row.getValue(ColumnNames.Cost) as number;
 
         let expectedLoss = calculateExpectedLoss(
+          //why use let here and not const?
           positionType,
           askPrice,
           stopLoss,
           quantity
-        )
+        );
 
         const expectedLossPercent = calculateExpectedLossPercent(
           expectedLoss,
           cost
-        )
+        );
 
         updateData?.(row.index, {
           [column.id]: +stopLoss,
           expectedLoss: +expectedLoss,
           expectedLossPercent: +expectedLossPercent,
-        })
-      }
+        });
+      };
 
       return (
         <CurrencyInput
@@ -473,14 +474,14 @@ export const columns: ColumnDef<Position>[] = [
           name="stopLoss"
           value={stopLoss}
           onValueChange={(value, name, values) => {
-            setStopLoss(value || "0")
+            setStopLoss(value || "0");
           }}
           onBlur={handleBlur}
           allowNegativeValue={false}
           decimalsLimit={2}
           prefix="$"
         />
-      )
+      );
     },
   },
   {
@@ -492,17 +493,17 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as number
-      const [expectedLoss, setExpectedLoss] = useState(initialValue)
+      const initialValue = row.getValue(column.id) as number;
+      const [expectedLoss, setExpectedLoss] = useState(initialValue);
 
       useEffect(() => {
-        let num = extractNegationAndNumber(initialValue)
+        let num = extractNegationAndNumber(initialValue);
         if (!num.hasNegation) {
-          setExpectedLoss(0)
+          setExpectedLoss(0);
         } else {
-          setExpectedLoss(initialValue)
+          setExpectedLoss(initialValue);
         }
-      }, [initialValue])
+      }, [initialValue]);
 
       return (
         <NumericFormat
@@ -514,7 +515,7 @@ export const columns: ColumnDef<Position>[] = [
           className="text-center w-24 text-red-500 block text-xs"
           thousandSeparator
         />
-      )
+      );
     },
   },
   {
@@ -526,22 +527,22 @@ export const columns: ColumnDef<Position>[] = [
       />
     ),
     cell: ({ row, column, table }) => {
-      const initialValue = row.getValue(column.id) as string | number
-      const quantity = row.getValue(ColumnNames.Quantity) as number
-      const askPrice = row.getValue(ColumnNames.AskPrice) as number
-      const cost = row.getValue(ColumnNames.Cost) as number
-      const updateData = table.options.meta?.updateData
+      const initialValue = row.getValue(column.id) as string | number;
+      const quantity = row.getValue(ColumnNames.Quantity) as number;
+      const askPrice = row.getValue(ColumnNames.AskPrice) as number;
+      const cost = row.getValue(ColumnNames.Cost) as number;
+      const updateData = table.options.meta?.updateData;
 
-      const [lossPercent, setLossPercent] = useState(initialValue)
+      const [lossPercent, setLossPercent] = useState(initialValue);
 
       useEffect(() => {
-        let num = extractNegationAndNumber(initialValue)
+        let num = extractNegationAndNumber(initialValue);
         if (!num.hasNegation) {
-          setLossPercent(0)
+          setLossPercent(0);
         } else {
-          setLossPercent(initialValue)
+          setLossPercent(initialValue);
         }
-      }, [initialValue])
+      }, [initialValue]);
 
       //prettier-ignore
       const handleBlur = () => {
@@ -593,15 +594,15 @@ export const columns: ColumnDef<Position>[] = [
           className="w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring text-red-500"
           value={lossPercent}
           onValueChange={(value, name, values) => {
-            setLossPercent(value || "0")
+            setLossPercent(value || "0");
           }}
           onBlur={handleBlur}
         />
-      )
+      );
     },
   },
   {
     id: "actions",
     cell: ({ row, table }) => <DataTableRowActions row={row} table={table} />,
   },
-]
+];

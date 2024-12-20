@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { PlusIcon } from "@radix-ui/react-icons"
-import SaveButton from "@/components/SaveButton"
-import { BsFillSaveFill } from "react-icons/bs"
-import { useState } from "react"
-import LoginFormDialog from "@/components/modals/login-dialog"
-import { Position } from "@/types"
+import { Button } from "@/components/ui/button";
+import { PlusIcon } from "@radix-ui/react-icons";
+import SaveButton from "@/components/SaveButton";
+import { BsFillSaveFill } from "react-icons/bs";
+import { useState } from "react";
+import LoginFormDialog from "@/components/modals/login-dialog";
+import { Position } from "@/types";
 
 interface DataTablePaginationProps<TData> {
-  handleAddNewTicker: () => void
-  creator?: string
-  saveChanges: (changes: Position[]) => Promise<void>
-  tableData: Position[]
-  isLoading: boolean
-  unsavedChanges: boolean
+  handleAddNewTicker: () => void;
+  creator?: string;
+  saveChanges: (changes: Position[]) => Promise<void>;
+  tableData: Position[];
+  isLoading: boolean;
+  unsavedChanges: boolean;
 }
 
 export function DataTablePagination<TData>({
@@ -25,9 +25,9 @@ export function DataTablePagination<TData>({
   isLoading,
   unsavedChanges,
 }: DataTablePaginationProps<TData>) {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
-  const openAuthModal = () => setIsAuthModalOpen(true)
+  const openAuthModal = () => setIsAuthModalOpen(true);
 
   // const renderSaveButton = () => (
   //   <SaveButton
@@ -56,5 +56,5 @@ export function DataTablePagination<TData>({
         onOpenChange={setIsAuthModalOpen}
       />
     </div>
-  )
+  );
 }
