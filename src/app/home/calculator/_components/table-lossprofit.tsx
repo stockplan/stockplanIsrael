@@ -1,21 +1,8 @@
 "use client"
 
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from "@tanstack/react-table"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
 import { Position } from "@/types"
 import { Separator } from "@/components/ui/separator"
@@ -143,22 +130,19 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
     // Validate ticker
     if (!lastRow.ticker) {
       validationToast.title = "Missing Ticker Symbol"
-      validationToast.description =
-        "Please enter a ticker symbol in the last row."
+      validationToast.description = "Please enter a ticker symbol in the last row."
     }
 
     // Validate askPrice
     else if (lastRow.askPrice === 0) {
       validationToast.title = "Ask Price Required"
-      validationToast.description =
-        "Please enter an ask price greater than 0 in the last row."
+      validationToast.description = "Please enter an ask price greater than 0 in the last row."
     }
 
     // Validate quantity
     else if (lastRow.quantity === 0) {
       validationToast.title = "Quantity Needed"
-      validationToast.description =
-        "Please enter a quantity greater than 0 in the last row."
+      validationToast.description = "Please enter a quantity greater than 0 in the last row."
     }
 
     if (validationToast.description) {
@@ -216,12 +200,7 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
             Quick Profit / Loss Calculator
           </h3>
 
-          <div
-            className={cn(
-              "flex-1 flex justify-center",
-              !creator && "justify-start lg:mr-[173px] ml-auto"
-            )}
-          >
+          <div className={cn("flex-1 flex justify-center", !creator && "justify-start lg:mr-[173px] ml-auto")}>
             <Logo isNavigate={false} />
           </div>
 
@@ -240,10 +219,7 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
                     colSpan={header.colSpan}
                     className="text-white text-sm text-center font-bold"
                   >
-                    {flexRender(
-                      header.column.columnDef.header,
-                      header.getContext()
-                    )}
+                    {flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -256,10 +232,7 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
                 <TableRow id={"row_" + row.id} key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell id={cell.id} key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>

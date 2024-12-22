@@ -13,12 +13,10 @@ import { Button } from "../ui/button"
 import { BsTrashFill } from "react-icons/bs"
 
 interface ConfirmationModalProps {
-  handleDeleteAll: any
+  handleDeleteAll: () => Promise<void>
 }
 
-const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-  handleDeleteAll,
-}) => {
+const ConfirmationModal: React.FC<ConfirmationModalProps> = ({ handleDeleteAll }) => {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
@@ -29,19 +27,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle className=" text-black">
-            Are you absolutely sure?
-          </AlertDialogTitle>
+          <AlertDialogTitle className=" text-black">Are you absolutely sure?</AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently remove your data
-            from our servers.
+            This action cannot be undone. This will permanently remove your data from our servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={async () => await handleDeleteAll()}>
-            Continue
-          </AlertDialogAction>
+          <AlertDialogAction onClick={async () => await handleDeleteAll()}>Continue</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

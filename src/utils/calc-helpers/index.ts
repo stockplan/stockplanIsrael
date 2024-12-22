@@ -32,12 +32,7 @@ export function calculateCost(askPrice: val, quantity: val): number {
   return safeNumber(askPrice) * safeNumber(quantity)
 }
 
-export function calculateExpectedProfit(
-  positionType: string,
-  askPrice: val,
-  exitPrice: val,
-  quantity: val
-): number {
+export function calculateExpectedProfit(positionType: string, askPrice: val, exitPrice: val, quantity: val): number {
   askPrice = safeNumber(askPrice)
   exitPrice = safeNumber(exitPrice)
   quantity = safeNumber(quantity)
@@ -51,40 +46,26 @@ export function calculateExpectedProfit(
   return profit
 }
 
-export function calculateExpectedProfitPercent(
-  expectedProfit: number,
-  cost: number
-): number {
+export function calculateExpectedProfitPercent(expectedProfit: number, cost: number): number {
   expectedProfit = safeNumber(expectedProfit)
   cost = safeNumber(cost)
   let profitPercent = (expectedProfit / cost) * 100
   return safeNumber(profitPercent)
 }
 
-export function calculateExpectedLoss(
-  positionType: string,
-  askPrice: val,
-  stopLoss: val,
-  quantity: val
-): number {
+export function calculateExpectedLoss(positionType: string, askPrice: val, stopLoss: val, quantity: val): number {
   askPrice = safeNumber(askPrice)
   stopLoss = safeNumber(stopLoss)
   quantity = safeNumber(quantity)
 
   if (!quantity || !stopLoss || !askPrice) return 0
 
-  const loss =
-    positionType === "sell"
-      ? (askPrice - stopLoss) * quantity
-      : (stopLoss - askPrice) * quantity
+  const loss = positionType === "sell" ? (askPrice - stopLoss) * quantity : (stopLoss - askPrice) * quantity
 
   return loss
 }
 
-export function calculateExpectedLossPercent(
-  expectedLoss: number,
-  cost: number
-): number {
+export function calculateExpectedLossPercent(expectedLoss: number, cost: number): number {
   expectedLoss = safeNumber(expectedLoss)
   cost = safeNumber(cost)
   if (!cost) return 0
@@ -103,23 +84,19 @@ export function calculateExitPriceFromProfitPercent(
   quantity = safeNumber(quantity)
 
   if (expectedProfit === 0 || quantity === 0) return askPrice
-  // let exitPrice = expectedProfit / quantity + askPrice
-  let exitPrice = expectedProfit / quantity + askPrice
-  // if (positionType === "buy") {
-  //   exitPrice = expectedProfit / quantity + askPrice
-  // } else if (positionType === "sell") {
-  //   const profitPerUnit = expectedProfit / quantity
-  //   exitPrice = askPrice * (1 - profitPerUnit / askPrice)
-  // }
 
+  let exitPrice: number
+
+  if (positionType === "buy") {
+    exitPrice = askPrice + expectedProfit / quantity
+  } else {
+    const profitPercent = expectedProfit / (askPrice * quantity)
+    exitPrice = askPrice * (1 - profitPercent)
+  }
   return safeNumber(exitPrice)
 }
 
-export function calculateStopLossFromLossPercent(
-  newExpectedLoss: val,
-  quantity: val,
-  askPrice: val
-): number {
+export function calculateStopLossFromLossPercent(newExpectedLoss: val, quantity: val, askPrice: val): number {
   quantity = safeNumber(quantity)
   newExpectedLoss = safeNumber(newExpectedLoss)
   askPrice = safeNumber(askPrice)

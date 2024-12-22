@@ -26,24 +26,14 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
 
   const creator = user?.id || ""
 
-  const serverUserStocks = creator
-    ? await getInitialData(creator)
-    : [getEmptyRow(creator, ticker)]
+  const serverUserStocks = creator ? await getInitialData(creator) : [getEmptyRow(creator, ticker)]
 
   switch (type) {
     case "lossprofit":
-      return (
-        <TableLossProfit
-          creator={creator}
-          serverUserStocks={serverUserStocks}
-        />
-      )
+      return <TableLossProfit creator={creator} serverUserStocks={serverUserStocks} />
     case "lossprofit-mobile":
       return (
-        <LossProfitStateProvider
-          initialValue={serverUserStocks}
-          creator={creator}
-        >
+        <LossProfitStateProvider initialValue={serverUserStocks} creator={creator}>
           <MobileLayout />
         </LossProfitStateProvider>
       )
