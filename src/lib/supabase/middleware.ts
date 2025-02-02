@@ -15,15 +15,11 @@ export async function updateSession(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({
             request,
           })
-          cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
-          )
+          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
         },
       },
     }
@@ -39,7 +35,7 @@ export async function updateSession(request: NextRequest) {
 
   const isTablePath = request.nextUrl.pathname === "/home/calculator/lossprofit"
 
-  const isHomePath = request.nextUrl.pathname.startsWith("/home")
+  const isHomePath = request.nextUrl.pathname === "/home"
   const isAuthPath = request.nextUrl.pathname.startsWith("/auth")
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin")
   const isApiAuthRoute = request.nextUrl.pathname.startsWith("/api")
@@ -56,11 +52,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // if (user && isHomePath) {
-  //   const url = request.nextUrl.clone()
-  //   url.pathname = "/home/calculator/lossprofit"
-  //   return NextResponse.redirect(url)
-  // }
+  if (user && isHomePath) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/home/calculator/lossprofit"
+    return NextResponse.redirect(url)
+  }
 
   // if (!user && !isHomePath && !isAuthPath) {
   //   if (isTablePath) {
