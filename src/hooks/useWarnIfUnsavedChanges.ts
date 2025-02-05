@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { NavigateOptions } from "next/dist/shared/lib/app-router-context.shared-runtime"
 
-export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
+export const useWarnIfUnsavedChanges = (unsaved: boolean) => {
   const router = useRouter()
 
   const handleAnchorClick: EventListener = (event) => {
@@ -20,14 +20,11 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
   }
 
   const addAnchorListeners = () => {
-    const anchorElements = document.querySelectorAll("a[href]")
-    anchorElements.forEach((anchor) =>
-      anchor.addEventListener("click", handleAnchorClick)
-    )
+    const anchorElements = document.querySelectorAll("a[href], .logout-btn")
+    anchorElements.forEach((anchor) => anchor.addEventListener("click", handleAnchorClick))
   }
 
   useEffect(() => {
-    if (!isUser) return
     const mutationObserver = new MutationObserver(addAnchorListeners)
 
     mutationObserver.observe(document.body, { childList: true, subtree: true })
@@ -36,12 +33,10 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
 
     return () => {
       mutationObserver.disconnect()
-      const anchorElements = document.querySelectorAll("a[href]")
-      anchorElements.forEach((anchor) =>
-        anchor.removeEventListener("click", handleAnchorClick)
-      )
+      const anchorElements = document.querySelectorAll("a[href], .logout-btn")
+      anchorElements.forEach((anchor) => anchor.removeEventListener("click", handleAnchorClick))
     }
-  }, [isUser])
+  }, [])
 
   useEffect(() => {
     const beforeUnloadHandler = (e: BeforeUnloadEvent) => {
@@ -50,10 +45,8 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
     }
 
     const handlePopState = (e: PopStateEvent) => {
-      if (unsaved && isUser) {
-        const confirmLeave = window.confirm(
-          "You have unsaved changes. Are you sure you want to leave?"
-        )
+      if (unsaved) {
+        const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
         if (!confirmLeave) {
           e.preventDefault()
           window.history.pushState(null, "", window.location.href)
@@ -61,7 +54,7 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
       }
     }
 
-    if (unsaved && isUser) {
+    if (unsaved) {
       window.addEventListener("beforeunload", beforeUnloadHandler)
       window.addEventListener("popstate", handlePopState)
     } else {
@@ -73,16 +66,14 @@ export const useWarnIfUnsavedChanges = (unsaved: boolean, isUser: boolean) => {
       window.removeEventListener("beforeunload", beforeUnloadHandler)
       window.removeEventListener("popstate", handlePopState)
     }
-  }, [unsaved, isUser])
+  }, [unsaved])
 
   useEffect(() => {
     const originalPush = router.push
 
     router.push = (url: string, options?: NavigateOptions) => {
-      if (unsaved && isUser) {
-        const confirmLeave = window.confirm(
-          "You have unsaved changes. Are you sure you want to leave?"
-        )
+      if (unsaved) {
+        const confirmLeave = window.confirm("You have unsaved changes. Are you sure you want to leave?")
         if (confirmLeave) {
           originalPush(url, options)
         }

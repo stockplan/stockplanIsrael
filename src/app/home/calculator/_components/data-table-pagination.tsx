@@ -1,20 +1,20 @@
-"use client";
+"use client"
 
-import { Button } from "@/components/ui/button";
-import { PlusIcon } from "@radix-ui/react-icons";
-import SaveButton from "@/components/SaveButton";
-import { BsFillSaveFill } from "react-icons/bs";
-import { useState } from "react";
-import LoginFormDialog from "@/components/modals/login-dialog";
-import { Position } from "@/types";
+import { Button } from "@/components/ui/button"
+import { PlusIcon } from "@radix-ui/react-icons"
+import SaveButton from "@/components/SaveButton"
+import { BsFillSaveFill } from "react-icons/bs"
+import { useState } from "react"
+import LoginFormDialog from "@/components/modals/login-dialog"
+import { Position } from "@/types"
 
 interface DataTablePaginationProps<TData> {
-  handleAddNewTicker: () => void;
-  creator?: string;
-  saveChanges: (changes: Position[]) => Promise<void>;
-  tableData: Position[];
-  isLoading: boolean;
-  unsavedChanges: boolean;
+  handleAddNewTicker: () => void
+  creator?: string
+  saveChanges: (changes: Position[]) => Promise<void>
+  tableData: Position[]
+  isLoading: boolean
+  unsavedChanges: boolean
 }
 
 export function DataTablePagination<TData>({
@@ -25,21 +25,9 @@ export function DataTablePagination<TData>({
   isLoading,
   unsavedChanges,
 }: DataTablePaginationProps<TData>) {
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
 
-  const openAuthModal = () => setIsAuthModalOpen(true);
-
-  // const renderSaveButton = () => (
-  //   <SaveButton
-  //     onClick={() => saveChanges(tableData)}
-  //     isLoading={isLoading}
-  //     disabled={!unsavedChanges}
-  //     className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center"
-  //   >
-  //     <BsFillSaveFill className="mr-2 h-4 w-4" />
-  //     Save Changes
-  //   </SaveButton>
-  // )
+  const openAuthModal = () => setIsAuthModalOpen(true)
 
   return (
     <div className="flex justify-center items-center relative py-2">
@@ -50,11 +38,18 @@ export function DataTablePagination<TData>({
         <PlusIcon className="mr-2 h-4 w-4" />
         Add Another Ticker
       </Button>
-      {/* {creator && <div className="absolute left-0">{renderSaveButton()}</div>} */}
-      <LoginFormDialog
-        open={isAuthModalOpen}
-        onOpenChange={setIsAuthModalOpen}
-      />
+      {creator && (
+        <SaveButton
+          onClick={() => saveChanges(tableData)}
+          isLoading={isLoading}
+          disabled={!unsavedChanges}
+          className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center absolute left-0"
+        >
+          <BsFillSaveFill className="mr-2 h-4 w-4" />
+          Save Changes
+        </SaveButton>
+      )}
+      <LoginFormDialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </div>
-  );
+  )
 }

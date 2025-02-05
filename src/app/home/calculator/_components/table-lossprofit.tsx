@@ -1,6 +1,6 @@
 "use client"
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react"
 import { ColumnDef, flexRender, getCoreRowModel, getPaginationRowModel, useReactTable } from "@tanstack/react-table"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { DataTablePagination } from "./data-table-pagination"
@@ -28,7 +28,7 @@ interface ColumnUpdate {
   [columnId: string]: number | string
 }
 
-const AUTO_SAVE_DELAY = 1000
+const AUTO_SAVE_DELAY = 2000
 
 export function TableLossProfit({ creator, serverUserStocks }: Props) {
   const [tableData, setTableData] = useState<Position[]>(serverUserStocks)
@@ -38,7 +38,9 @@ export function TableLossProfit({ creator, serverUserStocks }: Props) {
   const { unsavedChanges, setUnsavedChanges } = useUnsavedChangesContext()
   const { toast } = useToast()
 
-  useWarnIfUnsavedChanges(unsavedChanges, !!creator)
+  if (creator) {
+    useWarnIfUnsavedChanges(unsavedChanges)
+  }
 
   const memoColumns = useMemo<ColumnDef<Position>[]>(() => columns, [])
 

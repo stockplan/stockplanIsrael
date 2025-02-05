@@ -219,7 +219,7 @@ export const columns: ColumnDef<Position>[] = [
         const positionType = row.getValue(ColumnNames.PositionType) as string
         const exitPrice = row.getValue(ColumnNames.ExitPrice) as number
         const stopLoss = row.getValue(ColumnNames.StopLoss) as number
-
+        
         const updatedCost = calculateCost(askPrice, quantity)
         const expectedProfit = calculateExpectedProfit( positionType, askPrice, exitPrice, quantity)
         const expectedProfitPercent = calculateExpectedProfitPercent(expectedProfit, updatedCost)
@@ -241,9 +241,10 @@ export const columns: ColumnDef<Position>[] = [
           className=" w-24 h-9 border rounded-md bg-transparent px-3 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
           id={`askPrice-${row.index}`}
           name="askPrice"
+          placeholder="$0"
           value={askPrice}
           decimalsLimit={2}
-          onValueChange={(value: any) => setAskPrice(value || "0")}
+          onValueChange={(value: any) => setAskPrice(value)}
           onBlur={handleBlur}
           allowNegativeValue={false}
           prefix="$"
