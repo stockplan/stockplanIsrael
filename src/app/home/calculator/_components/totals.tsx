@@ -3,16 +3,11 @@ import { Position } from "@/types"
 
 interface TotalsProps {
   tableData: Position[]
+  isMobile?: boolean
 }
 
-const Totals: React.FC<TotalsProps> = ({ tableData }) => {
-  const {
-    totalInvestment,
-    totalProfit,
-    totalLoss,
-    totalProfitPercent,
-    totalLossPercent,
-  } = useMemo(() => {
+const Totals: React.FC<TotalsProps> = ({ tableData, isMobile = false }) => {
+  const { totalInvestment, totalProfit, totalLoss, totalProfitPercent, totalLossPercent } = useMemo(() => {
     if (!Array.isArray(tableData) || tableData.length === 0) {
       return {
         totalInvestment: "0",
@@ -26,20 +21,14 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
     let totalProfit = 0
     let totalLoss = 0
 
-    tableData.forEach(
-      ({ quantity, askPrice, expectedProfit, expectedLoss }) => {
-        totalInvestment += quantity * askPrice
-        totalProfit += expectedProfit
-        totalLoss += expectedLoss
-      }
-    )
+    tableData.forEach(({ quantity, askPrice, expectedProfit, expectedLoss }) => {
+      totalInvestment += quantity * askPrice
+      totalProfit += expectedProfit
+      totalLoss += expectedLoss
+    })
 
-    let totalProfitPercent = totalInvestment
-      ? (totalProfit / totalInvestment) * 100
-      : 0
-    let totalLossPercent = totalInvestment
-      ? (totalLoss / totalInvestment) * 100
-      : 0
+    let totalProfitPercent = totalInvestment ? (totalProfit / totalInvestment) * 100 : 0
+    let totalLossPercent = totalInvestment ? (totalLoss / totalInvestment) * 100 : 0
 
     totalProfit = Math.max(0, totalProfit)
     totalProfitPercent = Math.max(0, totalProfitPercent)
@@ -69,18 +58,37 @@ const Totals: React.FC<TotalsProps> = ({ tableData }) => {
   }, [tableData])
 
   return (
-    <div className="p-4 text-white bg-[#2D3131] rounded-md font-semibold text-sm md:text-base">
-      <div className="flex justify-between mt-4">
-        <div className="text-green-500">
-          Total Investment: ${totalInvestment}
+    <div className={`bg-[#2D3131] text-white rounded-md ${isMobile ? "p-2 text-xs" : "p-4 text-sm md:text-base"}`}>
+      {isMobile ? (
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center px-4">
+            <span className="text-green-500 text-right">Total Investment</span>
+            <span className="font-bold text-white">$ {totalInvestment}</span>
+          </div>
+          <div className="flex justify-between items-center px-4">
+            <span className="text-green-500 text-right">Total Profit</span>
+            <span className="font-bold text-white">
+              $ {totalProfit} ({totalProfitPercent}%)
+            </span>
+          </div>
+          <div className="flex justify-between items-center px-4">
+            <span className="text-red-500 text-right">Total Loss</span>
+            <span className="font-bold text-white">
+              $ {totalLoss} ({totalLossPercent}%)
+            </span>
+          </div>
         </div>
-        <div className="text-green-500">
-          Total Profit: ${totalProfit} ({totalProfitPercent}%)
+      ) : (
+        <div className="flex justify-between">
+          <div className="text-green-500">Total Investment: ${totalInvestment}</div>
+          <div className="text-green-500">
+            Total Profit: ${totalProfit} ({totalProfitPercent}%)
+          </div>
+          <div className="text-red-500">
+            Total Loss: ${totalLoss} ({totalLossPercent}%)
+          </div>
         </div>
-        <div className="text-red-500">
-          Total Loss: ${totalLoss} ({totalLossPercent}%)
-        </div>
-      </div>
+      )}
     </div>
   )
 }

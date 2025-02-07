@@ -20,6 +20,7 @@ import { Button } from "../ui/button"
 import axios from "axios"
 import Logo from "../logo"
 import { getEmptyRow } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
 import { ToastAction } from "@radix-ui/react-toast"
 import { useToast } from "../ui/use-toast"
 
@@ -32,7 +33,11 @@ const fetcher = async (url: string, currTicker: string) => {
 
 export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
   const { selectedTicker, updateSelectedTicker, deleteTicker, creator, tickersData } = useLossProfitState()
-  const defaultValues: Position = selectedTicker ?? getEmptyRow()
+  const searchParams = useSearchParams()
+  const tickerParam = searchParams.get("ticker")
+
+  const defaultValues: Position = selectedTicker ?? { ...getEmptyRow(), ticker: tickerParam ?? "" }
+
   const {
     control,
     handleSubmit,
@@ -40,8 +45,8 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
     getValues,
     reset,
     watch,
-    formState: { isDirty, dirtyFields },
-  } = useForm<Position>({ defaultValues })
+    formState: { isValid },
+  } = useForm<Position>({ defaultValues, mode: "onChange" })
 
   const { toast } = useToast()
 
@@ -96,7 +101,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
 
   const updateCalculations = (changedField: keyof Position) => {
     const values = getValues()
-
     const askPrice = Number(values.askPrice) || 0
     const quantity = Number(values.quantity) || 0
     const exitPrice = Number(values.exitPrice) || 0
@@ -137,7 +141,6 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
     }
   }
 
-  //prettier-ignore
   const handlePositionTypeChange = (type: "buy" | "sell") => {
     const values = getValues()
     const askPrice = Number(values.askPrice) || 0
@@ -161,32 +164,43 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
   const onSubmit: SubmitHandler<Position> = async (data) => {
     if (!validateNewTicker(data)) return
     const updatedTickers = tickersData.map((item) => (item._id === data._id ? data : item))
-
     await updateSelectedTicker(updatedTickers)
   }
 
   return (
-    <>
-      <div>
+    <div>
+      <div className="flex flex-col items-center">
         <Logo isNavigate={false} />
-        <h2 className="text-xl font-semibold mt-2" onClick={() => console.log(dirtyFields, isDirty, defaultValues)}>
+        <h2 className="text-xl font-semibold mt-2" onClick={() => console.log(getValues())}>
           Quick Profit & Loss Calculator
         </h2>
       </div>
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="mb-4 p-4 border border-gray-700 rounded-lg">
+          {/* Ticker ושדה Actual Price */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex justify-between items-center">
               <Controller
                 control={control}
                 name="ticker"
+                rules={{
+                  required: true,
+                  pattern: /^[A-Za-z]+$/,
+                }}
                 render={({ field }) => (
                   <Input
                     {...field}
                     placeholder="Ticker"
                     className="w-1/2 border-none bg-transparent focus:outline-none text-white"
-                    onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                    onBlur={() => mutate(["/api/tickerPrice", getValues("ticker")])}
+                    onChange={(e) => {
+                      const filteredValue = e.target.value.toUpperCase().replace(/[^A-Z]/g, "")
+                      field.onChange(filteredValue)
+                    }}
+                    onBlur={() => {
+                      if (/^[A-Z]+$/.test(field.value)) {
+                        mutate(["/api/tickerPrice", field.value])
+                      }
+                    }}
                   />
                 )}
               />
@@ -207,6 +221,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* כפתורי Buy/Sell */}
           <div className="flex justify-between mb-4">
             <button
               type="button"
@@ -228,19 +243,24 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </button>
           </div>
 
+          {/* Quantity */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Quantity</label>
               <Controller
                 control={control}
                 name="quantity"
+                rules={{
+                  required: true,
+                  validate: (value) => Number(value) > 0,
+                }}
                 render={({ field }) => (
                   <CurrencyInput
                     placeholder="0"
                     decimalsLimit={0}
-                    onBlur={() => dirtyFields.quantity ?? updateCalculations("quantity")}
+                    onBlur={() => updateCalculations("quantity")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -248,20 +268,25 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* Ask Price */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Ask Price</label>
               <Controller
                 control={control}
                 name="askPrice"
+                rules={{
+                  required: true,
+                  validate: (value) => Number(value) > 0,
+                }}
                 render={({ field }) => (
                   <CurrencyInput
                     placeholder="0.00"
                     suffix="$"
                     decimalsLimit={2}
-                    onBlur={() => dirtyFields.askPrice ?? updateCalculations("askPrice")}
+                    onBlur={() => updateCalculations("askPrice")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -303,7 +328,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("exitPrice")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -324,7 +349,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("expectedProfitPercent")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -345,7 +370,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("stopLoss")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -366,7 +391,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("expectedLossPercent")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) => field.onChange(value)}
+                    onValueChange={(value) => field.onChange(value === undefined ? 0 : value)}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -374,15 +399,15 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
-          <div className="flex justify-between mt-4 text-lg">
-            <div className="text-green-500">Exp. profit: {watch("expectedProfit")}$</div>
-            <div className="text-red-500">Exp. Loss: {watch("expectedLoss")}$</div>
+          <div className="flex justify-between mt-4 text-sm">
+            <div className="text-green-500">Exp. profit: {Number(watch("expectedProfit")).toFixed(2)}$</div>
+            <div className="text-red-500">Exp. Loss: {Number(watch("expectedLoss")).toFixed(2)}$</div>
           </div>
         </div>
 
         {creator && (
           <div className="mt-4 flex justify-center">
-            <Button type="submit" className="bg-blue-600 w-full" disabled={!isDirty}>
+            <Button type="submit" className="bg-blue-600 w-full" disabled={!isValid}>
               Save Changes
             </Button>
           </div>
@@ -394,12 +419,12 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
               Delete
             </Button>
           )}
-          <Button type="button" onClick={() => reset(defaultValues)} className="bg-gray-600 hover:bg-gray-700">
+          <Button type="button" onClick={() => reset(getEmptyRow())} className="bg-gray-600 hover:bg-gray-700">
             Reset
           </Button>
         </div>
       </form>
-    </>
+    </div>
   )
 }
 

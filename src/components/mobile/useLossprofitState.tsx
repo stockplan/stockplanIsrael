@@ -30,12 +30,6 @@ const LossProfitStateProvider = ({
   const [tickersData, setTickersData] = useState<Position[]>(initialValue)
   const [selectedTicker, setSelectedTicker] = useState<Position | null>(null)
 
-  useEffect(() => {
-    if (initialValue) {
-      setTickersData(initialValue)
-    }
-  }, [initialValue])
-
   const { toast } = useToast()
 
   const addNewTicker = async () => {
@@ -59,10 +53,8 @@ const LossProfitStateProvider = ({
 
       const savedTicker = response.data.newTicker
 
-      // Update state with the new ticker (including MongoDB-generated _id)
-      const updatedData = [...tickersData, savedTicker]
       setSelectedTicker(savedTicker)
-      setTickersData(updatedData)
+      setTickersData((prev) => [...prev, savedTicker])
     } catch (error) {
       console.error("Failed to add new ticker:", error)
       toast({
@@ -86,7 +78,6 @@ const LossProfitStateProvider = ({
 
   const updateSelectedTicker = async (changes: Position[]) => {
     if (!creator) return
-    // if (validateNewTicker(selectedTicker))
     try {
       setTickersData(changes)
       setSelectedTicker(null)
