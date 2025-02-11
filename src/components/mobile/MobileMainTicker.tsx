@@ -308,9 +308,11 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={0}
                     onBlur={() => updateCalculations("quantity")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) =>
-                      field.onChange(value === undefined ? 0 : value)
-                    }
+                    onValueChange={(value) => {
+                      const newValue =
+                        value === undefined ? 0 : Math.abs(Number(value));
+                      field.onChange(newValue);
+                    }}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -336,9 +338,11 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("askPrice")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) =>
-                      field.onChange(value === undefined ? 0 : value)
-                    }
+                    onValueChange={(value) => {
+                      const newValue =
+                        value === undefined ? 0 : Math.abs(Number(value));
+                      field.onChange(newValue);
+                    }}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -346,6 +350,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/*Cost  */}
           <div className="mb-2">
             <div className="p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Cost</label>
@@ -367,6 +372,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* Exit Price */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Exit Price</label>
@@ -380,9 +386,11 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("exitPrice")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) =>
-                      field.onChange(value === undefined ? 0 : value)
-                    }
+                    onValueChange={(value) => {
+                      const newValue =
+                        value === undefined ? 0 : Math.abs(Number(value));
+                      field.onChange(newValue);
+                    }}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -390,6 +398,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* ExpectedProfitPercent */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Expected Profit %</label>
@@ -403,9 +412,11 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
                     decimalsLimit={2}
                     onBlur={() => updateCalculations("expectedProfitPercent")}
                     className="w-1/2 border-none bg-transparent focus:outline-none text-right"
-                    onValueChange={(value) =>
-                      field.onChange(value === undefined ? 0 : value)
-                    }
+                    onValueChange={(value) => {
+                      const newValue =
+                        value === undefined ? 0 : Math.abs(Number(value));
+                      field.onChange(newValue);
+                    }}
                     value={field.value === 0 ? "" : String(field.value)}
                   />
                 )}
@@ -413,6 +424,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* Stop Loss */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Stop Loss</label>
@@ -436,6 +448,7 @@ export const MobileMainTicker: React.FC<MobileMainTickerProps> = () => {
             </div>
           </div>
 
+          {/* ExpectedLossPercent */}
           <div className="mb-2">
             <div className="border border-gray-600 p-2 rounded-md flex items-center justify-between">
               <label className="text-sm">Expected Loss %</label>
