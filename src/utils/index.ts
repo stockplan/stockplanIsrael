@@ -1,6 +1,7 @@
 import { Position } from "@/types"
 import { getURL } from "./helpers"
 import axios from "axios"
+import hash from "hash-sum"
 
 export async function getInitialData(userId: string) {
   try {
@@ -13,8 +14,11 @@ export async function getInitialData(userId: string) {
   }
 }
 
-export function hasDataChanged1(arr1: Position[], arr2: Position[]) {
-  return JSON.stringify(arr1) === JSON.stringify(arr2)
+function filterPosition(
+  position: Position
+): Omit<Position, "actualPrice" | "_id" | "id" | "creator" | "createdAt" | "updatedAt"> {
+  const { actualPrice, _id, id, creator, createdAt, updatedAt, ...filtered } = position
+  return filtered
 }
 
 //prettier-ignore
@@ -23,6 +27,13 @@ export function hasDataChanged(arr1: Position[], arr2: Position[]): boolean {
   if (arr1.length !== arr2.length) {
     return false;
   }
+
+  const hash1 = hash(arr1.map(filterPosition))
+  const hash2 = hash(arr2.map(filterPosition))
+  // console.log({hash1,hash2})
+  
+  
+  return hash1 === hash2
 
   // Iterate through each element in the arrays
   for (let i = 0; i < arr1.length; i++) {
@@ -56,19 +67,30 @@ export function hasDataChanged(arr1: Position[], arr2: Position[]): boolean {
   return true;
 }
 
-export function debounce<T extends (...args: any[]) => void>(
-  func: T,
-  wait: number
-) {
+export function debounce<T extends (...args: any[]) => void>(func: T, wait: number) {
   let timeout: ReturnType<typeof setTimeout> | null = null
+  let lastArgs: Parameters<T> | null = null
 
-  return function executedFunction(this: unknown, ...args: Parameters<T>) {
-    // Clear the previous timer if the function is called again before the wait time ends.
+  const debounced = ((...args: Parameters<T>) => {
+    lastArgs = args
     if (timeout) clearTimeout(timeout)
-
-    // Set a new timer. Only after 'wait' milliseconds without new calls will 'func' be executed.
     timeout = setTimeout(() => {
-      func.apply(this, args)
+      func(...args)
+      lastArgs = null
+      timeout = null
     }, wait)
+  }) as T & { flush: () => void }
+
+  debounced.flush = () => {
+    if (timeout) {
+      clearTimeout(timeout)
+      if (lastArgs) {
+        func(...lastArgs)
+      }
+      lastArgs = null
+      timeout = null
+    }
   }
+
+  return debounced
 }

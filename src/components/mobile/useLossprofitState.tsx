@@ -1,100 +1,99 @@
-"use client"
+"use client";
 
-import { Position } from "@/types"
-import { createContext, PropsWithChildren, useContext, useEffect, useState } from "react"
-import { useToast } from "../ui/use-toast"
-import { ToastAction } from "../ui/toast"
-import axios from "axios"
-import { getEmptyRow } from "@/lib/utils"
+import { Position } from "@/types";
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { useToast } from "../ui/use-toast";
+import { ToastAction } from "../ui/toast";
+import axios from "axios";
+import { getEmptyRow } from "@/lib/utils";
 
 type Props = {
-  tickersData: Position[]
-  addNewTicker: () => void
-  selectedTicker: Position | null
-  deleteTicker: () => void
-  handleTickerSelect: (ticker: Position | null) => void
-  creator: string | null
-  updateSelectedTicker: (changes: Position[]) => Promise<void>
-}
+  tickersData: Position[];
+  addNewTicker: () => void;
+  selectedTicker: Position | null;
+  deleteTicker: () => void;
+  handleTickerSelect: (ticker: Position | null) => void;
+  creator: string | null;
+  updateSelectedTicker: (changes: Position[]) => Promise<void>;
+};
 
-const LossProfitStateContext = createContext<Props | null>(null)
+const LossProfitStateContext = createContext<Props | null>(null);
 
 const LossProfitStateProvider = ({
   children,
   initialValue,
   creator,
 }: PropsWithChildren & {
-  initialValue: Position[]
-  creator: string | null
+  initialValue: Position[];
+  creator: string | null;
 }) => {
-  const [tickersData, setTickersData] = useState<Position[]>(initialValue)
-  const [selectedTicker, setSelectedTicker] = useState<Position | null>(null)
+  const [tickersData, setTickersData] = useState<Position[]>(initialValue);
+  const [selectedTicker, setSelectedTicker] = useState<Position | null>(null);
 
-  useEffect(() => {
-    if (initialValue) {
-      setTickersData(initialValue)
-    }
-  }, [initialValue])
-
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   const addNewTicker = async () => {
-    const maxTickers = 10
-    if (!creator) return
+    const maxTickers = 10;
+    if (!creator) return;
     if (tickersData.length >= maxTickers) {
       toast({
         description: `Maximum of ${maxTickers} rows allowed.`,
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     try {
       // Send a request to the API to create a new ticker (without sending the entire ticker object)
-      const response = await axios.post("/api/save/add-one")
+      const response = await axios.post("/api/save/add-one");
 
       if (!response.data || !response.data.newTicker) {
-        throw new Error("Failed to save ticker")
+        throw new Error("Failed to save ticker");
       }
 
-      const savedTicker = response.data.newTicker
+      const savedTicker = response.data.newTicker;
 
-      // Update state with the new ticker (including MongoDB-generated _id)
-      const updatedData = [...tickersData, savedTicker]
-      setSelectedTicker(savedTicker)
-      setTickersData(updatedData)
+      setSelectedTicker(savedTicker);
+      setTickersData((prev) => [...prev, savedTicker]);
     } catch (error) {
-      console.error("Failed to add new ticker:", error)
+      console.error("Failed to add new ticker:", error);
       toast({
         description: "Unable to add ticker. Please try again.",
         variant: "destructive",
-      })
+      });
     }
-  }
+  };
 
   const handleTickerSelect = (ticker: Position | null) => {
-    setSelectedTicker(ticker)
-  }
+    setSelectedTicker(ticker);
+  };
 
   const deleteTicker = async () => {
-    if (!selectedTicker) return
-    const updatedTickers = tickersData.filter((ticker) => ticker._id !== selectedTicker._id)
-    setTickersData(updatedTickers)
-    setSelectedTicker(null)
-    await updateSelectedTicker(updatedTickers)
-  }
+    if (!selectedTicker) return;
+    const updatedTickers = tickersData.filter(
+      (ticker) => ticker._id !== selectedTicker._id
+    );
+    setTickersData(updatedTickers);
+    setSelectedTicker(null);
+    await updateSelectedTicker(updatedTickers);
+  };
 
   const updateSelectedTicker = async (changes: Position[]) => {
-    if (!creator) return
-    // if (validateNewTicker(selectedTicker))
+    if (!creator) return;
     try {
-      setTickersData(changes)
-      setSelectedTicker(null)
-      await axios.post("/api/save", { changes })
+      setTickersData(changes);
+      setSelectedTicker(null);
+      await axios.post("/api/save", { changes });
     } catch (error) {
-      console.error("Failed to save data", error)
+      console.error("Failed to save data", error);
     }
-  }
+  };
 
   const value = {
     tickersData,
@@ -104,17 +103,19 @@ const LossProfitStateProvider = ({
     handleTickerSelect,
     creator,
     updateSelectedTicker,
-  }
-  return <LossProfitStateContext value={value}>{children}</LossProfitStateContext>
-}
+  };
+  return (
+    <LossProfitStateContext value={value}>{children}</LossProfitStateContext>
+  );
+};
 
-export default LossProfitStateProvider
+export default LossProfitStateProvider;
 
 export const useLossProfitState = () => {
-  const context = useContext(LossProfitStateContext)
+  const context = useContext(LossProfitStateContext);
   if (!context) {
-    throw new Error("please provide context")
+    throw new Error("please provide context");
   }
 
-  return context
-}
+  return context;
+};

@@ -19,7 +19,7 @@ const MobileLayout: React.FC<MobileLayoutProps> = ({}) => {
       ) : (
         <MobileEditorPage />
       )}
-      <Totals tableData={tickersData} />
+      <Totals tableData={tickersData} isMobile />
     </div>
   );
 };

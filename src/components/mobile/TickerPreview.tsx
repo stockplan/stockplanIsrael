@@ -23,8 +23,10 @@ const TickerPreview: React.FC<TickerPreviewProps> = ({ stock, onClick }) => {
       </div>
 
       <div className="flex justify-between w-full text-xs">
-        <span className="text-green-500">{stock.expectedProfit}$</span>
-        <span className="text-red-500">{stock.expectedLoss}$</span>
+        <span className="text-green-500">
+          {stock.expectedProfit.toFixed(2)}$
+        </span>
+        <span className="text-red-500">{stock.expectedLoss.toFixed(2)}$</span>
       </div>
     </button>
   );

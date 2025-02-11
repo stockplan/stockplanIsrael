@@ -3,7 +3,6 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { getURL } from "@/utils/helpers"
 import { Toaster } from "@/components/ui/toaster"
-import { UnsavedChangesProvider } from "@/hooks/useUnsavedChangesContext"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -29,7 +28,7 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body id={"root"} className={`${inter.className} relative `}>
-        <UnsavedChangesProvider>{children}</UnsavedChangesProvider>
+        {children}
         <Toaster />
       </body>
     </html>

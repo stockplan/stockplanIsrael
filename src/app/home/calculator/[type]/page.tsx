@@ -1,34 +1,34 @@
-import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit"
-import { createClient } from "@/lib/supabase/server"
-import { getEmptyRow } from "@/lib/utils"
-import { getInitialData } from "@/utils"
-import { getUser } from "@/utils/supabase-helpers/queries"
-import { redirect } from "next/navigation"
-import React from "react"
-import MobileLayout from "@/components/mobile/MobileLossprofitLayout"
-import LossProfitStateProvider from "@/components/mobile/useLossprofitState"
+import { TableLossProfit } from "@/app/home/calculator/_components/table-lossprofit";
+import { createClient } from "@/lib/supabase/server";
+import { getEmptyRow } from "@/lib/utils";
+import { getInitialData } from "@/utils";
+import { getUser } from "@/utils/supabase-helpers/queries";
+import { redirect } from "next/navigation";
+import React from "react";
+import MobileLayout from "@/components/mobile/MobileLossprofitLayout";
+import LossProfitStateProvider from "@/components/mobile/useLossprofitState";
 
 interface CalcPageProps {
-  params: Promise<{ type: string }>
-  searchParams: Promise<{ [key: string]: string | undefined }>
+  params: Promise<{ type: string }>;
+  searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
 const TablePage = async ({ params, searchParams }: CalcPageProps) => {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  const { user, error } = await getUser(supabase)
+  const { user, error } = await getUser(supabase);
 
-  if (error && user) return redirect("/home")
+  if (error && user) return redirect("/home");
 
-  const { ticker } = await searchParams
+  const { ticker } = await searchParams;
 
-  const { type } = await params
+  const { type } = await params;
 
-  const creator = user?.id || ""
+  const creator = user?.id || "";
 
   const serverUserStocks = creator
     ? await getInitialData(creator)
-    : [getEmptyRow(creator, ticker)]
+    : [getEmptyRow(creator, ticker)];
 
   switch (type) {
     case "lossprofit":
@@ -37,7 +37,7 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
           creator={creator}
           serverUserStocks={serverUserStocks}
         />
-      )
+      );
     case "lossprofit-mobile":
       return (
         <LossProfitStateProvider
@@ -46,10 +46,19 @@ const TablePage = async ({ params, searchParams }: CalcPageProps) => {
         >
           <MobileLayout />
         </LossProfitStateProvider>
-      )
+      );
+    case "lossprofit-mobile":
+      return (
+        <LossProfitStateProvider
+          initialValue={serverUserStocks}
+          creator={creator}
+        >
+          <MobileLayout />
+        </LossProfitStateProvider>
+      );
     default:
-      return <div className="CalcPage">Table now found {type}</div>
+      return <div className="CalcPage">Table now found {type}</div>;
   }
-}
+};
 
-export default TablePage
+export default TablePage;

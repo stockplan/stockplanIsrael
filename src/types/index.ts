@@ -31,6 +31,7 @@ export interface IRoute {
 
 export interface Position {
   _id?: string;
+  id?: string;
   creator?: string;
   ticker: string;
   positionType: string;

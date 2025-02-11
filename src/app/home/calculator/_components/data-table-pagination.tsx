@@ -29,18 +29,6 @@ export function DataTablePagination<TData>({
 
   const openAuthModal = () => setIsAuthModalOpen(true);
 
-  // const renderSaveButton = () => (
-  //   <SaveButton
-  //     onClick={() => saveChanges(tableData)}
-  //     isLoading={isLoading}
-  //     disabled={!unsavedChanges}
-  //     className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center"
-  //   >
-  //     <BsFillSaveFill className="mr-2 h-4 w-4" />
-  //     Save Changes
-  //   </SaveButton>
-  // )
-
   return (
     <div className="flex justify-center items-center relative py-2">
       <Button
@@ -50,11 +38,18 @@ export function DataTablePagination<TData>({
         <PlusIcon className="mr-2 h-4 w-4" />
         Add Another Ticker
       </Button>
-      {/* {creator && <div className="absolute left-0">{renderSaveButton()}</div>} */}
-      <LoginFormDialog
-        open={isAuthModalOpen}
-        onOpenChange={setIsAuthModalOpen}
-      />
+      {creator && (
+        <SaveButton
+          onClick={() => saveChanges(tableData)}
+          isLoading={isLoading}
+          disabled={!unsavedChanges}
+          className="text-white bg-slate-700 text-sm px-4 py-2 flex items-center absolute left-0"
+        >
+          <BsFillSaveFill className="mr-2 h-4 w-4" />
+          Save Changes
+        </SaveButton>
+      )}
+      <LoginFormDialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen} />
     </div>
   );
 }

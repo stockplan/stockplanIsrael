@@ -1,10 +1,10 @@
-import { createServerClient } from "@supabase/ssr"
-import { NextResponse, type NextRequest } from "next/server"
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
-  })
+  });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,22 +12,22 @@ export async function updateSession(request: NextRequest) {
     {
       cookies: {
         getAll() {
-          return request.cookies.getAll()
+          return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) =>
             request.cookies.set(name, value)
-          )
+          );
           supabaseResponse = NextResponse.next({
             request,
-          })
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
-          )
+          );
         },
       },
     }
-  )
+  );
 
   // IMPORTANT: Avoid writing any logic between createServerClient and
   // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -35,32 +35,33 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
-  } = await supabase.auth.getUser()
+  } = await supabase.auth.getUser();
 
-  const isTablePath = request.nextUrl.pathname === "/home/calculator/lossprofit"
+  const isTablePath =
+    request.nextUrl.pathname === "/home/calculator/lossprofit";
 
-  const isHomePath = request.nextUrl.pathname.startsWith("/home")
-  const isAuthPath = request.nextUrl.pathname.startsWith("/auth")
-  const isAdminPath = request.nextUrl.pathname.startsWith("/admin")
-  const isApiAuthRoute = request.nextUrl.pathname.startsWith("/api")
+  const isHomePath = request.nextUrl.pathname === "/home";
+  const isAuthPath = request.nextUrl.pathname.startsWith("/auth");
+  const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
+  const isApiAuthRoute = request.nextUrl.pathname.startsWith("/api");
 
-  const isDesktop = request.nextUrl.search.includes("desktop")
+  const isDesktop = request.nextUrl.search.includes("desktop");
 
   if (isApiAuthRoute) {
-    return NextResponse.next()
+    return NextResponse.next();
   }
 
   if (!isDesktop && isTablePath) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/home/calculator/lossprofit-mobile"
-    return NextResponse.redirect(url)
+    const url = request.nextUrl.clone();
+    url.pathname = "/home/calculator/lossprofit-mobile";
+    return NextResponse.redirect(url);
   }
 
-  // if (user && isHomePath) {
-  //   const url = request.nextUrl.clone()
-  //   url.pathname = "/home/calculator/lossprofit"
-  //   return NextResponse.redirect(url)
-  // }
+  if (user && isHomePath) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/home/calculator/lossprofit";
+    return NextResponse.redirect(url);
+  }
 
   // if (!user && !isHomePath && !isAuthPath) {
   //   if (isTablePath) {
@@ -92,5 +93,5 @@ export async function updateSession(request: NextRequest) {
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
 
-  return supabaseResponse
+  return supabaseResponse;
 }
